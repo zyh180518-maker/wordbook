@@ -40,6 +40,9 @@ jobs:
       - name: Sync web assets
         run: npx cap sync android
 
+      - name: Use stable signing keystore
+        run: mkdir -p "$HOME/.android" && cp android-signing/debug.keystore "$HOME/.android/debug.keystore"
+
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
 
