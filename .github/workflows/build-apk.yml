@@ -34,14 +34,16 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Configure stable signing
+        run: |
+          cp android-signing/debug.keystore android/app/debug.keystore
+          python3 scripts/patch-signing.py
+
       - name: Generate icons and splash
         run: npx @capacitor/assets generate --android
 
       - name: Sync web assets
         run: npx cap sync android
-
-      - name: Use stable signing keystore
-        run: mkdir -p "$HOME/.android" && cp android-signing/debug.keystore "$HOME/.android/debug.keystore"
 
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
