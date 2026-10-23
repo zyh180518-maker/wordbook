@@ -68,6 +68,9 @@
   ul.words li .t { color: var(--dim); font-size: 13px; flex: 1; }
   .del { background: none; border: none; color: var(--no); font-size: 18px; cursor: pointer; padding: 4px 8px; }
   .edit { background: none; border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 4px 8px; }
+  #resetModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
+  #resetModal .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 320px; }
+  #resetModal .box button { width: 100%; margin-bottom: 8px; }
   .hint { color: var(--dim); font-size: 12px; }
   #emptyTip { text-align: center; color: var(--dim); padding: 30px 0; }
   .feedback { text-align: center; font-size: 15px; margin-top: 12px; min-height: 22px; font-weight: 600; }
@@ -172,12 +175,32 @@
       5) 抽到单词时译文默认隐藏：<b>自己先回忆</b>，答不出再点「👁 看答案」显示译文。<br>
       6) 想删某个词：在单词本列表里点词右边的 ✕。<br>
       7) 答对的词(√)<b>不强制</b>写意思，想写就写，不想写点「下一个」直接跳过；答错的词(×)会要求补写译文加深记忆。<br>
-      8) 「📚 总单词本」可点开看全部单词，点词右边的 ✎ 给任意词写/改意思。
+      8) 「📚 总单词本」可点开看全部单词，点词右边的 ✎ 给任意词写/改意思。<br>
+      9) 「清空重来」可选<b>默认词库</b>（约1292词）或<b>归零</b>（从0开始自己收录），两次确认防误触。
     </div>
   </details>
 </div>
 
 <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+
+<!-- 清空重来：选默认词库 或 归零 -->
+<div id="resetModal">
+  <div class="box">
+    <div id="resetStep1">
+      <div style="font-size:15px; font-weight:700; margin-bottom:6px;">🧹 清空重来</div>
+      <div style="font-size:13px; color:var(--dim); margin-bottom:14px; line-height:1.6;">当前所有单词和学习记录都会被清掉。想恢复到哪种状态？</div>
+      <button class="btn ghost" id="resetToDefault">默认词库（约<span id="resetSeedCount">1292</span>词）</button>
+      <button class="btn no" id="resetToZero">清空归零（从0开始）</button>
+      <button class="btn ghost" id="resetCancel">取消</button>
+    </div>
+    <div id="resetStep2" style="display:none">
+      <div id="resetStep2Text" style="font-size:15px; font-weight:700; margin-bottom:6px;"></div>
+      <div style="font-size:13px; color:var(--no); margin-bottom:14px; font-weight:700;">⚠️ 此操作不可撤销！</div>
+      <button class="btn ok" id="resetConfirm">确定清空</button>
+      <button class="btn ghost" id="resetBack">再想想</button>
+    </div>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -557,11 +580,27 @@ document.getElementById("importFile").onchange = (e) => {
   e.target.value = "";
 };
 
-// 清空重来（恢复到种子词库）
-document.getElementById("resetBtn").onclick = () => {
-  if (!confirm("清空所有单词并恢复到初始词库（约 " + SEED_WORDS.length + " 词）？")) return;
-  localStorage.removeItem(STORE_KEY);
-  state = load();
+// 清空重来：可选「默认词库」或「归零」（两步确认，防止误触）
+document.getElementById("resetSeedCount").textContent = SEED_WORDS.length;
+let _resetMode = null;
+const resetModal = document.getElementById("resetModal");
+function resetShow(step) {
+  document.getElementById("resetStep1").style.display = step === 1 ? "block" : "none";
+  document.getElementById("resetStep2").style.display = step === 2 ? "block" : "none";
+}
+document.getElementById("resetBtn").onclick = () => { resetShow(1); resetModal.style.display = "flex"; };
+document.getElementById("resetCancel").onclick = () => { resetModal.style.display = "none"; };
+document.getElementById("resetBack").onclick = () => resetShow(1);
+document.getElementById("resetToDefault").onclick = () => { _resetMode = "default"; document.getElementById("resetStep2Text").textContent = "清空并恢复到默认词库（约 " + SEED_WORDS.length + " 词）？"; resetShow(2); };
+document.getElementById("resetToZero").onclick = () => { _resetMode = "zero"; document.getElementById("resetStep2Text").textContent = "清空全部单词，从 0 开始？"; resetShow(2); };
+document.getElementById("resetConfirm").onclick = () => {
+  resetModal.style.display = "none";
+  if (_resetMode === "zero") {
+    state = { words: {}, quizPool: state.quizPool || "un", dailyGoal: state.dailyGoal || 30, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0 } };
+  } else {
+    localStorage.removeItem(STORE_KEY);
+    state = load();
+  }
   save(); renderAll();
 };
 
