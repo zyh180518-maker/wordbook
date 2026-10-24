@@ -286,6 +286,14 @@
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
   <div id="updStatus" class="muted" style="margin-top:6px; min-height:16px;">—</div>
+  <div class="row" style="margin-top:8px; align-items:center;">
+    <label style="font-size:13px; display:flex; align-items:center; gap:6px;">🔊 朗读模式
+      <select id="readModeSel" style="font-size:13px">
+        <option value="manual">手动点击读</option>
+        <option value="auto">切词自动读</option>
+      </select>
+    </label>
+  </div>
   <details>
     <summary>📱 手机使用 & 说明 <span style="color:var(--no); font-size:12px; font-weight:700;">⚠️注意内有重要内容</span></summary>
     <div class="muted" style="line-height:1.7; margin-top:6px">
@@ -425,8 +433,19 @@ function updateApk() {
     var b2 = document.getElementById("btnCheckApk");
     if (b2) b2.onclick = updateApk;
     setTimeout(function () { checkForUpdate(false); }, 1500); /* 启动静默检查 */
+    var rm = document.getElementById("readModeSel");
+    if (rm) {
+      rm.value = getReadMode();
+      rm.onchange = function () { try { localStorage.setItem("wb_read_mode", rm.value); } catch (e) {} };
+    }
   });
 })();
+
+// 朗读模式：manual=手动点击读（默认），auto=切词自动读
+function getReadMode() {
+  try { return localStorage.getItem("wb_read_mode") === "auto" ? "auto" : "manual"; }
+  catch (e) { return "manual"; }
+}
 
 const STORE_KEY = "wordbook.v1";
 // 种子词库（来自用户手机记录 docx，2026-10-22 清洗，共1292个有效单词）
@@ -658,7 +677,7 @@ function renderQuiz() {
     }
   };
   document.getElementById("qSpeak").onclick = speak;
-  setTimeout(speak, 250); // 0.25秒后自动发音
+  if (getReadMode() === "auto") setTimeout(speak, 250); // 朗读模式=自动时才切词发音（默认手动，点了才读）
 }
 function answer(w, b) {
   if (!state.words[w]) return;
