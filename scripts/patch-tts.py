@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# 注入原生 TTS 桥：生成 TtsBridge.java，并 patch MainActivity.java
+# 在 WebView 里暴露 window.AndroidTTS.speak(text)（走系统 TTS 引擎，离线可用）
+# 用法：仓库根目录执行  python3 scripts/patch-tts.py（在 `npx cap add android` 之后）
+import os, sys
+
+APP_DIR = "android/app/src/main/java/com/wordbook/review"
+MAIN = os.path.join(APP_DIR, "MainActivity.java")
+BRIDGE = os.path.join(APP_DIR, "TtsBridge.java")
+
+BRIDGE_SRC = '''package com.wordbook.review;
+
+import android.content.Context;
+import android.speech.tts.TextToSpeech;
+import android.webkit.JavascriptInterface;
+
+import java.util.Locale;
+
+/**
+ * 原生 TTS 桥：暴露给 WebView 里 window.AndroidTTS.speak(text)。
+ * 走系统 TTS 引擎（离线可用，不依赖 Google TTS / 网络）。
+ */
+public class TtsBridge {
+    private final TextToSpeech tts;
+    private String pending = null;
+    private volatile boolean ready = false;
+
+    public TtsBridge(Context context) {
+        tts = new TextToSpeech(context, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int res = tts.setLanguage(Locale.US);
+                if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    // 无英文语音包：退回系统默认语言，仍尽量发声
+                    tts.setLanguage(Locale.getDefault());
+                }
+                tts.setSpeechRate(0.85f); // 语速稍慢，适合背词
+                tts.setPitch(1.1f);        // 音调稍高，更自然
+                ready = true;
+                if (pending != null) {
+                    tts.speak(pending, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
+                    pending = null;
+                }
+            } else {
+                ready = false;
+            }
+        });
+    }
+
+    @JavascriptInterface
+    public void speak(String text) {
+        if (text == null || text.isEmpty()) return;
+        if (ready) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
+        } else {
+            pending = text; // 引擎初始化完成后自动补读
+        }
+    }
+
+    @JavascriptInterface
+    public void stop() {
+        if (ready) tts.stop();
+    }
+
+    @JavascriptInterface
+    public boolean isReady() {
+        return ready;
+    }
+}
+'''
+
+ONCREATE_ANCHOR = "        super.onCreate(savedInstanceState);"
+INJECT = ONCREATE_ANCHOR + """
+        // 注入原生 TTS 桥：HTML 里 window.AndroidTTS.speak(text)
+        WebView webView = getBridge().getWebView();
+        if (webView != null) {
+            webView.addJavascriptInterface(new TtsBridge(this), "AndroidTTS");
+        }"""
+
+IMPORT_ANCHOR = "import android.os.Bundle;"
+IMPORT_ADD = "import android.os.Bundle;\nimport android.webkit.WebView;"
+
+# 若 updater 桥已注入（patch-updater.py 先跑），复用其 webView 变量追加 TTS 行，避免重复声明
+UPDATER_LINE = '            webView.addJavascriptInterface(new UpdaterBridge(this), "AndroidUpdater");'
+UPDATER_PLUS_TTS = UPDATER_LINE + '\n            webView.addJavascriptInterface(new TtsBridge(this), "AndroidTTS");'
+
+
+def main():
+    if not os.path.exists(MAIN):
+        sys.exit("ERROR: %s not found (run after `npx cap add android`)" % MAIN)
+
+    # 1) 生成 TtsBridge.java（幂等）
+    if os.path.exists(BRIDGE):
+        print("TtsBridge.java already exists, skip")
+    else:
+        with open(BRIDGE, "w", encoding="utf-8") as f:
+            f.write(BRIDGE_SRC)
+        print("generated:", BRIDGE)
+
+    # 2) patch MainActivity.java（幂等；与 patch-updater.py 协调，避免重复声明 webView）
+    with open(MAIN, "r", encoding="utf-8") as f:
+        src = f.read()
+
+    if "AndroidTTS" in src:
+        print("MainActivity already patched, skip")
+        return
+    if UPDATER_LINE in src:
+        # updater 桥已注入（patch-updater.py 先跑）→ 复用其 webView 变量追加 TTS 行
+        src = src.replace(UPDATER_LINE, UPDATER_PLUS_TTS, 1)
+    else:
+        if IMPORT_ANCHOR not in src:
+            sys.exit("ERROR: cannot find import anchor in MainActivity.java, template changed?")
+        if ONCREATE_ANCHOR not in src:
+            sys.exit("ERROR: cannot find onCreate anchor in MainActivity.java, template changed?")
+        if "import android.webkit.WebView;" not in src:
+            src = src.replace(IMPORT_ANCHOR, IMPORT_ADD, 1)
+        src = src.replace(ONCREATE_ANCHOR, INJECT, 1)
+
+    with open(MAIN, "w", encoding="utf-8") as f:
+        f.write(src)
+    print("patched:", MAIN)
+
+
+if __name__ == "__main__":
+    main()

@@ -79,6 +79,99 @@
   textarea { width: 100%; background: var(--bg); color: var(--txt); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 15px; resize: vertical; }
   .muted { color: var(--dim); font-size: 12px; margin-top: 6px; }
 </style>
+<script>
+/* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
+(function () {
+  var APP_VERSION = "1.4.0"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  function utf8(s) {
+    var out = [], i = 0, c;
+    while (i < s.length) {
+      c = s.charCodeAt(i++);
+      if (c >= 0xD800 && c <= 0xDBFF) { var c2 = s.charCodeAt(i++); c = 0x10000 + ((c & 0x3FF) << 10) + (c2 & 0x3FF); }
+      if (c < 0x80) out.push(c); else if (c < 0x800) out.push(0xC0 | (c >> 6), 0x80 | (c & 63));
+      else if (c < 0x10000) out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+      else out.push(0xF0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    }
+    return out;
+  }
+  function md5Bytes(b) {
+    function RL(l, s) { return (l << s) | (l >>> (32 - s)); }
+    function AU(lX, lY) {
+      var lX4, lY4, lX8, lY8, lR;
+      lX8 = (lX & 0x80000000); lY8 = (lY & 0x80000000);
+      lX4 = (lX & 0x40000000); lY4 = (lY & 0x40000000);
+      lR = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
+      if (lX4 & lY4) return (lR ^ 0x80000000 ^ lX8 ^ lY8);
+      if (lX4 | lY4) {
+        if (lR & 0x40000000) return (lR ^ 0xC0000000 ^ lX8 ^ lY8);
+        else return (lR ^ 0x40000000 ^ lX8 ^ lY8);
+      } else return (lR ^ lX8 ^ lY8);
+    }
+    function F(x, y, z) { return (x & y) | ((~x) & z); }
+    function G(x, y, z) { return (x & z) | (y & (~z)); }
+    function H(x, y, z) { return (x ^ y ^ z); }
+    function I(x, y, z) { return (y ^ (x | (~z))); }
+    function FF(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(F(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function GG(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(G(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function HH(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(H(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function II(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(I(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function CWA(b) {
+      var n = b.length, w1 = n + 8, w2 = ((w1 - (w1 % 64)) / 64 + 1) * 16;
+      var a = new Array(w2), bp = 0, bc = 0, wc;
+      while (bc < n) { wc = (bc - (bc % 4)) / 4; bp = (bc % 4) * 8; a[wc] = (a[wc] | (b[bc] << bp)); bc++; }
+      wc = (bc - (bc % 4)) / 4; bp = (bc % 4) * 8;
+      a[wc] = a[wc] | (0x80 << bp);
+      a[w2 - 2] = n << 3; a[w2 - 1] = n >>> 29;
+      return a;
+    }
+    function W2H(lv) {
+      var s = "", t, lb, lc;
+      for (lc = 0; lc <= 3; lc++) { lb = (lv >>> (lc * 8)) & 255; t = "0" + lb.toString(16); s += t.substr(t.length - 2, 2); }
+      return s;
+    }
+    var x = CWA(b), k, AA, BB, CC, DD, a = 0x67452301, b2 = 0xEFCDAB89, c = 0x98BADCFE, d = 0x10325476;
+    var S11 = 7, S12 = 12, S13 = 17, S14 = 22, S21 = 5, S22 = 9, S23 = 14, S24 = 20, S31 = 4, S32 = 11, S33 = 16, S34 = 23, S41 = 6, S42 = 10, S43 = 15, S44 = 21;
+    for (k = 0; k < x.length; k += 16) {
+      AA = a; BB = b2; CC = c; DD = d;
+      a = FF(a, b2, c, d, x[k + 0], S11, 0xD76AA478); d = FF(d, a, b2, c, x[k + 1], S12, 0xE8C7B756); c = FF(c, d, a, b2, x[k + 2], S13, 0x242070DB); b2 = FF(b2, c, d, a, x[k + 3], S14, 0xC1BDCEEE); a = FF(a, b2, c, d, x[k + 4], S11, 0xF57C0FAF); d = FF(d, a, b2, c, x[k + 5], S12, 0x4787C62A); c = FF(c, d, a, b2, x[k + 6], S13, 0xA8304613); b2 = FF(b2, c, d, a, x[k + 7], S14, 0xFD469501); a = FF(a, b2, c, d, x[k + 8], S11, 0x698098D8); d = FF(d, a, b2, c, x[k + 9], S12, 0x8B44F7AF); c = FF(c, d, a, b2, x[k + 10], S13, 0xFFFF5BB1); b2 = FF(b2, c, d, a, x[k + 11], S14, 0x895CD7BE); a = FF(a, b2, c, d, x[k + 12], S11, 0x6B901122); d = FF(d, a, b2, c, x[k + 13], S12, 0xFD987193); c = FF(c, d, a, b2, x[k + 14], S13, 0xA679438E); b2 = FF(b2, c, d, a, x[k + 15], S14, 0x49B40821);
+      a = GG(a, b2, c, d, x[k + 1], S21, 0xF61E2562); d = GG(d, a, b2, c, x[k + 6], S22, 0xC040B340); c = GG(c, d, a, b2, x[k + 11], S23, 0x265E5A51); b2 = GG(b2, c, d, a, x[k + 0], S24, 0xE9B6C7AA); a = GG(a, b2, c, d, x[k + 5], S21, 0xD62F105D); d = GG(d, a, b2, c, x[k + 10], S22, 0x2441453); c = GG(c, d, a, b2, x[k + 15], S23, 0xD8A1E681); b2 = GG(b2, c, d, a, x[k + 4], S24, 0xE7D3FBC8); a = GG(a, b2, c, d, x[k + 9], S21, 0x21E1CDE6); d = GG(d, a, b2, c, x[k + 14], S22, 0xC33707D6); c = GG(c, d, a, b2, x[k + 3], S23, 0xF4D50D87); b2 = GG(b2, c, d, a, x[k + 8], S24, 0x455A14ED); a = GG(a, b2, c, d, x[k + 13], S21, 0xA9E3E905); d = GG(d, a, b2, c, x[k + 2], S22, 0xFCEFA3F8); c = GG(c, d, a, b2, x[k + 7], S23, 0x676F02D9); b2 = GG(b2, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
+      a = HH(a, b2, c, d, x[k + 5], S31, 0xFFFA3942); d = HH(d, a, b2, c, x[k + 8], S32, 0x8771F681); c = HH(c, d, a, b2, x[k + 11], S33, 0x6D9D6122); b2 = HH(b2, c, d, a, x[k + 14], S34, 0xFDE5380C); a = HH(a, b2, c, d, x[k + 1], S31, 0xA4BEEA44); d = HH(d, a, b2, c, x[k + 4], S32, 0x4BDECFA9); c = HH(c, d, a, b2, x[k + 7], S33, 0xF6BB4B60); b2 = HH(b2, c, d, a, x[k + 10], S34, 0xBEBFBC70); a = HH(a, b2, c, d, x[k + 13], S31, 0x289B7EC6); d = HH(d, a, b2, c, x[k + 0], S32, 0xEAA127FA); c = HH(c, d, a, b2, x[k + 3], S33, 0xD4EF3085); b2 = HH(b2, c, d, a, x[k + 6], S34, 0x4881D05); a = HH(a, b2, c, d, x[k + 9], S31, 0xD9D4D039); d = HH(d, a, b2, c, x[k + 12], S32, 0xE6DB99E5); c = HH(c, d, a, b2, x[k + 15], S33, 0x1FA27CF8); b2 = HH(b2, c, d, a, x[k + 2], S34, 0xC4AC5665);
+      a = II(a, b2, c, d, x[k + 0], S41, 0xF4292244); d = II(d, a, b2, c, x[k + 7], S42, 0x432AFF97); c = II(c, d, a, b2, x[k + 14], S43, 0xAB9423A7); b2 = II(b2, c, d, a, x[k + 5], S44, 0xFC93A039); a = II(a, b2, c, d, x[k + 12], S41, 0x655B59C3); d = II(d, a, b2, c, x[k + 3], S42, 0x8F0CCC92); c = II(c, d, a, b2, x[k + 10], S43, 0xFFEFF47D); b2 = II(b2, c, d, a, x[k + 1], S44, 0x85845DD1); a = II(a, b2, c, d, x[k + 8], S41, 0x6FA87E4F); d = II(d, a, b2, c, x[k + 15], S42, 0xFE2CE6E0); c = II(c, d, a, b2, x[k + 6], S43, 0xA3014314); b2 = II(b2, c, d, a, x[k + 13], S44, 0x4E0811A1); a = II(a, b2, c, d, x[k + 4], S41, 0xF7537E82); d = II(d, a, b2, c, x[k + 11], S42, 0xBD3AF235); c = II(c, d, a, b2, x[k + 2], S43, 0x2AD7D2BB); b2 = II(b2, c, d, a, x[k + 9], S44, 0xEB86D391);
+      a = AU(a, AA); b2 = AU(b2, BB); c = AU(c, CC); d = AU(d, DD);
+    }
+    return (W2H(a) + W2H(b2) + W2H(c) + W2H(d)).toLowerCase();
+  }
+  window.WB_md5 = md5Bytes;
+  window.WB_utf8 = utf8;
+  function cmp(a, b) {
+    var pa = String(a).split("."), pb = String(b).split(".");
+    for (var i = 0; i < 3; i++) {
+      var x = parseInt(pa[i] || 0, 10), y = parseInt(pb[i] || 0, 10);
+      if (x !== y) return x - y;
+    }
+    return 0;
+  }
+  try {
+    var cache = JSON.parse(localStorage.getItem("wb_cache") || "null");
+    if (cache && cache.v && cache.html) {
+      if (md5Bytes(utf8(cache.html)) === cache.m) {
+        if (cmp(cache.v, APP_VERSION) > 0) {
+          /* 有更高版本缓存：跳转到 Blob URL（全新文档加载，避免 document.write 的全局变量冲突） */
+          var blob = new Blob([cache.html], { type: "text/html;charset=utf-8" });
+          var url = URL.createObjectURL(blob);
+          location.replace(url);
+          return;
+        }
+        /* md5 匹配但版本不高于本地（如升级后新页面再启动）：保留缓存。
+           保留而非清除，是为了 blob 页面刷新失效后回到本页可再次自愈跳转。 */
+      } else {
+        /* md5 不匹配（缓存损坏/被篡改）：清除，回滚本地版本 */
+        try { localStorage.removeItem("wb_cache"); } catch (e) {}
+      }
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <header>
@@ -177,6 +270,15 @@
       7) 答对的词(√)<b>不强制</b>写意思，想写就写，不想写点「下一个」直接跳过；答错的词(×)会要求补写译文加深记忆。<br>
       8) 「📚 总单词本」可点开看全部单词，点词右边的 ✎ 给任意词写/改意思。<br>
       9) 「清空重来」可选<b>默认词库</b>（约1292词）或<b>归零</b>（从0开始自己收录），两次确认防误触。
+      <div style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px;">
+        <div style="font-size:14px; font-weight:700; margin-bottom:6px;">🔄 软件更新</div>
+        <div class="muted" style="margin-bottom:8px;">当前版本：v<span id="appVer">1.4.0</span>（启动时自动静默检查，有新版会提示重启生效）</div>
+        <div class="row">
+          <button class="btn small ghost" id="btnCheckUpdate">检查更新</button>
+          <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
+        </div>
+        <div id="updStatus" class="muted" style="margin-top:8px; min-height:16px;">—</div>
+      </div>
     </div>
   </details>
 </div>
@@ -204,6 +306,109 @@
 
 <script>
 "use strict";
+/* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
+const APP_VERSION = "1.4.0";
+const UPDATE_URLS_DEFAULT = [
+  "https://zyh180518-maker.github.io/wordbook/latest.json",
+  "https://raw.githubusercontent.com/zyh180518-maker/wordbook/gh-pages/latest.json",
+  "https://cdn.jsdelivr.net/gh/zyh180518-maker/wordbook@gh-pages/latest.json"
+];
+/* 允许 localStorage 覆盖更新源（测试 / 换服务器用），默认使用上面三个官方源 */
+var UPDATE_URLS = UPDATE_URLS_DEFAULT.slice();
+try { var _u = JSON.parse(localStorage.getItem("wb_update_urls") || "null"); if (Array.isArray(_u) && _u.length) UPDATE_URLS = _u; } catch (e) {}
+const WB_CACHE_KEY = "wb_cache";
+
+function wbCmpVer(a, b) {
+  var pa = String(a).split("."), pb = String(b).split(".");
+  for (var i = 0; i < 3; i++) {
+    var x = parseInt(pa[i] || 0, 10), y = parseInt(pb[i] || 0, 10);
+    if (x !== y) return x - y;
+  }
+  return 0;
+}
+function wbMd5(s) { return window.WB_md5(window.WB_utf8(s)); }
+
+function checkForUpdate(manual) {
+  var statusEl = document.getElementById("updStatus");
+  function say(t) { if (statusEl) statusEl.textContent = t; }
+  if (manual) say("正在检查更新…");
+  function trySource(i) {
+    if (i >= UPDATE_URLS.length) {
+      if (manual) say("未连接到更新服务器（当前网络可能无法访问 GitHub），请稍后再试");
+      return;
+    }
+    fetch(UPDATE_URLS[i], { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("bad status");
+      return r.json();
+    }).then(function (j) {
+      if (!j || !j.version) throw new Error("bad json");
+      if (wbCmpVer(j.version, APP_VERSION) <= 0) {
+        if (manual) say("已是最新版本 v" + APP_VERSION);
+        checkApkUpdate(j, manual, statusEl);
+        return;
+      }
+      checkApkUpdate(j, manual, statusEl);
+      say("发现新版本 v" + j.version + "，正在下载…");
+      fetch(j.htmlUrl, { cache: "no-store" }).then(function (r2) {
+        if (!r2.ok) throw new Error("bad html status");
+        return r2.arrayBuffer();
+      }).then(function (buf) {
+        var bytes = new Uint8Array(buf);
+        if (j.md5 && window.WB_md5(bytes) !== j.md5) { say("⚠️ 更新文件校验失败，尝试备用源…"); trySource(i + 1); return; }
+        var html = new TextDecoder("utf-8").decode(bytes);
+        try {
+          localStorage.setItem(WB_CACHE_KEY, JSON.stringify({ v: j.version, f: j.htmlFile, m: j.md5, html: html }));
+        } catch (e) { say("⚠️ 存储空间不足，更新失败"); return; }
+        say("✅ 新版本 v" + j.version + " 已下载，重启应用后生效");
+      }).catch(function () { trySource(i + 1); });
+    }).catch(function () { trySource(i + 1); });
+  }
+  trySource(0);
+}
+
+/* APK 更新检查：仅 APK（存在原生 AndroidUpdater 桥）时有效，由 CI 注入的 Java 代码提供 */
+function checkApkUpdate(j, manual, statusEl) {
+  if (!window.AndroidUpdater || !j.apk || !j.apk.version) return;
+  var installed = "0.0.0";
+  try { installed = window.AndroidUpdater.getInstalledVersion() || "0.0.0"; } catch (e) {}
+  if (wbCmpVer(j.apk.version, installed) > 0) {
+    var btn = document.getElementById("btnCheckApk");
+    if (btn) {
+      btn.style.display = "";
+      btn.dataset.apkUrl = j.apk.url || "";
+      btn.dataset.apkMd5 = j.apk.md5 || "";
+      btn.dataset.apkVer = j.apk.version;
+      if (manual && statusEl) statusEl.textContent = "📦 检测到 APK 新版本 v" + j.apk.version + "（约 " + Math.round((j.apk.size || 0) / 1024) + " KB），点「更新 APK」自动下载安装";
+    }
+  }
+}
+
+/* 更新 APK：走原生桥下载并调起系统安装 */
+function updateApk() {
+  var btn = document.getElementById("btnCheckApk");
+  var statusEl = document.getElementById("updStatus");
+  if (!btn || !window.AndroidUpdater || !btn.dataset.apkUrl) return;
+  if (statusEl) statusEl.textContent = "⏳ 正在下载 APK…（完成后会自动调起安装）";
+  try {
+    window.AndroidUpdater.downloadAndInstall(btn.dataset.apkUrl, "wordbook-v" + btn.dataset.apkVer + ".apk", btn.dataset.apkMd5 || "");
+  } catch (e) { if (statusEl) statusEl.textContent = "⚠️ 更新失败：" + e.message; }
+}
+
+(function () {
+  function onReady(fn) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  onReady(function () {
+    var vEl = document.getElementById("appVer"); if (vEl) vEl.textContent = APP_VERSION;
+    var b1 = document.getElementById("btnCheckUpdate");
+    if (b1) b1.onclick = function () { checkForUpdate(true); };
+    var b2 = document.getElementById("btnCheckApk");
+    if (b2) b2.onclick = updateApk;
+    setTimeout(function () { checkForUpdate(false); }, 1500); /* 启动静默检查 */
+  });
+})();
+
 const STORE_KEY = "wordbook.v1";
 // 种子词库（来自用户手机记录 docx，2026-10-22 清洗，共1292个有效单词）
 const SEED_WORDS = ["abreast","abrupt","abundance","abundant","academic","academy","accent","access","accessible","accessory","accidental","acclaim","accompany","accuse","acknowledge","acquaintance","acting","acute","adjust","administer","admire","admit","admittedly","adolescent","adore","advanced","advent","adversary","adverse","advocate","affection","affiliate","affirm","affix","agency","agent","aggressive","alert","algorithm","all","allege","ally","along","alter","alternative","amaze","ambassador","ambiguous","ambition","ambulance","amend","ample","amplify","amuse","ancestor","and","anniversary","annual","anticipate","antivirus","appeal","appease","applaud","appoint","appraise","approve","april","aptitude","architect","architecture","arise","arouse","arrange","arrest","articulate","artificial","ascend","ascertain","ascribe","ask","aspect","assemble","assert","asset","assimilate","assist","assume","assure","atmosphere","attain","attempt","attitude","attorney","attribute","audio","august","auxiliary","avail","availability","avert","aviation","award","awesome","awkward","bachelor","backward","bakery","bald","bankrupt","bare","bargain","bark","barren","barrier","beforehand","beginner","belly","below","benign","bid","big","bilingual","bill","bin","biodiversity","bit","blackmail","blackout","blame","blanket","blast","bleak","blench","blink","bloc","block","blonde","blow","bold","border","borderline","borrow","bot","bother","bottleneck","bottom","brand","breach","break","breakdown","breast","bribe","bride","brilliant","broke","browse","brutal","build-out","bureau","burst","business","bust","campaign","campus","capital","carbo","carbohydrate","cardinal","carton","carve","cash","cast","casual","catastrophe","category","caution","ceiling","celebrate","celebrity","cell","ceremony","certificate","certify","changer","chaos","charity","chart","chill","chip","choir","chop","chore","chronic","circuit","circulate","circumstance","civic","civilian","claim","clarify","classic","classified","classify","client","climate","climax","clinic","coalition","coast","coffin","coherent","cohesion","coincide","coincidence","colleague","comic","commend","comment","commission","commit","companion","company","compensate","compete","compile","compliment","component","compose","composite","compound","comprehension","comprise","compromise","concede","conceive","conception","concise","concrete","condemn","conducive","conduct","confer","confession","confine","conform","congress","conquer","consecutive","consensus","consequence","considerate","consist","consistent","console","consonant","conspicuous","constitute","constrain","consume","contact","contemporary","contest","context","continue","contribute","controversy","conversation","converse","convert","convict","coordinate","copper","corner","cornerstone","corporate","corporation","correlate","correspond","correspondent","corrupt","cosy","count","court","courtesy","cousin","crab","creep","creepy","crept","cricket","crime","crucial","curb","curve","cycle","damp","date","deadly","deal","debt","decay","deceive","december","deceptive","declare","decline","deduce","deduct","deem","deep","default","defect","defend","deficiency","deficient","deficit","define","definite","definition","degenerate","delegate","deliberate","deliver","demographic","demonstrate","denote","dentist","depart","depict","deport","deposit","depress","deregulate","descend","descendant","descent","describe","description","desk","despise","destroy","details","detain","detect","deter","deteriorate","devastate","deviate","device","devise","diagnose","dialogue","dictate","difficult","dig","diploma","diplomat","dirt","discrimination","dismiss","dismissal","disorder","dispose","disregard","disrupt","disruption","disruptive","distill","distort","distribute","disturb","disturbance","dive","diverse","divert","division","documentary","domain","donate","doom","down","downstairs","draft","drain","drawback","driveway","drought","dumping","dust","dusted","ecological","ecology","economy","ecosystem","edit","effect","efficient","eject","elastic","element","elevate","elicit","eligible","eliminate","embarrass","embed","embody","emerge","emergency","eminent","emission","emit","emperor","endanger","endorse","endow","ensure","enterprise","entertain","entrepreneur","entrust","envisage","epidemic","episode","eradicate","erode","errant","erupt","escalation","especially","essence","essential","ethical","ethnic","evidence","evoke","evolve","exceed","exceedingly","exception","exceptional","excess","excessive","exclaim","execute","executive","exemplary","exist","expect","expenditure","experience","expert","expertise","explicit","exponent","export","expose","exposition","extend","extension","extensive","extent","extinct","extinction","extrovert","fabulous","facility","factor","faculty","fade","fake","famine","fault","february","federal","feminine","fertile","fierce","fight","file","fill","finance","finite","firm","flat","flaw","flexible","flight","floor","flow","fluctuate","fluctuation","fool","force","foreign","foremost","foresee","foresight","formal","formula","formulate","forth","forthcoming","fortune","forum","foundation","fragile","frame","freeway","freight","friday","frighten","froze","fundamental","furniture","gamble","gamechanger","gap","garbage","gas","generate","genre","genuine","geography","geology","giant","gist","gossip","grab","grad","grade","grand","grape","graph","grasp","grid","grip","grocery","guarantee","guard","guilt","hack","handicap","handicapped","hang","hangout","hard","harness","harsh","haste","haunt","hazard","head","headcount","hear","heavy","heck","heir","helmet","hemisphere","highway","hijack","hit","hitter","hoist","homogeneous","horizon","hotel","housewarming","hub","humane","humble","humid","humiliate","hunt","hurricane","hurry","hybrid","hypothesis","iconic","idle","illegal","illustrate","image","immaculate","immediate","immune","imperative","imperial","implicit","imply","import","impose","imprison","incur","indefinite","indicate","indicative","indicator","indict","indispensable","individual","induce","inevitable","infect","infected","infer","inferior","infinite","inflate","inform","infrastructure","infringe","ingredient","inherent","inherit","inject","innovation","insert","insight","insist","inspect","instance","institute","institution","insulate","insure","interact","interfere","intermediate","intermittent","interrogate","interrupt","intervene","interview","into","introduce","introvert","intrude","intuitive","invade","invalid","invert","involve","irregular","irrigate","irritable","irritate","irritating","irritation","issue","january","jeopardy","jet","job","joint","journalist","jubilee","judge","judicial","judiciary","july","june","jurisdiction","jury","justice","justify","keep","kidnap","knight","knock","landmark","landscape","latitude","lawsuit","layoff","lead","leak","ledger","legacy","legal","legend","legislate","lengthy","let","lever","levy","line","linguistic","literally","loan","lobster","log","longevity","look","low","loyal","loyalty","lure","magnify","magnitude","mainstream","maintain","malicious","malignant","mall","mandate","manifest","manual","manufacture","manufacturer","manuscript","march","master","material","materialism","matter","mature","may","medication","medium","melt","mend","mentality","mess","microscope","middle","milestone","mimic","mind","minister","misfortune","mislead","misread","mission","mockumentary","modify","moist","mollify","monday","monitor","mood","mop","moral","mortal","mortgage","mud","muddy","multiple","multiply","multitude","munchies","mute","mutter","necessary","negative","noted","november","now","object","obscure","observation","observe","obtain","occupation","occupy","occur","ocean","oceans","october","off","offend","official","offspring","old-fashioned","omit","opponent","opportunity","oppose","opposite","optimistic","organ","organic","organism","orient","other","outdated","outlaw","outrage","outstanding","over","oversight","overwhelm","pack","packed","pall","panic","parliament","passive","pastime","patronise","paycheck","peak","perceive","perform","peril","perish","permanent","permit","perpetual","perpetuate","persist","personality","personnel","perspective","persuade","pesticide","phrase","physician","pile","pilot","pinch","pit","place","plastic","platform","platinum","pledge","podcast","pole","polite","poll","pollute","pomegranate","pop","porch","portable","porter","portfolio","portion","portray","position","positive","post","postpartum","posture","potential","pottery","praise","precaution","precede","precedent","precise","predecessor","pregnant","premature","premise","premium","preoccupy","presume","pretext","prevail","prevalence","prevalent","preview","previous","pride","primary","prime","primitive","principle","prior","priority","prison","private","prize","problem","procedure","proceed","procession","proclaim","profession","professor","proficient","profile","profit","profound","project","prolong","prominent","promise","promising","promotion","prompt","pronunciation","proof","propaganda","propagate","proportion","propose","prospect","prospective","prosper","prosperity","protein","protest","prototype","proud","provoke","pull","punch","purity","qualify","quality","quantify","quantity","quarters","question","quiet","quiz","rack","rag","rage","raise","rate","ratify","rating","ratio","raw","reassure","recede","recession","recommend","recreation","recruit","rectangular","rectify","recur","recyclable","recycle","refer","reference","refine","refinery","reflect","reform","refrain","refresh","refusal","regard","regardless","register","regular","regulate","reign","reject","relate","relative","religion","remain","remark","remedy","remnant","renaissance","render","renew","renovate","repair","reporter","rescue","resemble","reserve","reserved","resist","resort","resource","respect","respective","restore","restrain","resume","retain","retort","retrospect","reunion","revenue","reverse","revise","revive","revolution","revolve","reward","right","rigor","rigorous","rip","rise","ritual","rival","rob","robust","roof","rot","rotate","row","royal","rubbish","rug","rush","sacrifice","safeguard","sales","salute","salvation","sample","sanctuary","saturate","saturday","savage","scandal","scandalous","scar","scarce","scarcity","scare","scared","scenario","scene","scholar","scope","scorn","scramble","script","scrub","sculpture","second","secondary","secretary","section","sector","secure","seduce","seminar","senior","september","sequence","set","setback","setting","severe","shadow","sheet","shell","shellfish","shield","shift","shoulder","shred","shrimp","shrink","side","sight","sightseeing","silence","similar","similarity","simmer","simplify","sink","skip","slang","slash","slightly","smuggle","snatch","soar","sole","solemn","solitary","solo","something","sort","special","speciality","species","specific","specify","specimen","spectacular","spectator","speculate","spend","sphere","split","spot","spotlight","stable","staff","stagger","stake","stale","stalk","stance","standpoint","statement","static","stationary","statistic","statute","steel","steer","stem","stereotype","stew","stifle","stock","stone","stop","strain","stride","struggle","stuff","stutter","subject","submarine","submerge","submissive","submit","subscribe","subsequent","subsistence","substance","substitute","subtle","succeed","succession","such","sufficient","suicide","suitcase","summit","sunday","superb","superior","supervise","support","surf","surface","surge","surgeon","surgery","surpass","surplus","surrender","surround","survive","susceptible","suspect","suspense","suspicion","suspicious","sustain","swamp","swear","switch","system","tablet","take","taking","tank","tease","telescope","temper","temperament","temperature","temporary","tempt","temptation","tenant","terminal","terrible","terrify","terror","that","the","therapy","there","thermal","thesis","thing","threshold","thrill","through","thursday","tidy","tie","timber","time","tongue","tool","torrential","torture","trail","transcend","transcript","transmit","transport","trauma","tremendous","trench","trial","tribe","tribute","triple","trophy","truck","trunk","try","tuesday","tuition","tumble","turn","turns","tutor","twist","types","underdressed","undergraduate","understaffed","uniform","unify","unite","universe","unlock","unprecedented","update","upgrade","uphold","uprising","upstairs","urgent","vaccine","vacuum","vague","valid","valued","variation","vary","vegetate","vegetation","vent","venture","verbal","verdict","verify","versatile","verse","versus","very","veto","village","virtue","virus","visible","vision","visual","vivid","vocal","void","vote","vow","vowel","vulnerability","vulnerable","wage","wages","ward","warrant","warranty","wednesday","weed","weird","wheel","whisper","wholesome","widespread","wipe","with","witness","worksheet","workshop","zoology"];
@@ -317,21 +522,34 @@ function renderQuiz() {
     const t = state.words[pick.w].t;
     tr.textContent = t ? "译文：" + t : "（该词还没有译文，答 × 后可补录）";
   };
-  // 发音功能，支持手动点，也自动读一次
+  // 发音功能：APK 里优先走原生 TTS（window.AndroidTTS，由 Java 注入，离线可用，
+  // 不依赖 Google TTS 引擎）；浏览器里退回 Web Speech API。
   const speak = () => {
+    let ttsCalled = false;
+    if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
+      try { window.AndroidTTS.speak(pick.w); ttsCalled = true; return; } catch (e) { /* 回退到 Web Speech */ }
+    }
     if (window.speechSynthesis) {
-      const u = new SpeechSynthesisUtterance(pick.w);
-      // 优先选自然的英文女声语音，更接近真人
-      const voices = window.speechSynthesis.getVoices();
-      const enVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Female') || v.name.includes('女性'))) 
-        || voices.find(v => v.lang === 'en-US') 
-        || null;
-      if (enVoice) u.voice = enVoice;
-      u.lang = 'en-US';
-      u.rate = 0.85; // 语速稍慢适合背词
-      u.pitch = 1.1; // 音调稍高更自然不生硬
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
+      try {
+        const u = new SpeechSynthesisUtterance(pick.w);
+        // 优先选自然的英文女声语音，更接近真人
+        const voices = window.speechSynthesis.getVoices();
+        const enVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Female') || v.name.includes('女性'))) 
+          || voices.find(v => v.lang === 'en-US') 
+          || null;
+        if (enVoice) u.voice = enVoice;
+        u.lang = 'en-US';
+        u.rate = 0.85; // 语速稍慢适合背词
+        u.pitch = 1.1; // 音调稍高更自然不生硬
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+        ttsCalled = true;
+      } catch (e) { /* 引擎异常（如无合法语音对象）：落入下方提示分支 */ }
+    }
+    // 两种TTS都不可用时提示用户
+    if (!ttsCalled) {
+      const fb = document.getElementById("qFb");
+      if (fb) fb.textContent = "⚠️ 无法发音，请在系统「设置-语言和输入法-语音」中下载英文离线语音包";
     }
   };
   document.getElementById("qSpeak").onclick = speak;
