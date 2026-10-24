@@ -13,11 +13,51 @@ import hashlib, json, os, re, sys
 WWW_INDEX = "www/index.html"
 LATEST_JSON = "www/latest.json"
 
+GITEE_OWNER = os.environ.get("GITEE_OWNER", "zZz")
+GITEE_REPO = os.environ.get("GITEE_REPO", "wordbook-update")
+GITEE_TOKEN = os.environ.get("GITEE_TOKEN", "")
+
 def parse_tag(ref):
     m = re.search(r"v(\d+)\.(\d+)\.(\d+)", ref.strip())
     if not m:
         return None
     return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+def push_to_gitee(files, version):
+    """把热更文件上传/覆盖到 Gitee 公开仓库（国内镜像源，手机无代理直连）。
+    无 GITEE_TOKEN 时跳过并提示（CI 配好 Secrets 后自动生效）。"""
+    if not GITEE_TOKEN:
+        print("WARN: GITEE_TOKEN not set, skip Gitee push (国内镜像未启用)")
+        return
+    import base64, urllib.request, urllib.parse
+    api = "https://gitee.com/api/v5/repos/%s/%s/contents" % (GITEE_OWNER, GITEE_REPO)
+    for path, data in files:
+        url = api + "/" + path
+        sha = None
+        try:
+            req = urllib.request.Request(url + ("?access_token=%s" % GITEE_TOKEN))
+            with urllib.request.urlopen(req, timeout=20) as r:
+                existing = json.load(r)
+                sha = existing.get("sha")
+        except Exception:
+            sha = None  # 文件不存在或查询失败 → 直接创建
+        body = urllib.parse.urlencode({
+            "access_token": GITEE_TOKEN,
+            "content": base64.b64encode(data).decode(),
+            "message": "release v%s hot-update assets" % version,
+            "sha": sha,
+        }).encode() if sha else urllib.parse.urlencode({
+            "access_token": GITEE_TOKEN,
+            "content": base64.b64encode(data).decode(),
+            "message": "release v%s hot-update assets" % version,
+        }).encode()
+        req = urllib.request.Request(url, data=body, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                json.load(r)
+            print("gitee upload OK: %s" % path)
+        except Exception as e:
+            print("WARN: gitee upload failed for %s: %r" % (path, e))
 
 def main():
     if not os.path.exists(WWW_INDEX):
@@ -63,9 +103,10 @@ def main():
     latest = {
         "version": version,
         "htmlFile": html_file,
-        "htmlUrl": "https://zyh180518-maker.github.io/wordbook/www/%s" % html_file,
+        # 主源：Gitee 国内 raw（手机无代理直连快）；GitHub Pages/raw/jsdelivr 做兜底
+        "htmlUrl": "https://gitee.com/%s/%s/raw/master/%s" % (GITEE_OWNER, GITEE_REPO, html_file),
         "htmlUrlBackup": [
-            # CI 只推 gh-pages 分支（含最新 latest.json + index-*.html），备份源一律指向 gh-pages
+            "https://zyh180518-maker.github.io/wordbook/www/%s" % html_file,
             "https://raw.githubusercontent.com/%s/gh-pages/%s" % (base, html_file),
             "https://cdn.jsdelivr.net/gh/%s@gh-pages/%s" % (base, html_file),
         ],
@@ -79,6 +120,12 @@ def main():
 
     print("release assets ready: version=%s md5=%s htmlFile=%s" % (version, md5, html_file))
     print("latest.json written to", LATEST_JSON)
+
+    # 国内镜像：同步热更文件到 Gitee 仓库（无 token 时跳过）
+    push_to_gitee([
+        (LATEST_JSON, open(LATEST_JSON, "rb").read()),
+        (html_file, html_bytes),
+    ], version)
 
 if __name__ == "__main__":
     main()
