@@ -82,7 +82,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.5.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.5.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -281,7 +281,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.1</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.2</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -334,7 +334,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.5.1";
+const APP_VERSION = "1.5.2";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -405,22 +405,30 @@ function checkForUpdate(manual) {
       }
       checkApkUpdate(j, manual, statusEl);
       say("发现新版本 v" + j.version + "，正在下载…");
-      fetchWithProgress(j.htmlUrl, function (loaded, total) {
-        var kb = Math.round(loaded / 1024);
-        var msg = "正在下载 v" + j.version + " " + (total ? Math.round(loaded * 100 / total) + "%（" + kb + "/" + Math.round(total / 1024) + " KB）" : kb + " KB…");
-        say(msg);
-      }).then(function (buf) {
-        var bytes = new Uint8Array(buf);
-        if (j.md5 && window.WB_md5(bytes) !== j.md5) { say("⚠️ 更新文件校验失败，尝试备用源…"); trySource(i + 1); return; }
-        var html = new TextDecoder("utf-8").decode(bytes);
-        try {
-          localStorage.setItem(WB_CACHE_KEY, JSON.stringify({ v: j.version, f: j.htmlFile, m: j.md5, html: html }));
-        } catch (e) { say("⚠️ 存储空间不足，更新失败"); return; }
-        say("✅ 新版本 v" + j.version + " 已下载，重启应用后生效");
-      }).catch(function (e) {
-        if (manual) say("源" + (i + 1) + " 下载失败" + (e && e.message === "timeout" ? "（连接超时）" : "（连接中断）") + "，尝试备用源…");
-        trySource(i + 1);
-      });
+      // 下载：主源 htmlUrl + htmlUrlBackup 逐个尝试（任一成功即完成，CORS/网络失败自动跳下一个）
+      var dlUrls = [j.htmlUrl].concat(j.htmlUrlBackup || []);
+      (function tryDl(k) {
+        if (k >= dlUrls.length) {
+          if (manual) say("❌ 所有下载源都失败，请检查网络后重试");
+          trySource(i + 1);
+          return;
+        }
+        fetchWithProgress(dlUrls[k], function (loaded, total) {
+          var kb = Math.round(loaded / 1024);
+          say("正在下载 v" + j.version + " " + (total ? Math.round(loaded * 100 / total) + "%（" + kb + "/" + Math.round(total / 1024) + " KB）" : kb + " KB…"));
+        }).then(function (buf) {
+          var bytes = new Uint8Array(buf);
+          if (j.md5 && window.WB_md5(bytes) !== j.md5) { say("⚠️ 下载内容校验失败，尝试下一个源…"); tryDl(k + 1); return; }
+          var html = new TextDecoder("utf-8").decode(bytes);
+          try {
+            localStorage.setItem(WB_CACHE_KEY, JSON.stringify({ v: j.version, f: j.htmlFile, m: j.md5, html: html }));
+          } catch (e) { say("⚠️ 存储空间不足，更新失败"); return; }
+          say("✅ 新版本 v" + j.version + " 已下载，重启应用后生效");
+        }).catch(function (e) {
+          if (manual) say("下载源" + (k + 1) + "/" + dlUrls.length + " 失败（" + (e && e.message === "timeout" ? "连接超时" : "连接中断") + "），尝试下一个…");
+          tryDl(k + 1);
+        });
+      })(0);
     }).catch(function (e) {
       if (manual) say("源" + (i + 1) + " 连接失败" + (e && e.message === "timeout" ? "（连接超时）" : "（连接中断）") + "，尝试备用源…");
       trySource(i + 1);
