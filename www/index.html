@@ -656,10 +656,12 @@ function renderQuiz() {
     if (window.speechSynthesis) {
       try {
         const u = new SpeechSynthesisUtterance(pick.w);
-        // 优先选自然的英文女声语音，更接近真人
+        // 音色优先级：自然/神经音色 > 知名自然女声 > 任意 en-US > 任意 en（更接近真人）
         const voices = window.speechSynthesis.getVoices();
-        const enVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Female') || v.name.includes('女性'))) 
-          || voices.find(v => v.lang === 'en-US') 
+        const enVoice = voices.find(v => v.lang === 'en-US' && /neural|natural|online|enhanced|premium/i.test(v.name))
+          || voices.find(v => v.lang === 'en-US' && /female|女性|samantha|aria|jenny|michelle|zira/i.test(v.name))
+          || voices.find(v => v.lang === 'en-US')
+          || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en'))
           || null;
         if (enVoice) u.voice = enVoice;
         u.lang = 'en-US';

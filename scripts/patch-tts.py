@@ -65,6 +65,25 @@ public class TtsBridge {
         if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
             tts.setLanguage(Locale.getDefault());
         }
+        // 音色优化：优先系统的自然/神经英文音色（更接近真人），无则保持引擎默认
+        try {
+            java.util.Set<android.speech.tts.Voice> voices = tts.getVoices();
+            if (voices != null) {
+                android.speech.tts.Voice best = null;
+                for (android.speech.tts.Voice v : voices) {
+                    if (v == null || v.getLocale() == null) continue;
+                    if (!"en".equalsIgnoreCase(v.getLocale().getLanguage())) continue;
+                    String n = v.getName() == null ? "" : v.getName().toLowerCase();
+                    if (n.contains("natural") || n.contains("neural") || n.contains("online")
+                            || n.contains("enhanced") || n.contains("premium")) { best = v; break; }
+                    if (best == null && (n.contains("female") || n.contains("samantha")
+                            || n.contains("aria") || n.contains("jenny") || n.contains("michelle"))) {
+                        best = v;
+                    }
+                }
+                if (best != null) tts.setVoice(best);
+            }
+        } catch (Throwable ignored) { /* 部分引擎 getVoices 异常：忽略，保持默认音色 */ }
         tts.setSpeechRate(0.85f); // 语速稍慢，适合背词
         tts.setPitch(1.1f);        // 音调稍高，更自然
     }
