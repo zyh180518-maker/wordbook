@@ -25,38 +25,36 @@ public class TtsBridge {
     private final TextToSpeech tts;
     private String pending = null;
     private volatile boolean ready = false;
+    private volatile boolean configured = false;
 
     public TtsBridge(Context context) {
-        // 用局部变量 t（effectively final）供 lambda 引用，避免 final 字段被判定未初始化
-        final TextToSpeech t = new TextToSpeech(context, status -> {
-            if (status == TextToSpeech.SUCCESS) {
-                int res = t.setLanguage(Locale.US);
-                if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    // 无英文语音包：退回系统默认语言，仍尽量发声
-                    t.setLanguage(Locale.getDefault());
-                }
-                t.setSpeechRate(0.85f); // 语速稍慢，适合背词
-                t.setPitch(1.1f);        // 音调稍高，更自然
-                ready = true;
-                if (pending != null) {
-                    t.speak(pending, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
-                    pending = null;
-                }
-            } else {
-                ready = false;
-            }
+        // 回调里不引用 tts（避免 final 字段/局部变量初始化判定错误），只设置 ready 标志
+        tts = new TextToSpeech(context, status -> {
+            ready = (status == TextToSpeech.SUCCESS);
         });
-        this.tts = t;
     }
 
     @JavascriptInterface
     public void speak(String text) {
         if (text == null || text.isEmpty()) return;
-        if (ready) {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
-        } else {
-            pending = text; // 引擎初始化完成后自动补读
+        if (!ready) { pending = text; return; }
+        configureOnce();
+        String toSpeak = text;
+        if (pending != null) { toSpeak = pending; pending = null; } // 补读引擎就绪前缓存的文本
+        tts.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
+    }
+
+    /** 首次发音时配置语言/语速/音调（此时 tts 已赋值，避免回调期 NPE） */
+    private void configureOnce() {
+        if (configured) return;
+        configured = true;
+        int res = tts.setLanguage(Locale.US);
+        if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+            // 无英文语音包：退回系统默认语言，仍尽量发声
+            tts.setLanguage(Locale.getDefault());
         }
+        tts.setSpeechRate(0.85f); // 语速稍慢，适合背词
+        tts.setPitch(1.1f);        // 音调稍高，更自然
     }
 
     @JavascriptInterface
