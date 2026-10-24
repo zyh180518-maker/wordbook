@@ -13,7 +13,7 @@ import hashlib, json, os, re, sys
 WWW_INDEX = "www/index.html"
 LATEST_JSON = "www/latest.json"
 
-GITEE_OWNER = os.environ.get("GITEE_OWNER", "zZz")
+GITEE_OWNER = os.environ.get("GITEE_OWNER", "zyh2077")
 GITEE_REPO = os.environ.get("GITEE_REPO", "wordbook-update")
 GITEE_TOKEN = os.environ.get("GITEE_TOKEN", "")
 
