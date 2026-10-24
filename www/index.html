@@ -559,9 +559,9 @@ function renderHistory() {
     const ws = Object.keys(map);
     const nOk = ws.filter(w => map[w] === "ok").length;
     const tag = d === todayKey() ? "📅" : "🗓";
-    return `<div class="histDay" data-day="${d}" style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:2px 0;border-bottom:1px dashed var(--line)">
-      <span data-exp="${d}" style="cursor:pointer;font-size:13px;flex:1">${tag} ${d}（${ws.length}词 / 掌握${nOk}）</span>
-      <button class="del" data-deld="${d}" title="删除这一天">✕</button>
+    return `<div class="histDay" data-day="${d}" data-exp="${d}" style="display:flex;align-items:center;gap:10px;margin-bottom:4px;padding:10px 4px;cursor:pointer;border-bottom:1px dashed var(--line)">
+      <span style="font-size:13px;flex:1">${tag} ${d}（${ws.length}词 / 掌握${nOk}）</span>
+      <button class="del" data-deld="${d}" style="padding:8px 12px;flex-shrink:0" title="删除这一天">✕</button>
       <div class="histBody" id="histBody-${d}" style="display:none;width:100%;order:3"></div>
     </div>`;
   }).join("");
