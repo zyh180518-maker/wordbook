@@ -51,7 +51,7 @@ def push_to_gitee(files, version):
             "content": base64.b64encode(data).decode(),
             "message": "release v%s hot-update assets" % version,
         }).encode()
-        req = urllib.request.Request(url, data=body, method="POST")
+        req = urllib.request.Request(url, data=body, method="PUT" if sha else "POST")
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
                 json.load(r)
