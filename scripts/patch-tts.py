@@ -27,24 +27,26 @@ public class TtsBridge {
     private volatile boolean ready = false;
 
     public TtsBridge(Context context) {
-        tts = new TextToSpeech(context, status -> {
+        // 用局部变量 t（effectively final）供 lambda 引用，避免 final 字段被判定未初始化
+        final TextToSpeech t = new TextToSpeech(context, status -> {
             if (status == TextToSpeech.SUCCESS) {
-                int res = tts.setLanguage(Locale.US);
+                int res = t.setLanguage(Locale.US);
                 if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
                     // 无英文语音包：退回系统默认语言，仍尽量发声
-                    tts.setLanguage(Locale.getDefault());
+                    t.setLanguage(Locale.getDefault());
                 }
-                tts.setSpeechRate(0.85f); // 语速稍慢，适合背词
-                tts.setPitch(1.1f);        // 音调稍高，更自然
+                t.setSpeechRate(0.85f); // 语速稍慢，适合背词
+                t.setPitch(1.1f);        // 音调稍高，更自然
                 ready = true;
                 if (pending != null) {
-                    tts.speak(pending, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
+                    t.speak(pending, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
                     pending = null;
                 }
             } else {
                 ready = false;
             }
         });
+        this.tts = t;
     }
 
     @JavascriptInterface
