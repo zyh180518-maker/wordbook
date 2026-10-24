@@ -84,7 +84,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.5.3"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.5.4"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -283,7 +283,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.3</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.4</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -300,13 +300,12 @@
     <summary>📱 手机使用 & 说明 <span style="color:var(--no); font-size:12px; font-weight:700;">⚠️注意内有重要内容</span></summary>
     <div class="muted" style="line-height:1.7; margin-top:6px">
       <div style="color:var(--no); font-weight:700; margin-bottom:6px;">⚠️ 注意：请勿随便清除浏览器缓存/数据，否则全部单词记录会被初始化清空！建议每隔一段时间点「导出备份」保存一份 .json 文件，万一清缓存后可点「导入备份」一键恢复。</div>
-      <div style="font-size:13px; color:var(--dim); margin-bottom:8px;">📲 手机添加到桌面：<b>不要在微信里直接打开</b>（微信浏览器的「添加至手机」对本地文件是灰色的）。正确方法：微信里点文件 →「···」→「用其他应用打开」→ 选 <b>Edge 或手机自带浏览器</b> → 浏览器菜单「⋮」→「添加到主屏幕」，以后从手机桌面直接打开。</div>
       1) <b>背词</b>：看到单词先回忆，答不出再点「👁 看答案」看译文；√ = 掌握，× = 未掌握（答 × 的词会要求补写译文加深记忆）。<br>
       2) <b>单词本</b>：「📚 总单词本」看全部单词，词右边 ✎ 写/改意思、✕ 删词。<br>
       3) <b>今日已学</b>：看今天学了哪些词、哪些掌握/未掌握。<br>
       4) <b>学习记录</b>：按日期永久保存每一天学过的词，点日期看当天明细，✕ 删某天，可一键清空。<br>
       5) <b>朗读</b>：默认手动点「🔊 发音」；可在设置里改为切词自动读。<br>
-      6) <b>备份</b>：点「导出备份」下载 .json，换设备/清缓存后点「导入备份」恢复。<br>
+      6) <b>备份</b>：点「导出备份」可下载文件或在面板里复制内容保存，换设备/清缓存后点「导入备份」恢复。<br>
       7) <b>清空重来</b>：可选默认词库（约1292词）或归零从0开始，两次确认防误触。
     </div>
   </details>
@@ -349,7 +348,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.5.3";
+const APP_VERSION = "1.5.4";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
