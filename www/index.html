@@ -71,6 +71,8 @@
   #resetModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
   #resetModal .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 320px; }
   #resetModal .box button { width: 100%; margin-bottom: 8px; }
+  #exportModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
+  #exportModal .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 360px; }
   .hint { color: var(--dim); font-size: 12px; }
   #emptyTip { text-align: center; color: var(--dim); padding: 30px 0; }
   .feedback { text-align: center; font-size: 15px; margin-top: 12px; min-height: 22px; font-weight: 600; }
@@ -82,7 +84,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.5.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.5.3"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -281,7 +283,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.2</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.3</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -331,10 +333,23 @@
   </div>
 </div>
 
+<!-- 导出备份面板：手机上不弹下载时，可直接长按复制备份内容 -->
+<div id="exportModal">
+  <div class="box">
+    <div style="font-size:15px; font-weight:700; margin-bottom:6px;">💾 备份内容</div>
+    <div class="muted" style="font-size:12px; margin-bottom:8px; line-height:1.6;">已尝试下载文件；若手机没有弹出下载，请点「复制全部」或长按下面内容全选复制，粘贴保存到备忘录/文件即可。</div>
+    <textarea id="exportText" readonly style="width:100%; height:160px; font-size:11px; box-sizing:border-box; border:1px solid var(--line); border-radius:6px; padding:8px; color:var(--fg); background:var(--bg, transparent);"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn small ghost" id="exportCopy">📋 复制全部</button>
+      <button class="btn small ghost" id="exportClose">关闭</button>
+    </div>
+  </div>
+</div>
+
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.5.2";
+const APP_VERSION = "1.5.3";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -929,33 +944,35 @@ document.getElementById("quizPool").onchange = function () {
 // 导出 / 导入备份
 document.getElementById("exportBtn").onclick = () => {
   const json = JSON.stringify(state);
-  const blob = new Blob([json], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "单词备份-" + new Date().toISOString().slice(0,10) + ".json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-  // APP(WebView) 里可能不弹下载：给一个「复制备份」兜底
-  const old = document.getElementById("exportTip");
-  if (old) old.remove();
-  const tip = document.createElement("div");
-  tip.id = "exportTip";
-  tip.style.cssText = "margin-top:8px; font-size:13px; color:var(--dim); line-height:1.6;";
-  tip.innerHTML = `💾 备份已生成（已尝试下载）。如果手机上没有弹出下载，<a href="#" id="copyBackup" style="color:var(--accent)">点这里复制备份内容</a>，粘贴保存到备忘录即可。`;
-  document.getElementById("exportBtn").parentElement.after(tip);
-  const cb = document.getElementById("copyBackup");
-  if (cb) cb.onclick = (ev) => {
-    ev.preventDefault();
+  // 1) 尝试直接下载文件（浏览器/部分 WebView 会弹下载）
+  try {
+    const blob = new Blob([json], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "单词备份-" + new Date().toISOString().slice(0,10) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  } catch (e) { /* 继续弹面板 */ }
+  // 2) 弹出备份面板：内容可见，可长按/按钮复制（手机 WebView 最可靠的方式）
+  const modal = document.getElementById("exportModal");
+  const ta = document.getElementById("exportText");
+  if (!modal || !ta) return;
+  ta.value = json;
+  modal.style.display = "flex";
+  document.getElementById("exportCopy").onclick = () => {
+    ta.select();
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(json).then(() => alert("备份内容已复制！粘贴保存到备忘录即可。"), () => alert("复制失败，请换用浏览器打开后导出。"));
+      navigator.clipboard.writeText(json).then(
+        () => alert("备份内容已复制！粘贴保存到备忘录/文件即可。"),
+        () => alert("已全选，请长按复制。")
+      );
     } else {
-      alert("当前环境不支持复制，请换用浏览器打开后导出。");
+      alert("已全选，请长按复制。");
     }
   };
-  clearTimeout(tip._t);
-  tip._t = setTimeout(() => { tip.remove(); }, 8000);
+  document.getElementById("exportClose").onclick = () => { modal.style.display = "none"; };
 };
 document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
 document.getElementById("importFile").onchange = (e) => {
