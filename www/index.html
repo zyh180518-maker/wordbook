@@ -82,7 +82,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.4.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.4.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -250,6 +250,29 @@
   </details>
 </div>
 
+<!-- 今日已学 / 学习记录 -->
+<div class="card">
+  <details id="todayDetails">
+    <summary>📅 今日已学（<span id="nToday">0</span>词）</summary>
+    <div class="row" style="margin-bottom:8px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="todayShowTrans" style="margin:0"> 显示意思</label>
+      <select id="todayFilter" style="margin-left:auto;font-size:13px">
+        <option value="all">全部</option>
+        <option value="ok">已掌握 ✓</option>
+        <option value="un">未掌握 ✗</option>
+      </select>
+    </div>
+    <div class="muted" id="todayStat" style="margin-bottom:6px"></div>
+    <ul class="words" id="listToday"></ul>
+  </details>
+  <details id="historyDetails">
+    <summary>🗓 学习记录（<span id="nDays">0</span>天）</summary>
+    <div class="muted" style="margin-bottom:6px">按日期保存每一天学过哪些单词及掌握情况，永久保留不自动清理。点日期可展开当天明细，点 ✕ 删除某天，或一键清空。</div>
+    <div id="historyList"></div>
+    <button class="btn no small" id="clearHistoryBtn" style="margin-top:8px">🗑 清空全部学习记录</button>
+  </details>
+</div>
+
 <div class="card">
   <div class="btns">
     <button class="btn ghost small" id="exportBtn">导出备份</button>
@@ -272,7 +295,7 @@
       9) 「清空重来」可选<b>默认词库</b>（约1292词）或<b>归零</b>（从0开始自己收录），两次确认防误触。
       <div style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px;">
         <div style="font-size:14px; font-weight:700; margin-bottom:6px;">🔄 软件更新</div>
-        <div class="muted" style="margin-bottom:8px;">当前版本：v<span id="appVer">1.4.1</span>（启动时自动静默检查，有新版会提示重启生效）</div>
+        <div class="muted" style="margin-bottom:8px;">当前版本：v<span id="appVer">1.4.2</span>（启动时自动静默检查，有新版会提示重启生效）</div>
         <div class="row">
           <button class="btn small ghost" id="btnCheckUpdate">检查更新</button>
           <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
@@ -307,7 +330,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.4.1";
+const APP_VERSION = "1.4.2";
 const UPDATE_URLS_DEFAULT = [
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
   "https://raw.githubusercontent.com/zyh180518-maker/wordbook/gh-pages/latest.json",
@@ -423,6 +446,7 @@ function load() {
       const s = JSON.parse(raw);
       // 兼容旧数据：补全统计与每日目标字段
       if (!s.stats) s.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
+      if (!s.stats.dailyDetail) s.stats.dailyDetail = {}; // 旧备份无学习明细：补空对象
       if (!s.dailyGoal) s.dailyGoal = 30;
       return s;
     }
@@ -430,7 +454,7 @@ function load() {
   // 首次运行：种子词全部进「未掌握」，默认只抽未掌握
   const words = {};
   for (const w of SEED_WORDS) words[w] = { w, t: "", b: "un", ts: Date.now() };
-  return { words, quizPool: "un", dailyGoal: 30, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0 } };
+  return { words, quizPool: "un", dailyGoal: 30, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0, dailyDetail: {} } };
 }
 function save() {
   localStorage.setItem(STORE_KEY, JSON.stringify(state));
@@ -452,6 +476,8 @@ function renderAll() {
   renderProgress();
   renderLists();
   renderQuiz();
+  renderToday();
+  renderHistory();
 }
 function renderProgress() {
   const today = new Date().toISOString().slice(0, 10);
@@ -478,6 +504,84 @@ function renderLists() {
     render(id, Object.values(state.words).filter(w => w.b === p).sort((a,b)=>a.w.localeCompare(b.w)));
   }
 }
+/* ===== 今日已学 / 学习记录 ===== */
+function todayKey() { return new Date().toISOString().slice(0, 10); } // 与答题统计同用 UTC 日期，保持一致
+function ensureDailyDetail() {
+  if (!state.stats) state.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
+  if (!state.stats.dailyDetail) state.stats.dailyDetail = {};
+  return state.stats.dailyDetail;
+}
+function wordRow(w, b, show) {
+  const t = (state.words[w] && state.words[w].t) || "";
+  const trans = show && t ? `<span class="t">${esc(t)}</span>` : "";
+  const color = b === "ok" ? "#2e8b57" : "#c0392b";
+  const mark = b === "ok" ? "✓" : "✗";
+  return `<li><b>${esc(w)}</b>${trans}<i style="color:${color};font-style:normal">${mark}</i></li>`;
+}
+function renderToday() {
+  const dd = ensureDailyDetail();
+  const map = dd[todayKey()] || {};
+  const ws = Object.keys(map);
+  const nOk = ws.filter(w => map[w] === "ok").length;
+  document.getElementById("nToday").textContent = ws.length;
+  document.getElementById("todayStat").textContent = ws.length
+    ? `今日共学 ${ws.length} 词：掌握 ${nOk}，未掌握 ${ws.length - nOk}`
+    : "今天还没学习，去复习/学习几个单词吧。";
+  const filter = document.getElementById("todayFilter").value;
+  const show = document.getElementById("todayShowTrans").checked;
+  const items = ws.filter(w => filter === "all" || map[w] === filter).sort((a,b)=>a.localeCompare(b));
+  document.getElementById("listToday").innerHTML = items.map(w => wordRow(w, map[w], show)).join("")
+    || `<li class="hint">（空）</li>`;
+}
+function renderHistory() {
+  const dd = ensureDailyDetail();
+  const days = Object.keys(dd).sort().reverse();
+  document.getElementById("nDays").textContent = days.length;
+  const el = document.getElementById("historyList");
+  if (!days.length) { el.innerHTML = `<div class="muted">还没有学习记录，答过题后会自动生成。</div>`; return; }
+  el.innerHTML = days.map(d => {
+    const map = dd[d];
+    const ws = Object.keys(map);
+    const nOk = ws.filter(w => map[w] === "ok").length;
+    const tag = d === todayKey() ? "📅" : "🗓";
+    return `<div class="histDay" data-day="${d}" style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:2px 0;border-bottom:1px dashed var(--line)">
+      <span data-exp="${d}" style="cursor:pointer;font-size:13px;flex:1">${tag} ${d}（${ws.length}词 / 掌握${nOk}）</span>
+      <button class="del" data-deld="${d}" title="删除这一天">✕</button>
+      <div class="histBody" id="histBody-${d}" style="display:none;width:100%;order:3"></div>
+    </div>`;
+  }).join("");
+}
+function openHistDay(d, show) {
+  const body = document.getElementById("histBody-" + d);
+  if (!body) return;
+  const open = body.style.display !== "none";
+  body.style.display = open ? "none" : "block";
+  if (!open) {
+    const map = ensureDailyDetail()[d] || {};
+    body.innerHTML = `<ul class="words">${Object.keys(map).sort((a,b)=>a.localeCompare(b)).map(w => wordRow(w, map[w], show)).join("") || `<li class="hint">（空）</li>`}</ul>`;
+  }
+}
+document.getElementById("todayShowTrans").onchange = () => { renderToday(); renderHistory(); };
+document.getElementById("todayFilter").onchange = renderToday;
+document.getElementById("clearHistoryBtn").onclick = () => {
+  if (!confirm("确定清空全部学习记录？此操作不可撤销。")) return;
+  if (!confirm("再次确认：将删除所有日期的学习记录，继续？")) return;
+  ensureDailyDetail();
+  state.stats.dailyDetail = {};
+  save(); renderToday(); renderHistory();
+};
+document.getElementById("historyList").onclick = (e) => {
+  const del = e.target.closest("[data-deld]");
+  if (del) {
+    const d = del.dataset.deld;
+    if (!confirm(`删除 ${d} 的学习记录？`)) return;
+    delete ensureDailyDetail()[d];
+    save(); renderToday(); renderHistory();
+    return;
+  }
+  const exp = e.target.closest("[data-exp]");
+  if (exp) openHistDay(exp.dataset.exp, document.getElementById("todayShowTrans").checked);
+};
 function renderQuiz() {
   const pool = document.getElementById("quizPool").value;
   const area = document.getElementById("quizArea");
@@ -567,6 +671,10 @@ function answer(w, b) {
   if (!state.stats) state.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
   const today = new Date().toISOString().slice(0, 10);
   state.stats.dailyRecords[today] = (state.stats.dailyRecords[today] || 0) + 1;
+  // 学习明细：当天该词最后一次答题状态（ok=掌握 / un=未掌握），永久保存供「今日已学/学习记录」查看
+  if (!state.stats.dailyDetail) state.stats.dailyDetail = {};
+  if (!state.stats.dailyDetail[today]) state.stats.dailyDetail[today] = {};
+  state.stats.dailyDetail[today][w] = b;
   const last = state.stats.lastStudyDate;
   if (last !== today) {
     const y = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -576,6 +684,8 @@ function answer(w, b) {
   }
   save();
   renderProgress();
+  renderToday();
+  renderHistory();
   const fb = document.getElementById("qFb");
   const tr = document.getElementById("qTrans");
   fb.textContent = b === "ok" ? "✓ 已记入「初步掌握」" : "✗ 已记入「未掌握」";
@@ -819,7 +929,7 @@ document.getElementById("resetToZero").onclick = () => { _resetMode = "zero"; do
 document.getElementById("resetConfirm").onclick = () => {
   resetModal.style.display = "none";
   if (_resetMode === "zero") {
-    state = { words: {}, quizPool: state.quizPool || "un", dailyGoal: state.dailyGoal || 30, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0 } };
+    state = { words: {}, quizPool: state.quizPool || "un", dailyGoal: state.dailyGoal || 30, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0, dailyDetail: {} } };
   } else {
     localStorage.removeItem(STORE_KEY);
     state = load();
