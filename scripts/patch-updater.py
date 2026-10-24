@@ -148,6 +148,22 @@ INJECT = ONCREATE_ANCHOR + """
 IMPORT_ANCHOR = "import android.os.Bundle;"
 IMPORT_ADD = "import android.os.Bundle;\\nimport android.webkit.WebView;"
 
+# Capacitor 6.2+ 极简模板：MainActivity 是空类（无 onCreate、无 android.os.Bundle import）
+EMPTY_CLASS = "public class MainActivity extends BridgeActivity {}"
+EMPTY_CLASS_IMPORT = "import com.getcapacitor.BridgeActivity;"
+EMPTY_CLASS_IMPORT_ADD = "import android.os.Bundle;\nimport android.webkit.WebView;\nimport com.getcapacitor.BridgeActivity;"
+EMPTY_CLASS_REPL = '''public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 注入 APK 自更新桥：HTML 里 window.AndroidUpdater.downloadAndInstall(url, name, md5)
+        WebView webView = getBridge().getWebView();
+        if (webView != null) {
+            webView.addJavascriptInterface(new UpdaterBridge(this), "AndroidUpdater");
+        }
+    }
+}'''
+
 # 若 TTS 桥已注入（patch-tts.py 先跑），复用其 webView 变量追加 updater 行，避免重复声明
 TTS_LINE = '            webView.addJavascriptInterface(new TtsBridge(this), "AndroidTTS");'
 TTS_PLUS_UPDATER = TTS_LINE + '\n            webView.addJavascriptInterface(new UpdaterBridge(this), "AndroidUpdater");'
@@ -192,7 +208,13 @@ def main():
         if TTS_LINE in src:
             # TTS 桥已注入（patch-tts.py 先跑）→ 复用其 webView 变量追加 updater 行
             src = src.replace(TTS_LINE, TTS_PLUS_UPDATER, 1)
+        elif EMPTY_CLASS in src:
+            # Capacitor 6.2+ 极简空类模板 → 重写类体（注入 onCreate + updater 桥）
+            if "import android.os.Bundle;" not in src:
+                src = src.replace(EMPTY_CLASS_IMPORT, EMPTY_CLASS_IMPORT_ADD, 1)
+            src = src.replace(EMPTY_CLASS, EMPTY_CLASS_REPL, 1)
         else:
+            # 旧模板（有 onCreate + super.onCreate）
             if "import android.webkit.WebView;" not in src:
                 src = src.replace(IMPORT_ANCHOR, IMPORT_ADD, 1)
             if ONCREATE_ANCHOR not in src:

@@ -84,6 +84,22 @@ IMPORT_ADD = "import android.os.Bundle;\nimport android.webkit.WebView;"
 UPDATER_LINE = '            webView.addJavascriptInterface(new UpdaterBridge(this), "AndroidUpdater");'
 UPDATER_PLUS_TTS = UPDATER_LINE + '\n            webView.addJavascriptInterface(new TtsBridge(this), "AndroidTTS");'
 
+# Capacitor 6.2+ 极简模板：MainActivity 是空类（无 onCreate、无 android.os.Bundle import）
+EMPTY_CLASS = "public class MainActivity extends BridgeActivity {}"
+EMPTY_CLASS_IMPORT = "import com.getcapacitor.BridgeActivity;"
+EMPTY_CLASS_IMPORT_ADD = "import android.os.Bundle;\nimport android.webkit.WebView;\nimport com.getcapacitor.BridgeActivity;"
+EMPTY_CLASS_REPL = '''public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 注入原生 TTS 桥：HTML 里 window.AndroidTTS.speak(text)
+        WebView webView = getBridge().getWebView();
+        if (webView != null) {
+            webView.addJavascriptInterface(new TtsBridge(this), "AndroidTTS");
+        }
+    }
+}'''
+
 
 def main():
     if not os.path.exists(MAIN):
@@ -107,7 +123,13 @@ def main():
     if UPDATER_LINE in src:
         # updater 桥已注入（patch-updater.py 先跑）→ 复用其 webView 变量追加 TTS 行
         src = src.replace(UPDATER_LINE, UPDATER_PLUS_TTS, 1)
+    elif EMPTY_CLASS in src:
+        # Capacitor 6.2+ 极简空类模板 → 重写类体（注入 onCreate + TTS 桥）
+        if "import android.os.Bundle;" not in src:
+            src = src.replace(EMPTY_CLASS_IMPORT, EMPTY_CLASS_IMPORT_ADD, 1)
+        src = src.replace(EMPTY_CLASS, EMPTY_CLASS_REPL, 1)
     else:
+        # 旧模板（有 onCreate + super.onCreate）
         if IMPORT_ANCHOR not in src:
             sys.exit("ERROR: cannot find import anchor in MainActivity.java, template changed?")
         if ONCREATE_ANCHOR not in src:
