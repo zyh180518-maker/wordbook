@@ -63,7 +63,7 @@ def main():
     latest = {
         "version": version,
         "htmlFile": html_file,
-        "htmlUrl": "https://zyh180518-maker.github.io/wordbook/%s" % html_file,
+        "htmlUrl": "https://zyh180518-maker.github.io/wordbook/www/%s" % html_file,
         "htmlUrlBackup": [
             # CI 只推 gh-pages 分支（含最新 latest.json + index-*.html），备份源一律指向 gh-pages
             "https://raw.githubusercontent.com/%s/gh-pages/%s" % (base, html_file),
