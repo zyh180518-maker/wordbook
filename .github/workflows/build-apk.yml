@@ -55,7 +55,19 @@ jobs:
         run: npx cap sync android
 
       - name: Build debug APK
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+        run: |
+          cd android
+          chmod +x gradlew
+          set +e
+          ./gradlew assembleDebug 2>&1 | tee gradle-build.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            echo "::error::=== Gradle build FAILED (exit $EXIT). Key lines: ==="
+            grep -nE "What went wrong|Execution failed|Caused by:|error:|FAILURE:|Manifest merger|Could not (resolve|download|find)|Connect to |Unable to |> Task .*FAILED|\.java:" gradle-build.log | head -50 | while IFS= read -r line; do echo "::error::$line"; done
+            echo "::error::=== last 30 lines ==="
+            tail -30 gradle-build.log | while IFS= read -r line; do echo "::error::$line"; done
+            exit $EXIT
+          fi
 
       - name: Upload APK (artifact)
         uses: actions/upload-artifact@v4
