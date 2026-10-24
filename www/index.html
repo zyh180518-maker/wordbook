@@ -82,7 +82,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.4.0"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.4.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -272,7 +272,7 @@
       9) 「清空重来」可选<b>默认词库</b>（约1292词）或<b>归零</b>（从0开始自己收录），两次确认防误触。
       <div style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px;">
         <div style="font-size:14px; font-weight:700; margin-bottom:6px;">🔄 软件更新</div>
-        <div class="muted" style="margin-bottom:8px;">当前版本：v<span id="appVer">1.4.0</span>（启动时自动静默检查，有新版会提示重启生效）</div>
+        <div class="muted" style="margin-bottom:8px;">当前版本：v<span id="appVer">1.4.1</span>（启动时自动静默检查，有新版会提示重启生效）</div>
         <div class="row">
           <button class="btn small ghost" id="btnCheckUpdate">检查更新</button>
           <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
@@ -307,7 +307,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
 const UPDATE_URLS_DEFAULT = [
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
   "https://raw.githubusercontent.com/zyh180518-maker/wordbook/gh-pages/latest.json",
@@ -527,7 +527,12 @@ function renderQuiz() {
   const speak = () => {
     let ttsCalled = false;
     if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
-      try { window.AndroidTTS.speak(pick.w); ttsCalled = true; return; } catch (e) { /* 回退到 Web Speech */ }
+      try {
+        // 原生引擎就绪才走原生 TTS；未就绪（App 刚启动引擎绑定中）由 Web Speech 兜底，
+        // 避免“点了没声音”。isReady 为同步方法，新老 APK 桥均有，缺失时按就绪处理。
+        const ready = typeof window.AndroidTTS.isReady === 'function' ? window.AndroidTTS.isReady() : true;
+        if (ready) { window.AndroidTTS.speak(pick.w); ttsCalled = true; return; }
+      } catch (e) { /* 回退到 Web Speech */ }
     }
     if (window.speechSynthesis) {
       try {

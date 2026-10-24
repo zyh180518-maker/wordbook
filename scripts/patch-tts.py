@@ -28,29 +28,41 @@ public class TtsBridge {
     private volatile boolean configured = false;
 
     public TtsBridge(Context context) {
-        // 回调里不引用 tts（避免 final 字段/局部变量初始化判定错误），只设置 ready 标志
+        // 回调只设 ready 标志并触发补读；不在 lambda 内直接引用 tts（避免初始化判定编译错误）
         tts = new TextToSpeech(context, status -> {
             ready = (status == TextToSpeech.SUCCESS);
+            if (ready) flushPending(); // 引擎就绪后自动补读初始化期间缓存的文本
         });
     }
 
     @JavascriptInterface
-    public void speak(String text) {
-        if (text == null || text.isEmpty()) return;
-        if (!ready) { pending = text; return; }
+    public boolean speak(String text) {
+        if (text == null || text.isEmpty()) return true;
+        if (!ready) { pending = text; return true; } // 引擎初始化中：缓存文本，就绪后自动补读
         configureOnce();
-        String toSpeak = text;
-        if (pending != null) { toSpeak = pending; pending = null; } // 补读引擎就绪前缓存的文本
-        tts.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis());
+        return tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "wb-" + System.currentTimeMillis())
+                == TextToSpeech.SUCCESS;
+    }
+
+    /** 引擎就绪后自动补读缓存文本（修复“点击没声音”：首次点击时引擎通常尚未绑定完成） */
+    private void flushPending() {
+        String text = pending;
+        pending = null;
+        if (text == null || text.isEmpty()) return;
+        configureOnce();
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "wb-flush-" + System.currentTimeMillis());
     }
 
     /** 首次发音时配置语言/语速/音调（此时 tts 已赋值，避免回调期 NPE） */
     private void configureOnce() {
         if (configured) return;
         configured = true;
+        // 语言：优先美音 → 通用英文 → 系统默认；都不支持也照常 speak（引擎会用自身默认语音，多数仍能出声）
         int res = tts.setLanguage(Locale.US);
         if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
-            // 无英文语音包：退回系统默认语言，仍尽量发声
+            res = tts.setLanguage(Locale.ENGLISH);
+        }
+        if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
             tts.setLanguage(Locale.getDefault());
         }
         tts.setSpeechRate(0.85f); // 语速稍慢，适合背词
