@@ -14,7 +14,7 @@ WWW_INDEX = "www/index.html"
 LATEST_JSON = "www/latest.json"
 
 GITEE_OWNER = os.environ.get("GITEE_OWNER", "zyh2077")
-GITEE_REPO = os.environ.get("GITEE_REPO", "wordbook-update")
+GITEE_REPO = os.environ.get("GITEE_REPO", "workbook.ds.cqjtu")
 GITEE_TOKEN = os.environ.get("GITEE_TOKEN", "")
 
 def parse_tag(ref):
@@ -121,9 +121,9 @@ def main():
     print("release assets ready: version=%s md5=%s htmlFile=%s" % (version, md5, html_file))
     print("latest.json written to", LATEST_JSON)
 
-    # 国内镜像：同步热更文件到 Gitee 仓库（无 token 时跳过）
+    # 国内镜像：同步热更文件到 Gitee 仓库根目录（无 www/ 前缀，对应 raw/master/ 直链）
     push_to_gitee([
-        (LATEST_JSON, open(LATEST_JSON, "rb").read()),
+        ("latest.json", open(LATEST_JSON, "rb").read()),
         (html_file, html_bytes),
     ], version)
 
