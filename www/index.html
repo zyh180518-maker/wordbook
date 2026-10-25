@@ -567,6 +567,9 @@ function renderAll() {
   // 同步 tab 与下拉的激活状态
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.dataset.pool === state.quizPool));
   document.getElementById("quizPool").value = state.quizPool;
+  // 同步每日单词数输入框（导入/重置等改 state.dailyGoal 的路径也要刷新；用户正在编辑时不打扰）
+  const dgEl = document.getElementById("dailyGoalSel");
+  if (dgEl && document.activeElement !== dgEl) dgEl.value = state.dailyGoal || 30;
   renderProgress();
   renderLists();
   renderQuiz();
