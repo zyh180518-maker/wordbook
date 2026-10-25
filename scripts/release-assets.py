@@ -103,10 +103,11 @@ def main():
     latest = {
         "version": version,
         "htmlFile": html_file,
-        # 主源：Gitee 国内 raw（手机无代理直连快）；GitHub Pages/raw/jsdelivr 做兜底
-        "htmlUrl": "https://gitee.com/%s/%s/raw/master/%s" % (GITEE_OWNER, GITEE_REPO, html_file),
+        # 主源：GitHub Pages（无代理国内可达 + CORS *，旧版 v1.4.x~v1.5.1 启动器只能读 htmlUrl、
+        # 无兜底链，Gitee raw 无 CORS 会拦它们 → 主源必须 Pages）；Gitee/raw/jsdelivr 做兜底
+        "htmlUrl": "https://zyh180518-maker.github.io/wordbook/www/%s" % html_file,
         "htmlUrlBackup": [
-            "https://zyh180518-maker.github.io/wordbook/www/%s" % html_file,
+            "https://gitee.com/%s/%s/raw/master/%s" % (GITEE_OWNER, GITEE_REPO, html_file),
             "https://raw.githubusercontent.com/%s/gh-pages/%s" % (base, html_file),
             "https://cdn.jsdelivr.net/gh/%s@gh-pages/%s" % (base, html_file),
         ],
