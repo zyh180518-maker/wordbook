@@ -84,7 +84,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.5.5"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.5.6"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -283,7 +283,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.5</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.5.6</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -305,7 +305,7 @@
       3) <b>今日已学</b>：看今天学了哪些词、哪些掌握/未掌握。<br>
       4) <b>学习记录</b>：按日期永久保存每一天学过的词，点日期看当天明细，✕ 删某天，可一键清空。<br>
       5) <b>朗读</b>：默认手动点「🔊 发音」；可在设置里改为切词自动读。<br>
-      6) <b>备份</b>：点「导出备份」可下载文件或在面板里复制内容保存，换设备/清缓存后点「导入备份」恢复。<br>
+      6) <b>备份</b>：点「导出备份」可保存/分享 .json 文件（新版）或在面板里复制内容（过大自动压缩），换设备/清缓存后点「导入备份」恢复。<br>
       7) <b>清空重来</b>：可选默认词库（约1292词）或归零从0开始，两次确认防误触。
     </div>
   </details>
@@ -336,7 +336,7 @@
 <div id="exportModal">
   <div class="box">
     <div style="font-size:15px; font-weight:700; margin-bottom:6px;">💾 备份内容</div>
-    <div class="muted" style="font-size:12px; margin-bottom:8px; line-height:1.6;">已尝试下载文件；若手机没有弹出下载，请点「复制全部」或长按下面内容全选复制，粘贴保存到备忘录/文件即可。</div>
+    <div class="muted" style="font-size:12px; margin-bottom:8px; line-height:1.6;">已尝试下载文件；若手机没有弹出下载，请点「复制全部」或长按下面内容全选复制，粘贴保存到备忘录/文件即可（内容较大时会自动压缩，导入时自动解压）。</div>
     <textarea id="exportText" readonly style="width:100%; height:160px; font-size:11px; box-sizing:border-box; border:1px solid var(--line); border-radius:6px; padding:8px; color:var(--fg); background:var(--bg, transparent);"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn small ghost" id="exportCopy">📋 复制全部</button>
@@ -348,7 +348,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.5.5";
+const APP_VERSION = "1.5.6";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -590,7 +590,7 @@ function wordRow(w, b, show) {
   const trans = show && t ? `<span class="t">${esc(t)}</span>` : "";
   const color = b === "ok" ? "#2e8b57" : "#c0392b";
   const mark = b === "ok" ? "✓" : "✗";
-  return `<li><b>${esc(w)}</b>${trans}<i style="color:${color};font-style:normal">${mark}</i></li>`;
+  return `<li><b>${esc(w)}</b>${trans}<button class="edit" data-edit="${esc(w)}" title="写/改意思">✎</button><i style="color:${color};font-style:normal">${mark}</i></li>`;
 }
 function renderToday() {
   const dd = ensureDailyDetail();
@@ -655,6 +655,8 @@ document.getElementById("clearHistoryBtn").onclick = () => {
   save(); renderToday(); renderHistory();
 };
 document.getElementById("historyList").onclick = (e) => {
+  if (e.target.closest("[data-edit], #editInput, #editSave")) return; // 点 ✎/编辑输入/保存：不触发展开/删除
+  if (e.target.closest(".histBody")) return; // 明细内容（显示意思开关/单词行）：不触发展开收起
   const del = e.target.closest("[data-deld]");
   if (del) {
     const d = del.dataset.deld;
@@ -704,8 +706,10 @@ function renderQuiz() {
     </div>`;
   document.getElementById("qOk").onclick = () => answer(pick.w, "ok");
   document.getElementById("qNo").onclick = () => answer(pick.w, "un");
-  // 看答案：自己选择何时看译文（先回忆，答不出再看）
+  // 看答案：自己选择何时看译文（先回忆，答不出再看）；已作答后忽略，避免覆盖补录区
   document.getElementById("qReveal").onclick = () => {
+    const okBtn = document.getElementById("qOk");
+    if (okBtn && okBtn.disabled) return;
     const tr = document.getElementById("qTrans");
     const t = state.words[pick.w].t;
     tr.textContent = t ? "译文：" + t : "（该词还没有译文，答 × 后可补录）";
@@ -781,6 +785,9 @@ function answer(w, b) {
   const btnNo = document.getElementById("qNo");
   if (btnOk) btnOk.disabled = true;
   if (btnNo) btnNo.disabled = true;
+  // 已作答：隐藏「看答案」，防止其 textContent 覆盖补录区导致卡死
+  const rv = document.getElementById("qReveal");
+  if (rv) rv.style.display = "none";
 
   // 译文处理：有译文直接显示；知道的词(√)不强制写，不知道的词(×)强制补写
   if (state.words[w].t) {
@@ -878,7 +885,7 @@ document.getElementById("bulkBtn").onclick = () => {
   save(); renderAll();
 }
 
-// 写/改单词意思（总单词本、未掌握/已掌握列表里点 ✎）
+// 写/改单词意思（总单词本、未掌握/已掌握列表、学习记录/今日已学里点 ✎，数据同一处同步）
 document.addEventListener("click", e => {
   const ed = e.target.closest(".edit");
   if (!ed) return;
@@ -893,7 +900,22 @@ document.addEventListener("click", e => {
   const saveEdit = () => {
     const t = inp.value.trim();
     if (t) state.words[w].t = t; else delete state.words[w].t;
-    save(); renderLists();
+    // 记录改词前所在的历史明细与当天开关，改完重开该天并保持状态
+    const body = li.closest('[id^="histBody-"]');
+    let dayShow = null;
+    if (body) { const cb = body.querySelector(".histShowTrans"); dayShow = cb ? cb.checked : null; }
+    save();
+    renderLists();
+    renderToday();
+    renderHistory();
+    if (body) {
+      const d = body.id.replace("histBody-", "");
+      const nb = document.getElementById("histBody-" + d);
+      if (nb) {
+        nb.style.display = "block";
+        renderHistBody(d, dayShow === null ? document.getElementById("todayShowTrans").checked : dayShow);
+      }
+    }
   };
   document.getElementById("editSave").onclick = saveEdit;
   inp.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); saveEdit(); } });
@@ -936,9 +958,11 @@ document.getElementById("searchInput").addEventListener("input", e => {
   `).join("");
 });
 
-// 范围联动：底部 tab 与抽词下拉
+// 范围联动：底部 tab 与抽词下拉（选择写回 state.quizPool，防止答题后 renderAll 重置回旧范围）
 document.querySelectorAll(".tab").forEach(tab => {
   tab.onclick = () => {
+    state.quizPool = tab.dataset.pool;
+    save();
     document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById("quizPool").value = tab.dataset.pool;
@@ -946,40 +970,100 @@ document.querySelectorAll(".tab").forEach(tab => {
   };
 });
 document.getElementById("quizPool").onchange = function () {
+  state.quizPool = this.value;
+  save();
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.dataset.pool === this.value));
   renderQuiz();
 };
 
+// ===== 备份压缩辅助（复制兜底：内容过大时剪贴板会截断，先 gzip+base64 压缩再复制，导入自动解压） =====
+function gzipB64(str) {
+  if (!window.CompressionStream) return Promise.resolve(null);
+  return new Promise((resolve, reject) => {
+    const reader = new Blob([str]).stream().pipeThrough(new CompressionStream("gzip")).getReader();
+    const chunks = [];
+    (function pump() {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          const bytes = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+          let off = 0;
+          for (const c of chunks) { bytes.set(c, off); off += c.length; }
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+          resolve(btoa(bin));
+        } else { chunks.push(new Uint8Array(value)); pump(); }
+      }).catch(reject);
+    })();
+  });
+}
+function gunzipB64(b64) {
+  if (!window.DecompressionStream) return Promise.reject(new Error("no-gunzip"));
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Promise((resolve, reject) => {
+    const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")).getReader();
+    const chunks = [];
+    (function pump() {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          const all = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+          let off = 0;
+          for (const c of chunks) { all.set(c, off); off += c.length; }
+          resolve(new TextDecoder().decode(all));
+        } else { chunks.push(value); pump(); }
+      }).catch(reject);
+    })();
+  });
+}
+
 // 导出 / 导入备份
-document.getElementById("exportBtn").onclick = () => {
+document.getElementById("exportBtn").onclick = async () => {
   const json = JSON.stringify(state);
-  // 1) 尝试直接下载文件（浏览器/部分 WebView 会弹下载）
+  const date = new Date().toISOString().slice(0, 10);
+  // 1) APK 内优先：Capacitor Filesystem 写真 .json 到手机存储 + 系统分享面板（根治复制截断）
+  const CP = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins : null;
+  const CFS = CP && CP.Filesystem ? CP.Filesystem : null;
+  if (CFS) {
+    try {
+      const fname = "wordbook-backup-" + date + ".json";
+      const res = await CFS.writeFile({ path: fname, data: json, directory: "DOCUMENTS", encoding: "utf8", recursive: true });
+      const uri = (res && res.uri) || (await CFS.getUri({ path: fname, directory: "DOCUMENTS" })).uri;
+      if (CP.Share) {
+        await CP.Share.share({ title: "单词备份", files: [uri], dialogTitle: "保存 / 发送单词备份" });
+        return; // 已走系统分享，不再弹面板
+      }
+      alert("备份已保存到手机 Documents/" + fname);
+      return;
+    } catch (e) { /* 插件异常：降级到下载/复制 */ }
+  }
+  // 2) 尝试直接下载文件（浏览器/部分 WebView 会弹下载）
   try {
     const blob = new Blob([json], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "单词备份-" + new Date().toISOString().slice(0,10) + ".json";
+    a.download = "单词备份-" + date + ".json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   } catch (e) { /* 继续弹面板 */ }
-  // 2) 弹出备份面板：内容可见，可长按/按钮复制（手机 WebView 最可靠的方式）
+  // 3) 弹出备份面板：内容较大时自动压缩再复制（导入时自动解压）
   const modal = document.getElementById("exportModal");
   const ta = document.getElementById("exportText");
   if (!modal || !ta) return;
-  ta.value = json;
+  const gz = await gzipB64(json);
+  const payload = gz ? "WBGZ:" + gz : json;
+  ta.value = payload;
   modal.style.display = "flex";
-  document.getElementById("exportCopy").onclick = () => {
+  document.getElementById("exportCopy").onclick = async () => {
     ta.select();
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(json).then(
-        () => alert("备份内容已复制！粘贴保存到备忘录/文件即可。"),
-        () => alert("已全选，请长按复制。")
-      );
-    } else {
-      alert("已全选，请长按复制。");
-    }
+      try {
+        await navigator.clipboard.writeText(payload);
+        alert(gz ? "备份内容已压缩复制！粘贴保存到备忘录/文件即可，导入时会自动解压。" : "备份内容已复制！粘贴保存到备忘录/文件即可。");
+      } catch (e2) { alert("已全选，请长按复制。"); }
+    } else { alert("已全选，请长按复制。"); }
   };
   document.getElementById("exportClose").onclick = () => { modal.style.display = "none"; };
 };
@@ -987,9 +1071,12 @@ document.getElementById("importBtn").onclick = () => document.getElementById("im
 document.getElementById("importFile").onchange = (e) => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
-  r.onload = () => {
+  r.onload = async () => {
     try {
-      const s = JSON.parse(r.result);
+      const text = String(r.result);
+      let s;
+      if (text.startsWith("WBGZ:")) s = JSON.parse(await gunzipB64(text.slice(5)));
+      else s = JSON.parse(text);
       if (!s || typeof s.words !== "object") throw new Error("bad");
       const n = Object.keys(s.words).length;
       if (!confirm(`导入备份将覆盖当前单词本（当前 ${Object.keys(state.words).length} 词，导入后 ${n} 词）。继续？`)) return;
