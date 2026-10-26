@@ -760,7 +760,19 @@ document.addEventListener("click", e => {
   for (const d in dd) if (w in dd[d]) latest = (latest === null || d > latest) ? d : latest;
   if (day === latest) state.words[w].b = nb;
   save();
+  // 记录翻转前所在的历史明细与当天开关，改完重开该天并保持状态（与写意思编辑一致）
+  const body = fl.closest('[id^="histBody-"]');
+  let dayShow = null;
+  if (body) { const cb = body.querySelector(".histShowTrans"); dayShow = cb ? cb.checked : null; }
   renderAll();
+  if (body) {
+    const d = body.id.replace("histBody-", "");
+    const nb2 = document.getElementById("histBody-" + d);
+    if (nb2) {
+      nb2.style.display = "block";
+      renderHistBody(d, dayShow === null ? document.getElementById("todayShowTrans").checked : dayShow);
+    }
+  }
 });
 function renderQuiz() {
   const pool = document.getElementById("quizPool").value;
@@ -875,7 +887,8 @@ function applyCurve(w, b) {
   word.next = Date.now() + CURVE_DAYS[word.lv] * 86400000;
 }
 function nextWord(w, b) {
-  applyCurve(w, b);
+  applyCurve(w, b); // 曲线数据（lv/miss/next）先更新
+  save();           // 再落盘，否则改判/自动跳题路径的 save() 在 applyCurve 之前执行会丢失曲线数据
   renderAll();
 }
 function answer(w, b) {
@@ -920,8 +933,8 @@ function answer(w, b) {
   if (isToggle) {
     if (window._advTimer) { clearTimeout(window._advTimer); window._advTimer = null; }
     const t0 = state.words[w].t || "";
-    if (t0) tr.textContent = "译文：" + t0;
-    tr.innerHTML += `
+    // 整体替换译文区内容（避免与首次作答的补录/强制写 UI 叠加造成重复 id，导致确认按钮绑定失效）
+    tr.innerHTML = (t0 ? "译文：" + esc(t0) + "<br>" : "") + `
       <div style="margin-top: 8px;">
         <input type="text" id="transInput" placeholder="已改判，请输入该单词的中文意思，确认后才能下一题" style="margin-bottom: 8px;">
         <button class="btn ghost small" id="confirmTrans">确认改判</button>
