@@ -54,7 +54,12 @@
   .btn.no { background: var(--no); }
   .btn.ghost { background: var(--line); color: var(--txt); }
   .btn:disabled { opacity: .35; }
+  .btn.sel { box-shadow: 0 0 0 2px var(--txt); }
   .btn.small { flex: none; padding: 10px 16px; font-size: 14px; }
+  .chip { flex: none; font-size: 12px; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--txt); cursor: pointer; }
+  .chip.ok { background: var(--ok); color: #06121f; border-color: var(--ok); }
+  .chip.no { background: var(--no); color: #fff; border-color: var(--no); }
+  .badge { flex: none; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--line); color: var(--dim); }
   .row { display: flex; gap: 8px; }
   .row input { flex: 1; }
   details { margin-top: 8px; }
@@ -209,6 +214,8 @@
       <option value="all">全部单词</option>
       <option value="un">仅未掌握</option>
       <option value="ok">仅初步掌握</option>
+      <option value="curve">遗忘曲线复习</option>
+      <option value="rand">完全随机</option>
     </select>
   </div>
   <div id="quizArea">
@@ -269,9 +276,22 @@
   </details>
   <details id="historyDetails">
     <summary>🗓 学习记录（<span id="nDays">0</span>天）</summary>
-    <div class="muted" style="margin-bottom:6px">按日期保存每一天学过哪些单词及掌握情况，永久保留不自动清理。点日期可展开当天明细，点 ✕ 删除某天，或一键清空。</div>
+    <div class="row" style="margin-bottom:8px">
+      <span class="muted" style="margin:0">展开日期后按掌握状态筛选：</span>
+      <select id="histFilter" style="margin-left:auto; font-size:13px; padding:8px; width:auto;">
+        <option value="all">全部</option>
+        <option value="ok">已掌握 ✓</option>
+        <option value="un">未掌握 ✗</option>
+      </select>
+    </div>
+    <div class="muted" style="margin-bottom:6px">按日期保存每一天学过哪些单词及掌握情况，永久保留不自动清理。点日期可展开当天明细，点 ✕ 删除某天，或一键清空；单词右边的 ✓/✗ 可随时改掌握状态。</div>
     <div id="historyList"></div>
     <button class="btn no small" id="clearHistoryBtn" style="margin-top:8px">🗑 清空全部学习记录</button>
+  </details>
+  <details id="missDetails">
+    <summary>🔁 多次未掌握（<span id="nMiss">0</span>词）</summary>
+    <div class="muted" style="margin-bottom:6px">答 ✗（未掌握）累计 2 次及以上的单词，说明还没真正记住，重点复习；点 ✎ 可补写/修改意思。</div>
+    <ul class="words" id="listMiss"></ul>
   </details>
 </div>
 
@@ -306,14 +326,16 @@
     <summary>📱 手机使用 & 说明 <span style="color:var(--no); font-size:12px; font-weight:700;">⚠️注意内有重要内容</span></summary>
     <div class="muted" style="line-height:1.7; margin-top:6px">
       <div style="color:var(--no); font-weight:700; margin-bottom:6px;">⚠️ 注意：请勿随便清除浏览器缓存/数据，否则全部单词记录会被初始化清空！建议每隔一段时间点「导出备份」保存一份 .json 文件，万一清缓存后可点「导入备份」一键恢复。</div>
-      1) <b>背词</b>：看到单词先回忆，答不出再点「👁 看答案」看译文；√ = 掌握，× = 未掌握（答 × 的词会要求补写译文加深记忆）。<br>
+      1) <b>背词</b>：看到单词先回忆，答不出再点「👁 看答案」看译文；√ = 掌握，× = 未掌握（答 × 或改判时会要求写中文意思，加深记忆）。答完可随时再点 √/× 改判，改判必须写意思才能下一题。<br>
       2) <b>单词本</b>：「📚 总单词本」看全部单词，词右边 ✎ 写/改意思、✕ 删词。<br>
-      3) <b>今日已学</b>：看今天学了哪些词、哪些掌握/未掌握。<br>
-      4) <b>学习记录</b>：按日期永久保存每一天学过的词，点日期看当天明细，✕ 删某天，可一键清空。<br>
+      3) <b>今日已学</b>：看今天学了哪些词、哪些掌握/未掌握；点单词右边的 ✓/✗ 可随时改掌握状态。<br>
+      4) <b>学习记录</b>：按日期永久保存每一天学过的词，点日期看当天明细（可按 已掌握/未掌握 筛选），✕ 删某天，可一键清空；明细里同样可点 ✓/✗ 改状态。<br>
       5) <b>朗读</b>：默认手动点「🔊 发音」；可在设置里改为切词自动读。<br>
       6) <b>备份</b>：点「导出备份」可保存/分享 .json 文件（新版）或在面板里复制内容（过大自动压缩），换设备/清缓存后点「导入备份」恢复。<br>
       7) <b>清空重来</b>：可选默认词库（约1292词）或归零从0开始，两次确认防误触。<br>
-      8) <b>每日单词数</b>：默认每天30个，可在设置里改成自己的目标，达标后顶部进度条满格。
+      8) <b>每日单词数</b>：默认每天30个，可在设置里改成自己的目标，达标后顶部进度条满格。<br>
+      9) <b>抽词范围</b>：「遗忘曲线复习」到期才抽词，答对间隔 1→2→4→7→15→30 天逐级拉长，答错回到 1 天；「完全随机」全库纯随机。<br>
+      10) <b>多次未掌握</b>：答 ✗ 累计 2 次及以上的单词单独列表（「🔁 多次未掌握」），重点复习。
     </div>
   </details>
 </div>
@@ -547,7 +569,7 @@ function load() {
   } catch (e) {}
   // 首次运行：种子词全部进「未掌握」，默认只抽未掌握
   const words = {};
-  for (const w of SEED_WORDS) words[w] = { w, t: "", b: "un", ts: Date.now() };
+  for (const w of SEED_WORDS) words[w] = { w, t: "", b: "un", ts: Date.now(), lv: 0, miss: 0, next: 0 };
   return { words, quizPool: "un", dailyGoal: 30, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0, dailyDetail: {} } };
 }
 function save() {
@@ -575,6 +597,7 @@ function renderAll() {
   renderQuiz();
   renderToday();
   renderHistory();
+  renderMiss();
 }
 function renderProgress() {
   const today = new Date().toISOString().slice(0, 10);
@@ -608,12 +631,12 @@ function ensureDailyDetail() {
   if (!state.stats.dailyDetail) state.stats.dailyDetail = {};
   return state.stats.dailyDetail;
 }
-function wordRow(w, b, show) {
+function wordRow(w, b, show, date) {
   const t = (state.words[w] && state.words[w].t) || "";
   const trans = show && t ? `<span class="t">${esc(t)}</span>` : "";
-  const color = b === "ok" ? "#2e8b57" : "#c0392b";
+  const cls = b === "ok" ? "chip ok" : "chip no";
   const mark = b === "ok" ? "✓" : "✗";
-  return `<li><b>${esc(w)}</b>${trans}<button class="edit" data-edit="${esc(w)}" title="写/改意思">✎</button><i style="color:${color};font-style:normal">${mark}</i></li>`;
+  return `<li><b>${esc(w)}</b>${trans}<button class="edit" data-edit="${esc(w)}" title="写/改意思">✎</button><button class="${cls}" data-flip="${esc(w)}" data-day="${esc(date)}" title="点击切换掌握/未掌握">${mark}</button></li>`;
 }
 function renderToday() {
   const dd = ensureDailyDetail();
@@ -627,7 +650,7 @@ function renderToday() {
   const filter = document.getElementById("todayFilter").value;
   const show = document.getElementById("todayShowTrans").checked;
   const items = ws.filter(w => filter === "all" || map[w] === filter).sort((a,b)=>a.localeCompare(b));
-  document.getElementById("listToday").innerHTML = items.map(w => wordRow(w, map[w], show)).join("")
+  document.getElementById("listToday").innerHTML = items.map(w => wordRow(w, map[w], show, todayKey())).join("")
     || `<li class="hint">（空）</li>`;
 }
 function renderHistory() {
@@ -655,14 +678,20 @@ function openHistDay(d, show) {
   body.style.display = open ? "none" : "block";
   if (!open) renderHistBody(d, show);
 }
-// 某一天明细：自带「显示意思」开关，只影响当天展开内容，不跟随全局
+// 某一天明细：自带「显示意思」开关，只影响当天展开内容，不跟随全局；受 histFilter 掌握状态筛选
 function renderHistBody(d, show) {
   const body = document.getElementById("histBody-" + d);
   if (!body) return;
   const map = ensureDailyDetail()[d] || {};
-  const rows = Object.keys(map).sort((a,b)=>a.localeCompare(b)).map(w => wordRow(w, map[w], show)).join("") || `<li class="hint">（空）</li>`;
+  const filterEl = document.getElementById("histFilter");
+  const filter = filterEl ? filterEl.value : "all";
+  const label = filter === "ok" ? "仅已掌握" : filter === "un" ? "仅未掌握" : "全部";
+  const rows = Object.keys(map).filter(w => filter === "all" || map[w] === filter)
+    .sort((a, b) => a.localeCompare(b)).map(w => wordRow(w, map[w], show, d)).join("")
+    || `<li class="hint">（空）</li>`;
   body.innerHTML =
     `<div style="display:flex;align-items:center;font-size:12px;margin:0 0 6px;color:var(--dim)">` +
+    `<span style="margin-right:auto">当前筛选：${label}（${Object.keys(map).filter(w => filter === "all" || map[w] === filter).length}词）</span>` +
     `<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" class="histShowTrans" style="margin:0" ${show ? "checked" : ""}> 显示意思</label></div>` +
     `<ul class="words">${rows}</ul>`;
   const cb = body.querySelector(".histShowTrans");
@@ -670,6 +699,12 @@ function renderHistBody(d, show) {
 }
 document.getElementById("todayShowTrans").onchange = () => { renderToday(); renderHistory(); };
 document.getElementById("todayFilter").onchange = renderToday;
+document.getElementById("histFilter").onchange = () => {
+  // 重新渲染所有已展开的日期明细，应用新的掌握状态筛选
+  document.querySelectorAll(".histBody").forEach(body => {
+    if (body.style.display !== "none") renderHistBody(body.id.replace("histBody-", ""), document.getElementById("todayShowTrans").checked);
+  });
+};
 document.getElementById("clearHistoryBtn").onclick = () => {
   if (!confirm("确定清空全部学习记录？此操作不可撤销。")) return;
   if (!confirm("再次确认：将删除所有日期的学习记录，继续？")) return;
@@ -691,12 +726,62 @@ document.getElementById("historyList").onclick = (e) => {
   const exp = e.target.closest("[data-exp]");
   if (exp) openHistDay(exp.dataset.exp, document.getElementById("todayShowTrans").checked);
 };
+// 多次未掌握（≥2次）单词表：答 ✗ 累计次数来自每次答题最终判定 + 记录里改判的同步调整
+function renderMiss() {
+  const el = document.getElementById("listMiss");
+  const cnt = document.getElementById("nMiss");
+  if (!el || !cnt) return;
+  const list = Object.values(state.words).filter(w => (w.miss || 0) >= 2)
+    .sort((a, b) => ((b.miss || 0) - (a.miss || 0)) || a.w.localeCompare(b.w));
+  cnt.textContent = list.length;
+  if (!document.getElementById("missDetails").open) return; // 收起时不构建列表，展开时才渲染（大词库省开销）
+  el.innerHTML = list.map(w => {
+    const t = w.t ? `<span class="t">${esc(w.t)}</span>` : "";
+    const hot = (w.miss || 0) >= 3;
+    return `<li><b>${esc(w.w)}</b>${t}<button class="edit" data-edit="${esc(w.w)}" title="写/改意思">✎</button><span class="badge" style="${hot ? "background:var(--no);color:#fff;" : ""}">未掌握 ×${w.miss}</span></li>`;
+  }).join("") || `<li class="hint">（没有 2 次及以上未掌握的单词，继续保持）</li>`;
+}
+document.getElementById("missDetails").addEventListener("toggle", () => { if (document.getElementById("missDetails").open) renderMiss(); });
+// 今日已学 / 学习记录明细里点 ✓/✗：切换该天该词的掌握状态；若该天是这个词最近一次记录，同步单词本当前状态
+document.addEventListener("click", e => {
+  const fl = e.target.closest("[data-flip]");
+  if (!fl) return;
+  const w = fl.dataset.flip;
+  const day = fl.dataset.day;
+  if (!w || !day || !state.words[w]) return;
+  const dd = ensureDailyDetail();
+  const map = dd[day];
+  if (!map || !(w in map)) return;
+  const nb = map[w] === "ok" ? "un" : "ok";
+  map[w] = nb;
+  const word = state.words[w];
+  if (nb === "un") word.miss = (word.miss || 0) + 1; else word.miss = Math.max(0, (word.miss || 0) - 1);
+  let latest = null;
+  for (const d in dd) if (w in dd[d]) latest = (latest === null || d > latest) ? d : latest;
+  if (day === latest) state.words[w].b = nb;
+  save();
+  renderAll();
+});
 function renderQuiz() {
   const pool = document.getElementById("quizPool").value;
   const area = document.getElementById("quizArea");
-  const poolWords = Object.values(state.words).filter(w => pool === "all" ? true : w.b === pool);
+  window._curAns = null; // 新一轮：重置本词答题状态（✓/× 可自由切换）
+  if (window._advTimer) { clearTimeout(window._advTimer); window._advTimer = null; }
+  let poolWords;
+  if (pool === "curve") {
+    // 遗忘曲线：到期（next<=now）或从未学过（无 next）的词才进入复习池，到期时间由答题结果推进
+    const now = Date.now();
+    poolWords = Object.values(state.words).filter(w => !w.next || w.next <= now);
+  } else if (pool === "rand") {
+    // 完全随机：全库纯随机，不偏重掌握状态
+    poolWords = Object.values(state.words);
+  } else {
+    poolWords = Object.values(state.words).filter(w => pool === "all" ? true : w.b === pool);
+  }
   if (poolWords.length === 0) {
-    area.innerHTML = '<div id="emptyTip">该范围没有单词，先收录或换个范围。</div>';
+    area.innerHTML = pool === "curve"
+      ? '<div id="emptyTip">今日没有到期复习的单词，明天再来，或换个范围。</div>'
+      : '<div id="emptyTip">该范围没有单词，先收录或换个范围。</div>';
     return;
   }
   // 加权随机：总范围下未掌握70%概率，初步掌握30%概率，不会总抽到会的词
@@ -731,8 +816,7 @@ function renderQuiz() {
   document.getElementById("qNo").onclick = () => answer(pick.w, "un");
   // 看答案：自己选择何时看译文（先回忆，答不出再看）；已作答后忽略，避免覆盖补录区
   document.getElementById("qReveal").onclick = () => {
-    const okBtn = document.getElementById("qOk");
-    if (okBtn && okBtn.disabled) return;
+    if (window._curAns) return;
     const tr = document.getElementById("qTrans");
     const t = state.words[pick.w].t;
     tr.textContent = t ? "译文：" + t : "（该词还没有译文，答 × 后可补录）";
@@ -777,17 +861,37 @@ function renderQuiz() {
   document.getElementById("qSpeak").onclick = speak;
   if (getReadMode() === "auto") setTimeout(speak, 250); // 朗读模式=自动时才切词发音（默认手动，点了才读）
 }
+// 遗忘曲线：答对逐级拉长复习间隔（1→2→4→7→15→30 天），答错回到第1天并累计一次未掌握
+const CURVE_DAYS = [1, 2, 4, 7, 15, 30];
+function applyCurve(w, b) {
+  const word = state.words[w];
+  if (!word) return;
+  if (b === "ok") {
+    word.lv = Math.min((word.lv || 0) + 1, CURVE_DAYS.length - 1);
+  } else {
+    word.lv = 0;
+    word.miss = (word.miss || 0) + 1;
+  }
+  word.next = Date.now() + CURVE_DAYS[word.lv] * 86400000;
+}
+function nextWord(w, b) {
+  applyCurve(w, b);
+  renderAll();
+}
 function answer(w, b) {
   if (!state.words[w]) return;
+  const isToggle = window._curAns && window._curAns !== b;
+  window._curAns = b;
   state.words[w].b = b;
-  // 更新学习统计：今日打卡数 + 连续天数
+  // 更新学习统计：今日打卡数（每天每个词只计一次，改判不重复计数）+ 连续天数
   if (!state.stats) state.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
   const today = new Date().toISOString().slice(0, 10);
-  state.stats.dailyRecords[today] = (state.stats.dailyRecords[today] || 0) + 1;
   // 学习明细：当天该词最后一次答题状态（ok=掌握 / un=未掌握），永久保存供「今日已学/学习记录」查看
-  if (!state.stats.dailyDetail) state.stats.dailyDetail = {};
-  if (!state.stats.dailyDetail[today]) state.stats.dailyDetail[today] = {};
-  state.stats.dailyDetail[today][w] = b;
+  const dd = ensureDailyDetail();
+  if (!dd[today]) dd[today] = {};
+  const firstToday = !(w in dd[today]);
+  dd[today][w] = b;
+  if (firstToday) state.stats.dailyRecords[today] = (state.stats.dailyRecords[today] || 0) + 1;
   const last = state.stats.lastStudyDate;
   if (last !== today) {
     const y = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -803,23 +907,47 @@ function answer(w, b) {
   const tr = document.getElementById("qTrans");
   fb.textContent = b === "ok" ? "✓ 已记入「初步掌握」" : "✗ 已记入「未掌握」";
   fb.className = "feedback " + b;
-  
+
   const btnOk = document.getElementById("qOk");
   const btnNo = document.getElementById("qNo");
-  if (btnOk) btnOk.disabled = true;
-  if (btnNo) btnNo.disabled = true;
+  if (btnOk) btnOk.classList.toggle("sel", b === "ok");
+  if (btnNo) btnNo.classList.toggle("sel", b === "un");
   // 已作答：隐藏「看答案」，防止其 textContent 覆盖补录区导致卡死
   const rv = document.getElementById("qReveal");
   if (rv) rv.style.display = "none";
 
-  // 译文处理：有译文直接显示；知道的词(√)不强制写，不知道的词(×)强制补写
+  // 改判（对错发生变化）：必须先写意思，不写不能下一题
+  if (isToggle) {
+    if (window._advTimer) { clearTimeout(window._advTimer); window._advTimer = null; }
+    const t0 = state.words[w].t || "";
+    if (t0) tr.textContent = "译文：" + t0;
+    tr.innerHTML += `
+      <div style="margin-top: 8px;">
+        <input type="text" id="transInput" placeholder="已改判，请输入该单词的中文意思，确认后才能下一题" style="margin-bottom: 8px;">
+        <button class="btn ghost small" id="confirmTrans">确认改判</button>
+      </div>
+    `;
+    const input = document.getElementById("transInput");
+    input.focus();
+    const confirmTrans = () => {
+      const t = input.value.trim();
+      if (!t) { alert("请输入单词意思后再继续"); return; }
+      if (t && !state.words[w].t) state.words[w].t = t;
+      save();
+      nextWord(w, b);
+    };
+    document.getElementById("confirmTrans").onclick = confirmTrans;
+    input.addEventListener("keydown", e => { if (e.key === "Enter") confirmTrans(); });
+    return;
+  }
+
+  // 首次作答：有译文直接显示，900ms后自动跳下一题（期间可点另一个按钮改判，改判会取消自动跳题）
   if (state.words[w].t) {
     tr.textContent = "译文：" + state.words[w].t;
-    // 900ms后自动跳下一题
-    setTimeout(() => {
-      renderAll();
-    }, 900);
-  } else if (b === "ok") {
+    window._advTimer = setTimeout(() => { window._advTimer = null; nextWord(w, b); }, 900);
+    return;
+  }
+  if (b === "ok") {
     // 知道的单词：想写就写，不想写点「下一个」直接跳过
     tr.innerHTML = `
       <div style="margin-top: 8px;">
@@ -837,7 +965,7 @@ function answer(w, b) {
         const t = input.value.trim();
         if (t) { state.words[w].t = t; save(); }
       }
-      renderAll();
+      nextWord(w, b);
     };
     document.getElementById("confirmTrans").onclick = () => finish(true);
     document.getElementById("skipTrans").onclick = () => finish(false);
@@ -860,7 +988,7 @@ function answer(w, b) {
       }
       state.words[w].t = t;
       save();
-      renderAll();
+      nextWord(w, b);
     };
     document.getElementById("confirmTrans").onclick = confirmTrans;
     input.addEventListener("keydown", e => { if (e.key === "Enter") confirmTrans(); });
@@ -879,7 +1007,7 @@ function addWords() {
   const ws = raw.toLowerCase().split(/[\s,，、;；]+/).filter(x => /^[a-z][a-z'\-]*$/.test(x));
   if (!ws.length) { alert("没识别到英文单词"); return; }
   for (const w of ws) {
-    if (!state.words[w]) state.words[w] = { w, t, b: "un", ts: Date.now() };
+    if (!state.words[w]) state.words[w] = { w, t, b: "un", ts: Date.now(), lv: 0, miss: 0, next: 0 };
     else if (t && !state.words[w].t) state.words[w].t = t;
   }
   inp.value = ""; tr.value = "";
@@ -899,7 +1027,7 @@ document.getElementById("bulkBtn").onclick = () => {
     if (!/^[a-z][a-z'\-]*$/.test(w)) continue;
     const t = parts.length > 1 ? parts[1] : "";
     if (!state.words[w]) {
-      state.words[w] = { w, t, b: "un", ts: Date.now() };
+      state.words[w] = { w, t, b: "un", ts: Date.now(), lv: 0, miss: 0, next: 0 };
       cnt++;
     }
   }
