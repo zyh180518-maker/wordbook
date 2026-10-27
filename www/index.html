@@ -660,7 +660,10 @@ function ensureDailyDetail() {
   return state.stats.dailyDetail;
 }
 function wordRow(w, b, show, date) {
-  const t = (state.words[w] && state.words[w].t) || "";
+  // 记忆方式=系统直接给意思：每日记录优先显示内置词典意思（个人手写可能有偏差），无词典词条才退回个人写的
+  const word = state.words[w] || {};
+  const sys = (state.memorizeMode || "default") === "system";
+  const t = (sys && DICT && DICT[w] ? DICT[w] : "") || word.t || "";
   const trans = show && t ? `<span class="t">${esc(t)}</span>` : "";
   const cls = b === "ok" ? "chip ok" : "chip no";
   const mark = b === "ok" ? "✓" : "✗";
