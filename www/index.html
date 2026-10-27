@@ -922,13 +922,14 @@ function applyCurve(w, b) {
   }
   word.next = Date.now() + CURVE_DAYS[word.lv] * 86400000;
 }
-// 系统给意思：取该词中文意思（已有译文优先；没有则查内置词典并自动补录进词库，供以后复用）
+// 系统给意思：词典优先（个人手写可能有偏差，系统直接给意思=给词典意思；词典无词条才退回个人写的）。
+// 个人没写过释义时自动补录词典释义进词库（只填空缺，不覆盖已有），供以后复用
 function sysMeaning(w) {
   const word = state.words[w];
   if (!word) return "";
-  let t = word.t || "";
-  if (!t && DICT && DICT[w]) { t = DICT[w]; word.t = t; save(); }
-  return t;
+  const sys = (DICT && DICT[w]) || "";
+  if (!word.t && sys) { word.t = sys; save(); }
+  return sys || word.t || "";
 }
 function nextWord(w, b) {
   applyCurve(w, b); // 曲线数据（lv/miss/next）先更新
