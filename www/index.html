@@ -854,6 +854,9 @@ function renderQuiz() {
     <div class="btns">
       <button class="btn no" id="qNo">×</button>
       <button class="btn ok" id="qOk">√</button>
+    </div>
+    <div style="display:flex; justify-content:center; margin-top:10px;">
+      <button class="btn small" id="qNext" style="display:none">下一题 ➤</button>
     </div>`;
   document.getElementById("qOk").onclick = () => answer(pick.w, "ok");
   document.getElementById("qNo").onclick = () => answer(pick.w, "un");
@@ -931,6 +934,13 @@ function sysMeaning(w) {
   if (!word.t && sys) { word.t = sys; save(); }
   return sys || word.t || "";
 }
+// system 模式：判完后显示「下一题」按钮，自己点才进下一题（不自动跳）
+function showNext(w, b) {
+  const nx = document.getElementById("qNext");
+  if (!nx) return;
+  nx.style.display = "block";
+  nx.onclick = () => { nx.style.display = "none"; nextWord(w, b); };
+}
 function nextWord(w, b) {
   applyCurve(w, b); // 曲线数据（lv/miss/next）先更新
   save();           // 再落盘，否则改判/自动跳题路径的 save() 在 applyCurve 之前执行会丢失曲线数据
@@ -977,11 +987,11 @@ function answer(w, b) {
   // 改判（对错发生变化）：必须先写意思，不写不能下一题
   if (isToggle) {
     if (window._advTimer) { clearTimeout(window._advTimer); window._advTimer = null; }
-    // 系统给意思模式：改判也免写，直接显示系统意思后自动下一题
+    // 系统给意思模式：改判也免写，直接显示系统意思，自己点「下一题」（不自动跳）
     if ((state.memorizeMode || "default") === "system") {
       const st = sysMeaning(w);
       tr.textContent = st ? "译文：" + st : "（该词暂无内置释义，可点 ✎ 补录）";
-      window._advTimer = setTimeout(() => { window._advTimer = null; nextWord(w, b); }, 1200);
+      showNext(w, b);
       return;
     }
     const t0 = state.words[w].t || "";
@@ -1006,11 +1016,11 @@ function answer(w, b) {
     return;
   }
 
-  // 系统给意思模式：判完免写免回忆，直接显示系统意思后自动下一题
+  // 系统给意思模式：判完免写免回忆，直接显示系统意思，自己点「下一题」（不自动跳）
   if ((state.memorizeMode || "default") === "system") {
     const st = sysMeaning(w);
     tr.textContent = st ? "译文：" + st : "（该词暂无内置释义，可点 ✎ 补录）";
-    window._advTimer = setTimeout(() => { window._advTimer = null; nextWord(w, b); }, 900);
+    showNext(w, b);
     return;
   }
 
