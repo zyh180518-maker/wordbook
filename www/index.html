@@ -603,7 +603,7 @@ function save() {
   const t = new Date().toTimeString().slice(0, 8);
   n.textContent = "已保存 " + t;
 }
-function renderAll() {
+function renderAll(keepQuiz) {
   const c = (p) => Object.values(state.words).filter(w => w.b === p).length;
   document.getElementById("cAll").textContent = Object.keys(state.words).length;
   document.getElementById("nAll").textContent = Object.keys(state.words).length;
@@ -622,7 +622,9 @@ function renderAll() {
   if (mmEl && document.activeElement !== mmEl) mmEl.value = state.memorizeMode || "default";
   renderProgress();
   renderLists();
-  renderQuiz();
+  // keepQuiz=true：收录单词等场景不重抽题（当前题目保持不动）；题库原本为空时仍抽一题显示
+  if (keepQuiz) { if (!document.querySelector("#quizArea .bigWord")) renderQuiz(); }
+  else renderQuiz();
   renderToday();
   renderHistory();
   renderMiss();
@@ -856,7 +858,7 @@ function renderQuiz() {
       <button class="btn ok" id="qOk">√</button>
     </div>
     <div style="display:flex; justify-content:center; margin-top:10px;">
-      <button class="btn small" id="qNext" style="display:none">下一题 ➤</button>
+      <button class="btn ghost small" id="qNext" style="display:none">下一个 ➤</button>
     </div>`;
   document.getElementById("qOk").onclick = () => answer(pick.w, "ok");
   document.getElementById("qNo").onclick = () => answer(pick.w, "un");
@@ -910,7 +912,12 @@ function renderQuiz() {
     }
   };
   document.getElementById("qSpeak").onclick = speak;
-  if (getReadMode() === "auto") setTimeout(speak, 250); // 朗读模式=自动时才切词发音（默认手动，点了才读）
+  if (getReadMode() === "auto") {
+    // 朗读模式=自动时才切词发音（默认手动，点了才读）；启动首次等页面加载稳了再读（2.5s），换题 250ms
+    const first = !window._quizAutoSaid;
+    window._quizAutoSaid = true;
+    setTimeout(speak, first ? 2500 : 250);
+  }
 }
 // 遗忘曲线：答对逐级拉长复习间隔（1→2→4→7→15→30 天），答错回到第1天并累计一次未掌握
 const CURVE_DAYS = [1, 2, 4, 7, 15, 30];
@@ -1095,7 +1102,7 @@ function addWords() {
     else if (!state.words[w].t && DICT && DICT[w]) state.words[w].t = DICT[w]; // 词典自动匹配（只填空缺，不覆盖已有）
   }
   inp.value = ""; tr.value = "";
-  save(); renderAll();
+  save(); renderAll(true); // 收录后不重抽题，当前题目保持不动
 }
 
 // 批量导入
@@ -1119,7 +1126,7 @@ document.getElementById("bulkBtn").onclick = () => {
   }
   ta.value = "";
   alert(`成功导入 ${cnt} 个新单词`);
-  save(); renderAll();
+  save(); renderAll(true); // 批量收录后也不重抽题，当前题目保持不动
 }
 
 // 写/改单词意思（总单词本、未掌握/已掌握列表、学习记录/今日已学里点 ✎，数据同一处同步）
