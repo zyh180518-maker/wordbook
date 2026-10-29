@@ -185,7 +185,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.7.9"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.8.0"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -404,7 +404,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.7.9</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.8.0</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -500,7 +500,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.7.9";
+const APP_VERSION = "1.8.0";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1622,6 +1622,9 @@ function renderExamPaper() {
     '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
   html += '<div class="muted" style="font-size:11px;margin-bottom:8px">点选项作答（蓝色=已选；有标准答案的套次即时判对错）</div>';
+  if (ex.meta && ex.meta.note) {
+    html += '<div class="muted" style="font-size:11px;color:var(--no);margin-bottom:8px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
+  }
   // 段落速跳：长卷（70~90 题）手机上滑很久，给一排 Part/Section 跳转 chips
   const heads = [];
   ex.blocks.forEach((b, bi) => { if (b.t === "h") heads.push({ i: bi, v: b.v }); });
@@ -1703,6 +1706,31 @@ function renderExamPaper() {
   });
 }
 
+/* ===== 听力播放倍速（0.75/1/1.25/1.5/2，记忆选择）===== */
+var AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+function spdGet() {
+  try {
+    const v = Number(localStorage.getItem("wb_audio_speed"));
+    return AUDIO_SPEEDS.indexOf(v) >= 0 ? v : 1;
+  } catch (e) { return 1; }
+}
+function spdHtml() {
+  return '<button class="rsBtn" id="spdBtn" aria-label="播放速度" style="width:50px;flex:none;font-size:12px">' + spdGet() + 'x</button>';
+}
+function bindSpd(audioId) {
+  const a = document.getElementById(audioId), b = document.getElementById("spdBtn");
+  if (!a || !b) return;
+  a.playbackRate = spdGet();
+  b.textContent = spdGet() + 'x';
+  b.onclick = () => {
+    const cur = spdGet();
+    const v = AUDIO_SPEEDS[(AUDIO_SPEEDS.indexOf(cur) + 1) % AUDIO_SPEEDS.length];
+    try { localStorage.setItem("wb_audio_speed", v); } catch (e) { }
+    a.playbackRate = v;
+    b.textContent = v + 'x';
+  };
+}
+
 /* ===== 听力原文阅读（纯文本，无音频） ===== */
 var LISTEN_BANK = null;
 function loadListenBank() {
@@ -1759,14 +1787,17 @@ function renderListenRead() {
   }
   if (rec.audio) {
     // 内置音频：直接播 APK assets 里的 m4a（WebView 原生支持 AAC）；播放器吸顶，滚多远都能暂停
-    html += '<div class="stickyAudio"><audio id="listenAudio" controls preload="metadata" src="' + esc(rec.audio) + '" style="width:100%; height:44px; border-radius:10px; outline:none"></audio></div>';
+    html += '<div class="stickyAudio"><audio id="listenAudio" controls preload="metadata" src="' + esc(rec.audio) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
   } else {
     html += '<div class="muted" style="font-size:12px;margin:6px 0">（该套暂无内置音频，可用电脑播放）</div>';
   }
-  if (rec.trans) {
+  if (rec.trans || rec.audio) {
     html += '<div class="row" style="gap:8px;margin-bottom:10px">';
-    html += '<button class="btn small ' + (window._listen.showTrans ? "ghost" : "ok") + '" id="showOrig" style="flex:1">原文</button>';
-    html += '<button class="btn small ' + (window._listen.showTrans ? "ok" : "ghost") + '" id="showTrans" style="flex:1">对照译文</button>';
+    if (rec.trans) {
+      html += '<button class="btn small ' + (window._listen.showTrans ? "ghost" : "ok") + '" id="showOrig" style="flex:1">原文</button>';
+      html += '<button class="btn small ' + (window._listen.showTrans ? "ok" : "ghost") + '" id="showTrans" style="flex:1">对照译文</button>';
+    }
+    if (rec.audio) html += spdHtml();
     html += '</div>';
   }
   let text = window._listen.showTrans && rec.trans ? rec.trans : (rec.text || "（无原文）");
@@ -1795,6 +1826,7 @@ function renderListenRead() {
   studyArea().innerHTML = html;
   document.getElementById("listenQuit").onclick = () => renderListenList();
   bindRsButtons();
+  bindSpd("listenAudio");
   studyArea().querySelectorAll(".chip[data-ljump]").forEach(c => c.onclick = () => {
     const el = document.getElementById(c.dataset.ljump);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2121,6 +2153,22 @@ function renderTopicPart() {
   html += '<div class="secHead"><div class="k">' + esc((catMeta.icon || '') + ' ' + secExamLabel(ex.meta)) + '</div>' +
     '<div class="t">' + esc(secItemSub(p)) + '</div>' +
     '<div class="m">' + esc(secSizeLabel(p)) + (qs.length && !qs.some(q => q.answer) ? ' · 暂无标准答案，可当练习' : '') + '</div></div>';
+  // 原卷残缺的说明（OCR 补录的套次会带 note）
+  if (ex.meta && ex.meta.note) {
+    html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
+  }
+  // 小节速跳（阅读/听力动辄 3 个 Section + 十几屏，先给一排跳转）
+  const secHeads = [];
+  blocks.forEach((b, bi) => { if (b.t === "h") secHeads.push({ bi: bi, v: secNorm(b.v) }); });
+  if (secHeads.length >= 2) {
+    html += '<div class="yearChips" style="margin:0 0 6px">';
+    secHeads.forEach(h => {
+      const short = /^Section/i.test(h.v) ? h.v.replace(/Section\s*/i, "").trim().slice(0, 14)
+        : h.v.replace(/\s*\(.*$/, "").slice(0, 16);
+      html += '<button class="chip" data-sjump="sp' + h.bi + '">' + esc(short) + '</button>';
+    });
+    html += '</div>';
+  }
   // 听力板块：有内置音频就带播放器，配上这套的题目一起练
   let audioRec = null;
   if (cat === "listening" && LISTEN_BANK) {
@@ -2128,12 +2176,13 @@ function renderTopicPart() {
     if (lv) audioRec = LISTEN_BANK[lv][key];
   }
   if (audioRec && audioRec.audio) {
-    html += '<div class="stickyAudio"><audio id="secAudio" controls preload="metadata" src="' + esc(audioRec.audio) + '" style="width:100%; height:44px; border-radius:10px; outline:none"></audio></div>';
+    html += '<div class="stickyAudio"><audio id="secAudio" controls preload="metadata" src="' + esc(audioRec.audio) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
+    html += '<div class="row" style="gap:8px;margin-bottom:10px">';
     if (audioRec.text) {
-      html += '<div class="row" style="gap:8px;margin-bottom:10px">' +
-        '<button class="btn small ' + (window._secPart.showText ? "ghost" : "ok") + '" id="secOrig" style="flex:1">做题</button>' +
-        '<button class="btn small ' + (window._secPart.showText ? "ok" : "ghost") + '" id="secText" style="flex:1">听力原文</button></div>';
+      html += '<button class="btn small ' + (window._secPart.showText ? "ghost" : "ok") + '" id="secOrig" style="flex:1">做题</button>' +
+        '<button class="btn small ' + (window._secPart.showText ? "ok" : "ghost") + '" id="secText" style="flex:1">听力原文</button>';
     }
+    html += spdHtml() + '</div>';
   }
   if (window._secPart.showText && audioRec && audioRec.text) {
     const tl = audioRec.text.split(/\r?\n/).map(x => x.trim()).filter(Boolean)
@@ -2184,7 +2233,12 @@ function renderTopicPart() {
   const so = document.getElementById("secOrig"), st = document.getElementById("secText");
   if (so) so.onclick = () => { window._secPart.showText = false; renderTopicPart(); };
   if (st) st.onclick = () => { window._secPart.showText = true; renderTopicPart(); };
+  studyArea().querySelectorAll(".chip[data-sjump]").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.sjump);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
   bindRsButtons();
+  bindSpd("secAudio");
   secBindOpts(studyArea(), qs, ansObj, (n, k, ans) => {
     if (ans) examRecord(key, k === ans);
     save();
