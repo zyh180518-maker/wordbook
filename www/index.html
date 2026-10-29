@@ -93,6 +93,11 @@
   .examH.sec { font-size: 14px; font-weight: 700; margin: 26px 0 10px; padding: 8px 12px; color: var(--txt);
                background: rgba(90,162,255,.06); border-left: 3px solid var(--dim); border-radius: 6px; }
   .examText { font-size: 14px; line-height: 1.95; margin: 12px 0; word-break: break-word; }
+  /* 听力原文逐行排版 */
+  .listenLine { font-size: 14px; line-height: 1.75; margin: 7px 0; word-break: break-word; }
+  .listenLine.dlg { padding: 2px 0 2px 12px; border-left: 2px solid var(--line); }
+  .listenLine.q { color: var(--accent); font-weight: 600; margin-top: 16px; }
+  .listenHead { font-size: 15px; font-weight: 700; color: var(--accent); margin: 22px 0 8px; }
   /* 每题：上方大间距 + 虚线分隔，眼睛有落点 */
   .examQ { font-size: 15px; font-weight: 600; line-height: 1.6; margin: 32px 0 10px; padding-top: 22px; border-top: 1px dashed var(--line); }
   .examQ.first { border-top: none; padding-top: 0; margin-top: 12px; }
@@ -1618,7 +1623,12 @@ function renderListenRead() {
     // 译文是 md 源：剥掉标题/引用/加粗标记，纯文本阅读更干净
     text = text.replace(/^#{1,6}\s*/gm, "").replace(/^>\s*/gm, "").replace(/\*\*/g, "").trim();
   }
-  html += '<div class="examText" style="white-space:pre-wrap;font-size:14px;line-height:1.9;margin-top:8px">' + esc(text) + '</div>';
+  const lines = text.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  html += '<div style="margin-top:8px">' + lines.map(l => {
+    if (/^(Section|Part|News Report|Conversation|Listening|Questions)\b/i.test(l)) return '<div class="listenHead">' + esc(l) + '</div>';
+    if (/^[WMQ]:?\s/.test(l)) return '<div class="listenLine dlg">' + esc(l) + '</div>';
+    return '<div class="listenLine">' + esc(l) + '</div>';
+  }).join('') + '</div>';
   studyArea().innerHTML = html;
   document.getElementById("listenQuit").onclick = () => renderListenList();
   const so = document.getElementById("showOrig"), st = document.getElementById("showTrans");
