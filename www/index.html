@@ -185,7 +185,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.8.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.8.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -404,7 +404,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.8.1</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.8.2</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -500,7 +500,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.8.1";
+const APP_VERSION = "1.8.2";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2287,6 +2287,12 @@ function renderTopicPart() {
   if (ex.meta && ex.meta.note) {
     html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
   }
+  // 翻译：有英文参考译文就能「先自己译 → 点开对照」
+  if (cat === "translation" && ex.meta && ex.meta.transRef) {
+    html += '<div class="row" style="gap:8px;margin-bottom:10px">' +
+      '<button class="btn small ' + (window._secPart.showRef ? "ghost" : "ok") + '" id="refOrig" style="flex:1">中文原文</button>' +
+      '<button class="btn small ' + (window._secPart.showRef ? "ok" : "ghost") + '" id="refShow" style="flex:1">参考译文</button></div>';
+  }
   // 小节速跳（阅读/听力动辄 3 个 Section + 十几屏，先给一排跳转）
   const secHeads = [];
   blocks.forEach((b, bi) => { if (b.t === "h") secHeads.push({ bi: bi, v: secNorm(b.v) }); });
@@ -2314,7 +2320,11 @@ function renderTopicPart() {
     }
     html += spdHtml() + '</div>';
   }
-  if (window._secPart.showText && audioRec && audioRec.text) {
+  if (window._secPart.showRef && cat === "translation" && ex.meta && ex.meta.transRef) {
+    // 参考译文按句断开，手机上每句一段，方便逐句对照
+    const sents = ex.meta.transRef.split(/(?<=[.!?])\s+/).filter(Boolean);
+    html += sents.map(s => '<div class="examText">' + esc(s) + '</div>').join('');
+  } else if (window._secPart.showText && audioRec && audioRec.text) {
     const tl = audioRec.text.split(/\r?\n/).map(x => x.trim()).filter(Boolean)
       .map(x => x.replace(/\[\d{1,3}\]/g, "").replace(/\s{2,}/g, " ").trim()).filter(Boolean);
     html += tl.map(l => /^(Section|Part|News Report|Conversation|Listening|Questions)\b/i.test(l)
@@ -2363,6 +2373,9 @@ function renderTopicPart() {
   const so = document.getElementById("secOrig"), st = document.getElementById("secText");
   if (so) so.onclick = () => { window._secPart.showText = false; renderTopicPart(); };
   if (st) st.onclick = () => { window._secPart.showText = true; renderTopicPart(); };
+  const ro = document.getElementById("refOrig"), rs = document.getElementById("refShow");
+  if (ro) ro.onclick = () => { window._secPart.showRef = false; renderTopicPart(); };
+  if (rs) rs.onclick = () => { window._secPart.showRef = true; renderTopicPart(); };
   studyArea().querySelectorAll(".chip[data-sjump]").forEach(c => c.onclick = () => {
     const el = document.getElementById(c.dataset.sjump);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
