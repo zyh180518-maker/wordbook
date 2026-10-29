@@ -185,7 +185,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.8.0"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.8.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -404,7 +404,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.8.0</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.8.1</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -500,7 +500,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.8.1";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1639,6 +1639,19 @@ function renderExamPaper() {
     html += '</div>';
   }
   let afterH = true;
+  // 题号速跳（55 题的长卷按 10 题一组，想回第 30 题不用从头滚）
+  if (qs.length > 20) {
+    const qBi = {};
+    ex.blocks.forEach((b, bi) => { if (b.t === "q") qBi[b.n] = bi; });
+    html += '<div class="yearChips" style="margin:0 0 6px">';
+    for (let i = 0; i < qs.length; i += 10) {
+      const last = Math.min(i + 9, qs.length - 1);
+      const a1 = qs[i].n, b1 = qs[last].n;
+      const label = (b1 - a1 > 15) ? a1 + '+' : a1 + '-' + b1;
+      html += '<button class="chip" data-qjump="qq' + qBi[qs[i].n] + '">' + label + '</button>';
+    }
+    html += '</div>';
+  }
   // 每个板块（Part）标题右上角给「单独看」入口：只想练某一段时不用通读整卷
   const partStarts = {};
   if (secPartsOf(window._exam.key).length > 1) {
@@ -1657,7 +1670,7 @@ function renderExamPaper() {
     } else {
       const sel = window._exam.answers[b.n];
       const ans = b.answer;
-      html += '<div class="examQ' + (afterH ? ' first' : '') + '">' + b.n + '. ' + (b.stem ? esc(b.stem) : '') + '</div>';
+      html += '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + (b.stem ? esc(b.stem) : '') + '</div>';
       afterH = false;
       for (const k of "ABCD") {
         if (!b.opts || !b.opts[k]) continue;
@@ -1674,6 +1687,10 @@ function renderExamPaper() {
   bindRsButtons();
   studyArea().querySelectorAll(".chip[data-jump]").forEach(c => c.onclick = () => {
     const el = document.getElementById(c.dataset.jump);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  studyArea().querySelectorAll(".chip[data-qjump]").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.qjump);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   studyArea().querySelectorAll(".secOnly").forEach(b => b.onclick = (e) => {
@@ -1994,7 +2011,49 @@ function secItemSub(p) {
   return secShortTitle(p.title) || secCatName(secGroupOf(p.cat));
 }
 
-window._topic = { cat: "writing", year: "all" };
+// 板块正文前 400 字符（搜索用：译文/原文内容里的词也能搜到）
+var SEC_TEXT_CACHE = {};
+function secBodyText(key, pi) {
+  const cid = key + "#" + pi;
+  if (SEC_TEXT_CACHE[cid] !== undefined) return SEC_TEXT_CACHE[cid];
+  const p = secPartsOf(key)[pi], ex = EXAM_BANK.exams[key];
+  let t = '';
+  if (p && ex) {
+    for (let i = p.start; i < p.end && t.length < 400; i++) {
+      const b = ex.blocks[i];
+      if (b.t === "text") t += ' ' + (b.v || '');
+    }
+  }
+  SEC_TEXT_CACHE[cid] = t;
+  return t;
+}
+window._topic = { cat: "writing", year: "all", q: "" };
+/* 学习记忆：上次看到哪段 + 哪些点开过（localStorage，随备份一起走） */
+var TOPIC_LAST_KEY = "wb_topic_last", TOPIC_SEEN_KEY = "wb_topic_seen";
+function topicSeenMap() {
+  try { return JSON.parse(localStorage.getItem(TOPIC_SEEN_KEY) || "{}"); } catch (e) { return {}; }
+}
+function topicMarkSeen(id) {
+  const m = topicSeenMap();
+  m[id] = Date.now();
+  const ks = Object.keys(m);
+  if (ks.length > 400) {
+    ks.sort((a, b) => m[a] - m[b]);
+    ks.slice(0, ks.length - 400).forEach(k => { delete m[k]; });
+  }
+  try { localStorage.setItem(TOPIC_SEEN_KEY, JSON.stringify(m)); } catch (e) { }
+}
+function topicLast() {
+  try { return JSON.parse(localStorage.getItem(TOPIC_LAST_KEY) || "null"); } catch (e) { return null; }
+}
+function topicSaveLast(cat, key, pi) {
+  try {
+    localStorage.setItem(TOPIC_LAST_KEY, JSON.stringify({
+      cat: cat, key: key, pi: pi, ts: Date.now(),
+      label: secExamLabel(EXAM_BANK.exams[key].meta) + ' · ' + secCatName(cat)
+    }));
+  } catch (e) { }
+}
 async function openTopics() {
   switchMode("study");
   document.getElementById("studyExamTab").className = "btn small ghost";
@@ -2032,28 +2091,68 @@ function renderTopicList() {
     html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
   });
   html += '</div>';
+  // 上次看到哪一段：手机上一进来就能接着练，不用再翻年份
+  const lt = topicLast();
+  if (lt && lt.cat && lt.label && !(window._topic.q || "").trim()) {
+    html += '<button class="btn small ok" id="topicResume" style="width:100%;text-align:left;margin:0 0 8px">▶ 上次看到：' + esc(lt.label) + '　<b>继续 →</b></button>';
+  }
+  // 搜索（阅读 109 份、听力 85 份，靠翻页太慢）
+  html += '<div class="row" style="gap:6px;margin:0 0 8px">' +
+    '<input id="topicSearch" placeholder="搜年份/套次/板块名（如 2021、梅花、Cloze）" value="' + esc(window._topic.q || "") +
+    '" style="flex:1;font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)">' +
+    '<button class="btn ghost small" id="topicClear" style="flex:none;padding:9px 12px">清空</button></div>';
   const hint = (SEC_CATS.filter(c => c.id === cat)[0] || {}).hint || "";
+  const qstr = (window._topic.q || "").trim().toLowerCase();
+  let shown2 = shown;
+  if (qstr) {
+    // 搜索跨全部板块（在作文里搜「梅花」也能找到翻译那篇）
+    const allCat = SEC_CATS.reduce((acc, c) => acc.concat(secList(c.id)), []);
+    shown2 = allCat
+      .filter(x => (secExamLabel(x.meta) + ' ' + secItemSub(x.part) + ' ' + x.part.title + ' ' +
+        secCatName(secGroupOf(x.part.cat)) + ' ' + secBodyText(x.key, x.pi))
+        .toLowerCase().indexOf(qstr) >= 0)
+      .sort((a, b) => (a.key < b.key ? 1 : -1));
+  }
   let extra = "";
   if (cat === "listening" && LISTEN_BANK) {
     const bank = Object.keys(LISTEN_BANK.cet6 || {});
     const onlyAudio = bank.filter(k => (EXAM_BANK.exams || {})[k] === undefined).length;
-    if (onlyAudio) extra = '；另有 <b>' + onlyAudio + '</b> 套只有音频+原文（试卷未收录），在顶部「🎧 听力」里听';
+    if (onlyAudio && !qstr) extra = '；另有 <b>' + onlyAudio + '</b> 套只有音频+原文（试卷未收录），列在下方';
   }
-  html += '<div class="muted" style="margin:2px 0 10px;line-height:1.6">' + hint + ' · 共 <b>' + shown.length + '</b> 份，点开即只看这一段' + extra + '</div>';
-  if (!shown.length) {
-    html += '<div id="emptyTip">该板块暂无可用内容</div>';
+  html += '<div class="muted" style="margin:2px 0 10px;line-height:1.6">' +
+    (qstr ? '全板块搜索「' + esc(window._topic.q) + '」· 命中 <b>' + shown2.length + '</b> 处'
+      : hint + ' · 共 <b>' + shown2.length + '</b> 份，点开即只看这一段' + extra) + '</div>';
+  const seenMap = topicSeenMap();
+  if (!shown2.length) {
+    html += '<div id="emptyTip">' + (qstr ? '没搜到「' + esc(window._topic.q) + '」，换个词试试' : '该板块暂无可用内容') + '</div>';
   } else {
     let lastY = null;
-    shown.forEach(x => {
+    shown2.forEach(x => {
       if (x.meta.year !== lastY) {
         lastY = x.meta.year;
         html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + lastY + ' 年</b></div>';
       }
-      html += '<button class="btn ghost small secItem" data-sec="' + x.key + '#' + x.pi + '">' +
-        '<span class="secItemT">' + secExamLabel(x.meta) + '</span>' +
-        '<span class="secItemS">' + esc(secItemSub(x.part)) + '</span>' +
+      const id = x.key + '#' + x.pi;
+      html += '<button class="btn ghost small secItem" data-sec="' + id + '">' +
+        '<span class="secItemT">' + secExamLabel(x.meta) + (seenMap[id] ? ' <span style="color:var(--ok);font-size:12px">✓ 看过</span>' : '') + '</span>' +
+        '<span class="secItemS">' + (qstr ? '<b style="color:var(--accent)">[' + secCatName(secGroupOf(x.part.cat)) + ']</b> ' : '') + esc(secItemSub(x.part)) + '</span>' +
         '<span class="secItemM">' + secSizeLabel(x.part) + (cat === "listening" && secHasAudio(x.key) ? ' · 🎵 内置音频' : '') + '</span></button>';
     });
+  }
+  // 听力：只有音频+原文的套次（试卷未收录）也列出来，点开直接听
+  if (cat === "listening" && LISTEN_BANK && !qstr) {
+    const onlyAudio = Object.keys(LISTEN_BANK.cet6 || {})
+      .filter(k => (EXAM_BANK.exams || {})[k] === undefined).sort().reverse();
+    if (onlyAudio.length) {
+      html += '<div style="font-size:13px;color:var(--dim);margin:16px 0 6px"><b>只有音频 + 原文 ' + onlyAudio.length + ' 套（试卷未收录）</b></div>';
+      onlyAudio.forEach(k => {
+        const rec = LISTEN_BANK.cet6[k];
+        html += '<button class="btn ghost small listenOnly" data-lkey="' + esc(k) + '">' +
+          '<span class="secItemT">' + secExamLabel(rec.meta) + '</span>' +
+          '<span class="secItemS">听力原文 + 内置音频</span>' +
+          '<span class="secItemM">点开直接听</span></button>';
+      });
+    }
   }
   studyArea().innerHTML = html;
   studyArea().querySelectorAll(".chip[data-cat]").forEach(c => c.onclick = () => {
@@ -2065,6 +2164,33 @@ function renderTopicList() {
   studyArea().querySelectorAll(".secItem").forEach(b => b.onclick = () => {
     const parts2 = b.dataset.sec.split("#");
     openTopicPart(parts2[0], Number(parts2[1]));
+  });
+  const rsm = document.getElementById("topicResume");
+  if (rsm) rsm.onclick = () => {
+    const lt2 = topicLast();
+    if (!lt2 || !lt2.key) return;
+    window._topic.cat = lt2.cat || window._topic.cat;
+    openTopicPart(lt2.key, lt2.pi);
+  };
+  const sIn = document.getElementById("topicSearch");
+  if (sIn) sIn.oninput = () => {
+    window._topic.q = sIn.value;
+    const pos = sIn.selectionStart;
+    renderTopicList();
+    const n2 = document.getElementById("topicSearch");
+    if (n2) { n2.focus(); try { n2.setSelectionRange(pos, pos); } catch (e) { } }
+  };
+  const sClr = document.getElementById("topicClear");
+  if (sClr) sClr.onclick = () => { window._topic.q = ""; renderTopicList(); };
+  studyArea().querySelectorAll(".listenOnly").forEach(b => b.onclick = () => {
+    // 跳到「听力」页的原文阅读（该套没有试题，只有音频+原文）
+    document.getElementById("studyExamTab").className = "btn small ghost";
+    document.getElementById("studyTopicTab").className = "btn small ghost";
+    document.getElementById("studyListenTab").className = "btn small ok";
+    window._listen.level = "cet6";
+    window._listen.key = b.dataset.lkey;
+    window._listen.showTrans = false;
+    renderListenRead();
   });
 }
 
@@ -2128,10 +2254,14 @@ function secBindOpts(scope, qs, ansObj, onProgress) {
   });
 }
 async function openTopicPart(key, pi) {
-  const cat = window._topic.cat;
+  const part = secPartsOf(key)[pi];
+  const cat = part ? secGroupOf(part.cat) : window._topic.cat;
   if (cat === "listening") await loadListenBank();
+  window._topic.cat = cat;   // 从搜索/整卷跳进来时同步板块
   window._secPart = { key: key, pi: pi, ans: SEC_ANS[key + "#" + pi] || {} };
   SEC_ANS[key + "#" + pi] = window._secPart.ans;
+  topicSaveLast(cat, key, pi);
+  topicMarkSeen(key + "#" + pi);
   renderTopicPart();
 }
 function renderTopicPart() {
