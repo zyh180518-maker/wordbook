@@ -208,6 +208,9 @@
 
 <!-- 抽词 -->
 <div class="card">
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn ghost small" id="examBtn" style="flex:1">📝 六级真题练习（38 套 / 1228 题）</button>
+  </div>
   <div class="poolRow">
     <span>抽词范围：</span>
     <select id="quizPool">
@@ -582,6 +585,15 @@ function loadBank(name) {
   return fetch(BANK_FILES[name], { cache: "no-store" })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) { return (d && d.words) || null; })
+    .catch(function () { return null; });
+}
+// 六级真题库（38 套结构化题目，懒加载）
+var EXAM_BANK = null;
+function loadExamBank() {
+  if (EXAM_BANK) return Promise.resolve(EXAM_BANK);
+  return fetch("cet6-exams.json", { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { EXAM_BANK = d; return d; })
     .catch(function () { return null; });
 }
 // 种子词库（来自用户手机记录 docx，2026-10-22 清洗，共1292个有效单词）
@@ -1096,6 +1108,7 @@ function answer(w, b) {
 
 // 收录
 document.getElementById("addBtn").onclick = addWords;
+document.getElementById("examBtn").onclick = openExams;
 document.getElementById("addInput").addEventListener("keydown", e => { if (e.key === "Enter") addWords(); });
 function addWords() {
   const inp = document.getElementById("addInput");
@@ -1333,7 +1346,7 @@ document.getElementById("importFile").onchange = (e) => {
       if (!s || typeof s.words !== "object") throw new Error("bad");
       const n = Object.keys(s.words).length;
       if (!confirm(`导入备份将覆盖当前单词本（当前 ${Object.keys(state.words).length} 词，导入后 ${n} 词）。继续？`)) return;
-      state = { words: s.words, quizPool: s.quizPool || state.quizPool, dailyGoal: s.dailyGoal || state.dailyGoal, stats: s.stats || state.stats };
+      state = { words: s.words, quizPool: s.quizPool || state.quizPool, dailyGoal: s.dailyGoal || state.dailyGoal, memorizeMode: s.memorizeMode || state.memorizeMode || "default", exams: s.exams || {}, stats: s.stats || state.stats };
       save(); renderAll();
     } catch (err) { alert("备份文件格式不对"); }
   };
@@ -1402,6 +1415,137 @@ document.addEventListener("keydown", e => {
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+/* ===== 六级真题练习 ===== */
+window._exam = { view: "list", key: null, idx: 0, answers: {}, decided: {} };
+function examMetaLabel(meta) {
+  return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" +
+    (meta.set > 1 ? " 第" + meta.set + "套" : "");
+}
+function examArea() { return document.getElementById("quizArea"); }
+async function openExams() {
+  const d = await loadExamBank();
+  if (!d || !d.exams) {
+    examArea().innerHTML = '<div id="emptyTip">真题库加载失败（当前 APK 不含真题数据，请升级）</div>';
+    return;
+  }
+  window._exam.view = "list";
+  renderExamList();
+}
+function renderExamList() {
+  const d = EXAM_BANK, prog = state.exams || {};
+  const keys = Object.keys(d.exams).sort().reverse();
+  const groups = {};
+  keys.forEach(k => { const y = d.exams[k].meta.year; (groups[y] = groups[y] || []).push(k); });
+  let html = '<div class="row" style="margin-bottom:10px"><button class="btn ghost small" id="examBack" style="flex:1">← 返回背单词</button></div>';
+  html += '<div class="muted" style="margin:4px 0 10px;line-height:1.6">六级真题 <b>' + d.count + '</b> 套 / <b>' + d.totalQuestions + '</b> 题（听力+阅读单选）。点套次开始做题；<b>2007年6月套</b>带标准答案可自动判分，其余套次暂无标准答案（做答后点「完成本题」自评）。四级真题暂只有扫描 PDF（电脑上看）。</div>';
+  for (const y of Object.keys(groups).sort().reverse()) {
+    html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + y + ' 年</b></div>';
+    for (const k of groups[y]) {
+      const ex = d.exams[k], p = prog[k];
+      const tag = p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '';
+      html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + ex.questions.length + ' 题）' + tag + '</button>';
+    }
+  }
+  examArea().innerHTML = html;
+  document.getElementById("examBack").onclick = () => renderQuiz();
+  examArea().querySelectorAll(".examItem").forEach(b => b.onclick = () => {
+    window._exam.key = b.dataset.key;
+    window._exam.idx = 0;
+    window._exam.answers = {};
+    window._exam.decided = {};
+    renderExamQuiz();
+  });
+}
+function examRecord(key, correct) {
+  if (!state.exams) state.exams = {};
+  const p = state.exams[key] || (state.exams[key] = { done: 0, ok: 0 });
+  return p;
+}
+function renderExamQuiz() {
+  const ex = EXAM_BANK.exams[window._exam.key];
+  const q = ex.questions[window._exam.idx];
+  const total = ex.questions.length;
+  const sel = window._exam.answers[q.n];
+  const decided = window._exam.decided[q.n];
+  let html = '<div class="row" style="margin-bottom:8px;align-items:center;gap:8px">' +
+    '<button class="btn ghost small" id="examQuit" style="flex:none">← 退出</button>' +
+    '<span class="muted" style="font-size:12px">' + examMetaLabel(ex.meta) + ' · 第 ' + (window._exam.idx + 1) + ' / ' + total + ' 题</span>' +
+    '<button class="btn ghost small" id="examPrev" style="flex:none;margin-left:auto" ' + (window._exam.idx === 0 ? 'disabled' : '') + '>上一题</button>' +
+    '</div>';
+  if (q.part) html += '<div class="muted" style="font-size:11px;margin-bottom:2px">' + esc(q.part) + ' ' + esc(q.section || '') + '</div>';
+  html += '<div style="font-size:16px;line-height:1.65;margin:8px 0">' +
+    (q.stem ? esc(q.stem) : '<span class="muted">（听力题无题干：直接看选项作答，听力原文在听力资源库/电脑上看）</span>') + '</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:8px">';
+  for (const k of "ABCD") {
+    let cls = "btn ghost";
+    if (decided) {
+      cls = "btn ghost";
+      if (q.answer) {
+        if (k === q.answer) cls = "btn ok";
+        else if (k === sel) cls = "btn no";
+      } else if (k === sel) cls = "btn ok";
+    } else if (sel === k) cls = "btn ok";
+    html += '<button class="' + cls + '" style="text-align:left;padding:12px 14px" data-opt="' + k + '">' + k + ') ' + esc(q.opts[k] || '') + '</button>';
+  }
+  html += '</div>';
+  if (decided) {
+    if (q.answer) {
+      html += '<div class="feedback ok" style="margin-top:10px;font-size:14px">' + (sel === q.answer ? '✅ 正确' : '❌ 错误（正确答案：' + q.answer + '）') + '</div>';
+    } else {
+      html += '<div class="feedback" style="margin-top:10px;font-size:13px;color:var(--dim)">本题无标准答案，已记录你的选择（' + (sel || '未选') + '），可对照电脑上解析 PDF 核对。</div>';
+    }
+  }
+  html += '<div class="row" style="margin-top:12px;gap:8px">';
+  if (!decided) {
+    html += '<button class="btn ok small" id="examSubmit" style="flex:1" ' + (sel ? '' : 'disabled') + '>完成本题</button>';
+  }
+  html += '<button class="btn ghost small" id="examNext" style="flex:1" ' + (decided ? '' : 'disabled') + '>' + (window._exam.idx === total - 1 ? '完成本套' : '下一题') + '</button>';
+  html += '</div>';
+  examArea().innerHTML = html;
+  document.getElementById("examQuit").onclick = () => { renderExamList(); };
+  const prev = document.getElementById("examPrev");
+  if (prev) prev.onclick = () => { if (window._exam.idx > 0) { window._exam.idx--; renderExamQuiz(); } };
+  examArea().querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
+    if (window._exam.decided[q.n]) return;
+    window._exam.answers[q.n] = b.dataset.opt;
+    renderExamQuiz();
+  });
+  const sub = document.getElementById("examSubmit");
+  if (sub) sub.onclick = () => {
+    const p = examRecord(window._exam.key);
+    const correct = q.answer ? (sel === q.answer) : null;
+    window._exam.decided[q.n] = true;
+    p.done += 1;
+    if (correct) p.ok += 1;
+    save();
+    renderExamQuiz();
+  };
+  const nx = document.getElementById("examNext");
+  if (nx) nx.onclick = () => {
+    if (window._exam.idx < total - 1) { window._exam.idx++; renderExamQuiz(); }
+    else { finishExam(); }
+  };
+}
+function finishExam() {
+  const ex = EXAM_BANK.exams[window._exam.key];
+  const p = state.exams[window._exam.key] || { done: 0, ok: 0 };
+  const answered = Object.keys(window._exam.decided).length;
+  const withAns = ex.questions.filter(q => q.answer).length;
+  let rate = "";
+  if (withAns > 0) {
+    const totalWithAns = ex.questions.filter(q => q.answer).length;
+    const okWithAns = ex.questions.filter(q => q.answer && window._exam.answers[q.n] === q.answer).length;
+    rate = '（有标准答案的 ' + totalWithAns + ' 题中答对 ' + okWithAns + ' 题）';
+  }
+  examArea().innerHTML = '<div style="text-align:center;padding:20px 0">' +
+    '<div style="font-size:20px;font-weight:700;margin-bottom:8px">🎉 本套完成</div>' +
+    '<div class="muted" style="line-height:1.8">' + examMetaLabel(ex.meta) + '：已答 ' + answered + ' / ' + ex.questions.length + ' 题 ' + rate + '</div>' +
+    '<div class="row" style="margin-top:16px;gap:8px"><button class="btn ghost small" id="examAgain" style="flex:1">再来一遍</button><button class="btn ghost small" id="examBack2" style="flex:1">返回套次列表</button></div>' +
+    '</div>';
+  document.getElementById("examAgain").onclick = () => { window._exam.idx = 0; window._exam.answers = {}; window._exam.decided = {}; renderExamQuiz(); };
+  document.getElementById("examBack2").onclick = () => renderExamList();
 }
 
 // 首次运行（无任何数据）：弹「选择起始词库」（从零/四级/六级），选完才进入正常使用
