@@ -104,7 +104,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.7.4"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.7.6"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -323,7 +323,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.7.4</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.7.6</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -417,7 +417,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.7.4";
+const APP_VERSION = "1.7.6";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1584,6 +1584,9 @@ function renderListenList() {
 function renderListenRead() {
   const d = LISTEN_BANK, lv = window._listen.level, rec = d[lv][window._listen.key];
   let html = '<div class="row" style="margin-bottom:8px;gap:8px"><button class="btn ghost small" id="listenQuit" style="flex:none">← 列表</button><span class="muted" style="font-size:12px">' + listenMetaLabel(rec.meta) + ' · 听力原文</span></div>';
+  if (rec.note) {
+    html += '<div class="muted" style="font-size:12px;margin:6px 0;color:var(--no)">' + esc(rec.note) + '</div>';
+  }
   if (rec.audio) {
     // 内置音频：直接播 APK assets 里的 m4a（WebView 原生支持 AAC）
     html += '<div style="margin:8px 0"><audio id="listenAudio" controls preload="none" src="' + esc(rec.audio) + '" style="width:100%; height:44px; border-radius:10px; outline:none"></audio></div>';
