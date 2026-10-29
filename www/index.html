@@ -23,6 +23,12 @@
     max-width: 640px; margin: 0 auto; padding: 14px 14px 90px;
   }
   header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  /* 分区模式：备考专区只显示 studyCard，背单词模式隐藏 studyCard */
+  body.mode-study .card { display: none !important; }
+  body.mode-study #studyCard { display: block !important; }
+  body.mode-study .progressRow { display: none !important; }
+  body.mode-study .tabs { display: none !important; }
+  #studyCard { display: none; }
   h1 { font-size: 20px; }
   #saveNote { font-size: 12px; color: var(--dim); }
   .progressRow { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
@@ -79,6 +85,15 @@
   #exportModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
   #exportModal .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 360px; }
   .hint { color: var(--dim); font-size: 12px; }
+  /* 真题试卷视图 */
+  .examH { font-size: 15px; font-weight: 700; margin: 18px 0 6px; color: var(--accent); }
+  .examText { font-size: 14px; line-height: 1.8; margin: 6px 0; word-break: break-word; }
+  .examQ { font-size: 15px; font-weight: 600; margin: 16px 0 2px; }
+  .examOpt { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--txt); padding: 10px 12px; margin: 5px 0; font-size: 14px; cursor: pointer; }
+  .examOpt b { color: var(--accent); margin-right: 4px; }
+  .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
+  .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
   #emptyTip { text-align: center; color: var(--dim); padding: 30px 0; }
   .feedback { text-align: center; font-size: 15px; margin-top: 12px; min-height: 22px; font-weight: 600; }
   .feedback.ok { color: var(--ok); }
@@ -89,7 +104,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.7.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.7.3"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -186,6 +201,11 @@
   <span id="saveNote"></span>
 </header>
 
+<div class="row" style="gap:8px;margin-bottom:10px">
+  <button class="btn small ok" id="modeMain" style="flex:1">📖 背单词</button>
+  <button class="btn small ghost" id="modeStudy" style="flex:1">📚 备考专区</button>
+</div>
+
 <div class="progressRow">
   <div class="bar"><div class="fill" id="progressBar"></div></div>
   <span class="txt" id="progressText">0/30</span>
@@ -208,10 +228,6 @@
 
 <!-- 抽词 -->
 <div class="card">
-  <div class="row" style="margin-bottom:10px;gap:8px">
-    <button class="btn ghost small" id="examBtn" style="flex:1">📝 六级真题（35 套）</button>
-    <button class="btn ghost small" id="listenBtn" style="flex:1">🎧 听力原文</button>
-  </div>
   <div class="poolRow">
     <span>抽词范围：</span>
     <select id="quizPool">
@@ -307,7 +323,7 @@
   </div>
   <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
     <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
-    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.7.1</span></div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.7.3</span></div>
     <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
     <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
   </div>
@@ -390,10 +406,18 @@
   </div>
 </div>
 
+<div class="card" id="studyCard" style="display:none">
+  <div class="row" style="gap:8px;margin-bottom:10px">
+    <button class="btn small ok" id="studyExamTab" style="flex:1">📝 六级真题</button>
+    <button class="btn small ghost" id="studyListenTab" style="flex:1">🎧 听力原文</button>
+  </div>
+  <div id="studyArea"><div id="emptyTip">选择上方模块</div></div>
+</div>
+
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.7.1";
+const APP_VERSION = "1.7.3";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1109,8 +1133,10 @@ function answer(w, b) {
 
 // 收录
 document.getElementById("addBtn").onclick = addWords;
-document.getElementById("examBtn").onclick = openExams;
-document.getElementById("listenBtn").onclick = openListening;
+document.getElementById("modeMain").onclick = () => switchMode("main");
+document.getElementById("modeStudy").onclick = () => switchMode("study");
+document.getElementById("studyExamTab").onclick = openExams;
+document.getElementById("studyListenTab").onclick = openListening;
 document.getElementById("addInput").addEventListener("keydown", e => { if (e.key === "Enter") addWords(); });
 function addWords() {
   const inp = document.getElementById("addInput");
@@ -1419,20 +1445,35 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 }
 
-/* ===== 六级真题练习 ===== */
-window._exam = { view: "list", key: null, idx: 0, answers: {}, decided: {} };
+/* ===== 备考专区（独立分区：背单词 / 备考专区） ===== */
+function switchMode(mode) {
+  const isStudy = mode === "study";
+  document.body.classList.toggle("mode-study", isStudy);
+  document.getElementById("modeMain").className = "btn small " + (isStudy ? "ghost" : "ok");
+  document.getElementById("modeStudy").className = "btn small " + (isStudy ? "ok" : "ghost");
+  document.getElementById("studyCard").style.display = isStudy ? "block" : "none";
+}
+function studyArea() { return document.getElementById("studyArea"); }
+
+/* ===== 六级真题（整卷试卷式展示） ===== */
+window._exam = { key: null, answers: {} };
 function examMetaLabel(meta) {
   return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" +
     (meta.set > 1 ? " 第" + meta.set + "套" : "");
 }
-function examArea() { return document.getElementById("quizArea"); }
+function examRecord(key, correct) {
+  if (!state.exams) state.exams = {};
+  const p = state.exams[key] || (state.exams[key] = { done: 0, ok: 0 });
+  p.done += 1;
+  if (correct) p.ok += 1;
+  return p;
+}
 async function openExams() {
+  switchMode("study");
+  document.getElementById("studyExamTab").className = "btn small ok";
+  document.getElementById("studyListenTab").className = "btn small ghost";
   const d = await loadExamBank();
-  if (!d || !d.exams) {
-    examArea().innerHTML = '<div id="emptyTip">真题库加载失败（当前 APK 不含真题数据，请升级）</div>';
-    return;
-  }
-  window._exam.view = "list";
+  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">真题库加载失败（请升级 APK）</div>'; return; }
   renderExamList();
 }
 function renderExamList() {
@@ -1440,96 +1481,64 @@ function renderExamList() {
   const keys = Object.keys(d.exams).sort().reverse();
   const groups = {};
   keys.forEach(k => { const y = d.exams[k].meta.year; (groups[y] = groups[y] || []).push(k); });
-  let html = '<div class="row" style="margin-bottom:10px"><button class="btn ghost small" id="examBack" style="flex:1">← 返回背单词</button></div>';
-  html += '<div class="muted" style="margin:4px 0 10px;line-height:1.6">六级真题 <b>' + d.count + '</b> 套 / <b>' + d.totalQuestions + '</b> 题（听力+阅读单选）。点套次开始做题；<b>2007年6月套</b>带标准答案可自动判分，其余套次暂无标准答案（做答后点「完成本题」自评）。四级真题暂只有扫描 PDF（电脑上看）。</div>';
+  let html = '<div class="muted" style="margin:2px 0 10px;line-height:1.6">六级真题 <b>' + d.count + '</b> 套 · <b>' + d.totalQuestions + '</b> 题。点套次打开<b>完整试卷</b>（写作题/听力原文与题目/阅读文章/翻译都在，像纸质卷一样往下看）。标注「仅阅读」的套次原卷无独立听力（与其他套共用）。</div>';
   for (const y of Object.keys(groups).sort().reverse()) {
     html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + y + ' 年</b></div>';
     for (const k of groups[y]) {
       const ex = d.exams[k], p = prog[k];
-      const tag = p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '';
-      html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + ex.questions.length + ' 题）' + tag + '</button>';
+      const qs = ex.blocks.filter(b => b.t === "q");
+      const hasListen = qs.some(q => q.n <= 25);
+      const tag = (hasListen ? "" : ' <span style="color:var(--no);font-size:11px">仅阅读</span>') +
+        (p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '');
+      html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + qs.length + ' 题）' + tag + '</button>';
     }
   }
-  examArea().innerHTML = html;
-  document.getElementById("examBack").onclick = () => renderQuiz();
-  examArea().querySelectorAll(".examItem").forEach(b => b.onclick = () => {
+  studyArea().innerHTML = html;
+  studyArea().querySelectorAll(".examItem").forEach(b => b.onclick = () => {
     window._exam.key = b.dataset.key;
-    window._exam.idx = 0;
     window._exam.answers = {};
-    window._exam.decided = {};
-    renderExamQuiz();
+    renderExamPaper();
   });
 }
-function examRecord(key, correct) {
-  if (!state.exams) state.exams = {};
-  const p = state.exams[key] || (state.exams[key] = { done: 0, ok: 0 });
-  return p;
-}
-function renderExamQuiz() {
+function renderExamPaper() {
   const ex = EXAM_BANK.exams[window._exam.key];
-  const q = ex.questions[window._exam.idx];
-  const total = ex.questions.length;
-  const sel = window._exam.answers[q.n];
-  const decided = window._exam.decided[q.n];
-  let html = '<div class="row" style="margin-bottom:8px;align-items:center;gap:8px">' +
-    '<button class="btn ghost small" id="examQuit" style="flex:none">← 退出</button>' +
-    '<span class="muted" style="font-size:12px">' + examMetaLabel(ex.meta) + ' · 第 ' + (window._exam.idx + 1) + ' / ' + total + ' 题</span>' +
-    '<button class="btn ghost small" id="examPrev" style="flex:none;margin-left:auto" ' + (window._exam.idx === 0 ? 'disabled' : '') + '>上一题</button>' +
-    '</div>';
-  if (q.part) html += '<div class="muted" style="font-size:11px;margin-bottom:2px">' + esc(q.part) + ' ' + esc(q.section || '') + '</div>';
-  html += '<div style="font-size:16px;line-height:1.65;margin:8px 0">' +
-    (q.stem ? esc(q.stem) : '<span class="muted">（听力题无题干：直接看选项作答，听力原文在听力资源库/电脑上看）</span>') + '</div>';
-  html += '<div style="display:flex;flex-direction:column;gap:8px">';
-  for (const k of "ABCD") {
-    let cls = "btn ghost";
-    if (decided) {
-      cls = "btn ghost";
-      if (q.answer) {
-        if (k === q.answer) cls = "btn ok";
-        else if (k === sel) cls = "btn no";
-      } else if (k === sel) cls = "btn ok";
-    } else if (sel === k) cls = "btn ok";
-    html += '<button class="' + cls + '" style="text-align:left;padding:12px 14px" data-opt="' + k + '">' + k + ') ' + esc(q.opts[k] || '') + '</button>';
-  }
-  html += '</div>';
-  if (decided) {
-    if (q.answer) {
-      html += '<div class="feedback ok" style="margin-top:10px;font-size:14px">' + (sel === q.answer ? '✅ 正确' : '❌ 错误（正确答案：' + q.answer + '）') + '</div>';
-    } else {
-      html += '<div class="feedback" style="margin-top:10px;font-size:13px;color:var(--dim)">本题无标准答案，已记录你的选择（' + (sel || '未选') + '），可对照电脑上解析 PDF 核对。</div>';
+  const qs = ex.blocks.filter(b => b.t === "q");
+  let html = '<div class="row" style="margin-bottom:8px"><button class="btn ghost small" id="examBack" style="flex:1">← 套次列表</button></div>';
+  html += '<div class="muted" style="margin-bottom:2px">' + examMetaLabel(ex.meta) + ' · 共 ' + qs.length + ' 题</div>';
+  html += '<div class="muted" style="font-size:11px;margin-bottom:8px">点选项作答（蓝色=已选；有标准答案的套次即时判对错）</div>';
+  ex.blocks.forEach(b => {
+    if (b.t === "h") html += '<div class="examH">' + esc(b.v) + '</div>';
+    else if (b.t === "text") html += '<div class="examText">' + esc(b.v) + '</div>';
+    else {
+      const sel = window._exam.answers[b.n];
+      const ans = b.answer;
+      html += '<div class="examQ">' + b.n + '. ' + (b.stem ? esc(b.stem) : '') + '</div>';
+      for (const k of "ABCD") {
+        if (!b.opts || !b.opts[k]) continue;
+        let cls = "examOpt";
+        if (ans) { if (k === ans) cls += " correct"; else if (sel === k) cls += " wrong"; }
+        else if (sel === k) cls += " sel";
+        html += '<button class="' + cls + '" data-n="' + b.n + '" data-k="' + k + '"><b>' + k + '</b> ' + esc(b.opts[k]) + '</button>';
+      }
     }
-  }
-  html += '<div class="row" style="margin-top:12px;gap:8px">';
-  if (!decided) {
-    html += '<button class="btn ok small" id="examSubmit" style="flex:1" ' + (sel ? '' : 'disabled') + '>完成本题</button>';
-  }
-  html += '<button class="btn ghost small" id="examNext" style="flex:1" ' + (decided ? '' : 'disabled') + '>' + (window._exam.idx === total - 1 ? '完成本套' : '下一题') + '</button>';
-  html += '</div>';
-  examArea().innerHTML = html;
-  document.getElementById("examQuit").onclick = () => { renderExamList(); };
-  const prev = document.getElementById("examPrev");
-  if (prev) prev.onclick = () => { if (window._exam.idx > 0) { window._exam.idx--; renderExamQuiz(); } };
-  examArea().querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
-    if (window._exam.decided[q.n]) return;
-    window._exam.answers[q.n] = b.dataset.opt;
-    renderExamQuiz();
   });
-  const sub = document.getElementById("examSubmit");
-  if (sub) sub.onclick = () => {
-    const p = examRecord(window._exam.key);
-    const correct = q.answer ? (sel === q.answer) : null;
-    window._exam.decided[q.n] = true;
-    p.done += 1;
-    if (correct) p.ok += 1;
-    save();
-    renderExamQuiz();
-  };
-  const nx = document.getElementById("examNext");
-  if (nx) nx.onclick = () => {
-    if (window._exam.idx < total - 1) { window._exam.idx++; renderExamQuiz(); }
-    else { finishExam(); }
-  };
+  studyArea().innerHTML = html;
+  document.getElementById("examBack").onclick = () => renderExamList();
+  studyArea().querySelectorAll(".examOpt").forEach(btn => btn.onclick = () => {
+    const n = Number(btn.dataset.n), k = btn.dataset.k;
+    window._exam.answers[n] = k;
+    const q = qs.find(x => x.n === n);
+    const ans = q && q.answer;
+    studyArea().querySelectorAll('.examOpt[data-n="' + n + '"]').forEach(x => {
+      x.classList.remove("sel", "correct", "wrong");
+      const xk = x.dataset.k;
+      if (ans) { if (xk === ans) x.classList.add("correct"); else if (xk === k) x.classList.add("wrong"); }
+      else if (xk === k) x.classList.add("sel");
+    });
+    if (ans) { examRecord(window._exam.key, k === ans); save(); }
+  });
 }
+
 /* ===== 听力原文阅读（纯文本，无音频） ===== */
 var LISTEN_BANK = null;
 function loadListenBank() {
@@ -1544,14 +1553,16 @@ function listenMetaLabel(meta) {
   return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" + (meta.set > 1 ? " 第" + meta.set + "套" : "");
 }
 async function openListening() {
+  switchMode("study");
+  document.getElementById("studyExamTab").className = "btn small ghost";
+  document.getElementById("studyListenTab").className = "btn small ok";
   const d = await loadListenBank();
-  if (!d) { examArea().innerHTML = '<div id="emptyTip">听力原文库加载失败（当前 APK 不含听力数据）</div>'; return; }
+  if (!d) { studyArea().innerHTML = '<div id="emptyTip">听力原文库加载失败（请升级 APK）</div>'; return; }
   renderListenList();
 }
 function renderListenList() {
   const d = LISTEN_BANK, lv = window._listen.level, list = d[lv];
-  let html = '<div class="row" style="margin-bottom:10px;gap:8px"><button class="btn ghost small" id="listenBack" style="flex:1">← 返回背单词</button></div>';
-  html += '<div class="row" style="gap:8px;margin-bottom:10px">';
+  let html = '<div class="row" style="gap:8px;margin-bottom:10px">';
   html += '<button class="btn small ' + (lv === "cet4" ? "ok" : "ghost") + '" id="lvCet4" style="flex:1">四级听力</button>';
   html += '<button class="btn small ' + (lv === "cet6" ? "ok" : "ghost") + '" id="lvCet6" style="flex:1">六级听力</button>';
   html += '</div>';
@@ -1561,11 +1572,10 @@ function renderListenList() {
     const tag = rec.trans ? ' <span style="color:var(--accent);font-size:12px">译</span>' : '';
     html += '<button class="btn ghost small listenItem" data-key="' + esc(k) + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + listenMetaLabel(rec.meta) + '（' + (rec.text ? '原文' : '无原文') + '）' + tag + '</button>';
   }
-  examArea().innerHTML = html;
-  document.getElementById("listenBack").onclick = () => renderQuiz();
+  studyArea().innerHTML = html;
   document.getElementById("lvCet4").onclick = () => { window._listen.level = "cet4"; renderListenList(); };
   document.getElementById("lvCet6").onclick = () => { window._listen.level = "cet6"; renderListenList(); };
-  examArea().querySelectorAll(".listenItem").forEach(b => b.onclick = () => {
+  studyArea().querySelectorAll(".listenItem").forEach(b => b.onclick = () => {
     window._listen.key = b.dataset.key;
     window._listen.showTrans = false;
     renderListenRead();
@@ -1573,7 +1583,7 @@ function renderListenList() {
 }
 function renderListenRead() {
   const d = LISTEN_BANK, lv = window._listen.level, rec = d[lv][window._listen.key];
-  let html = '<div class="row" style="margin-bottom:8px;gap:8px"><button class="btn ghost small" id="listenQuit" style="flex:none">← 退出</button><span class="muted" style="font-size:12px">' + listenMetaLabel(rec.meta) + ' · 听力原文</span></div>';
+  let html = '<div class="row" style="margin-bottom:8px;gap:8px"><button class="btn ghost small" id="listenQuit" style="flex:none">← 列表</button><span class="muted" style="font-size:12px">' + listenMetaLabel(rec.meta) + ' · 听力原文</span></div>';
   if (rec.trans) {
     html += '<div class="row" style="gap:8px;margin-bottom:10px">';
     html += '<button class="btn small ' + (window._listen.showTrans ? "ghost" : "ok") + '" id="showOrig" style="flex:1">原文</button>';
@@ -1585,31 +1595,12 @@ function renderListenRead() {
     // 译文是 md 源：剥掉标题/引用/加粗标记，纯文本阅读更干净
     text = text.replace(/^#{1,6}\s*/gm, "").replace(/^>\s*/gm, "").replace(/\*\*/g, "").trim();
   }
-  html += '<div style="white-space:pre-wrap;font-size:14px;line-height:1.9;margin-top:8px">' + esc(text) + '</div>';
-  examArea().innerHTML = html;
+  html += '<div class="examText" style="white-space:pre-wrap;font-size:14px;line-height:1.9;margin-top:8px">' + esc(text) + '</div>';
+  studyArea().innerHTML = html;
   document.getElementById("listenQuit").onclick = () => renderListenList();
   const so = document.getElementById("showOrig"), st = document.getElementById("showTrans");
   if (so) so.onclick = () => { window._listen.showTrans = false; renderListenRead(); };
   if (st) st.onclick = () => { window._listen.showTrans = true; renderListenRead(); };
-}
-function finishExam() {
-  const ex = EXAM_BANK.exams[window._exam.key];
-  const p = state.exams[window._exam.key] || { done: 0, ok: 0 };
-  const answered = Object.keys(window._exam.decided).length;
-  const withAns = ex.questions.filter(q => q.answer).length;
-  let rate = "";
-  if (withAns > 0) {
-    const totalWithAns = ex.questions.filter(q => q.answer).length;
-    const okWithAns = ex.questions.filter(q => q.answer && window._exam.answers[q.n] === q.answer).length;
-    rate = '（有标准答案的 ' + totalWithAns + ' 题中答对 ' + okWithAns + ' 题）';
-  }
-  examArea().innerHTML = '<div style="text-align:center;padding:20px 0">' +
-    '<div style="font-size:20px;font-weight:700;margin-bottom:8px">🎉 本套完成</div>' +
-    '<div class="muted" style="line-height:1.8">' + examMetaLabel(ex.meta) + '：已答 ' + answered + ' / ' + ex.questions.length + ' 题 ' + rate + '</div>' +
-    '<div class="row" style="margin-top:16px;gap:8px"><button class="btn ghost small" id="examAgain" style="flex:1">再来一遍</button><button class="btn ghost small" id="examBack2" style="flex:1">返回套次列表</button></div>' +
-    '</div>';
-  document.getElementById("examAgain").onclick = () => { window._exam.idx = 0; window._exam.answers = {}; window._exam.decided = {}; renderExamQuiz(); };
-  document.getElementById("examBack2").onclick = () => renderExamList();
 }
 
 // 首次运行（无任何数据）：弹「选择起始词库」（从零/四级/六级），选完才进入正常使用
