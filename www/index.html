@@ -624,7 +624,7 @@ function loadBank(name) {
     .then(function (d) { return (d && d.words) || null; })
     .catch(function () { return null; });
 }
-// 六级真题库（36 套结构化题目，懒加载）
+// 六级真题库（结构化试卷，懒加载；套数/题数由数据自身提供，勿写死）
 var EXAM_BANK = null;
 function loadExamBank() {
   if (EXAM_BANK) return Promise.resolve(EXAM_BANK);
@@ -1535,7 +1535,8 @@ function renderExamPaper() {
       for (const k of "ABCD") {
         if (!b.opts || !b.opts[k]) continue;
         let cls = "examOpt";
-        if (ans) { if (k === ans) cls += " correct"; else if (sel === k) cls += " wrong"; }
+        // 有标准答案时只有作答后才揭示对错（未作答一律不标 correct，避免直接泄露答案）
+        if (ans && sel) { if (k === ans) cls += " correct"; else if (sel === k) cls += " wrong"; }
         else if (sel === k) cls += " sel";
         html += '<button class="' + cls + '" data-n="' + b.n + '" data-k="' + k + '"><b>' + k + '</b> ' + esc(b.opts[k]) + '</button>';
       }
