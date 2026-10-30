@@ -144,6 +144,10 @@
   .matchStmt { font-size: calc(var(--rd, 16px) - 1px); line-height: 1.6; margin: 0 0 10px;
                padding-left: 2.4em; text-indent: -2.4em; word-break: break-word; }
   .matchStmt b { color: var(--accent); margin-right: 2px; }
+  /* 长篇匹配正文段落标记（A）…）：小色标，扫段落时好定位 */
+  .paraTag { display: inline-block; min-width: 20px; padding: 1px 5px; margin-right: 7px;
+             border-radius: 5px; background: rgba(90,162,255,.18); color: var(--accent);
+             font-size: 12px; text-align: center; }
   /* 缺项提示（原卷扫描丢行） */
   /* 整卷页「作答说明」：默认收起，首屏直接就是题目 */
   .examNote { font-size: 12px; line-height: 1.6; margin: 0 0 8px; color: var(--dim); }
@@ -261,7 +265,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.8"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.9"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -585,7 +589,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.8";
+const APP_VERSION = "1.9.9";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1313,10 +1317,32 @@ function answer(w, b) {
   }
 }
 
+// 加载失败页的「重试」：直接重载页面（数据会重新 fetch）
+document.addEventListener("click", function (e) {
+  if (e.target && e.target.id === "retryLoad") location.reload();
+});
 // 收录
 document.getElementById("addBtn").onclick = addWords;
-document.getElementById("modeMain").onclick = () => switchMode("main");
-document.getElementById("modeStudy").onclick = () => switchMode("study");
+/* ===== 返回栈（v1.9.9）：系统返回键回到上一级页面，不再直接退出 App ===== */
+var NAV_STACK = [];
+function pushNav(back) {
+  try { NAV_STACK.push(back); history.pushState({ nav: NAV_STACK.length }, ""); } catch (e) { }
+}
+function navBack() {
+  if (NAV_STACK.length) { try { history.back(); return; } catch (e) { } }
+  var f = NAV_STACK.pop();
+  if (f) { try { f(); } catch (e) { } }
+}
+window.addEventListener("popstate", function () {
+  var f = NAV_STACK.pop();
+  if (f) { try { f(); } catch (e) { } }
+});
+document.getElementById("modeMain").onclick = () => { NAV_STACK.length = 0; switchMode("main"); };
+document.getElementById("modeStudy").onclick = () => {
+  if (document.body.classList.contains("mode-study")) return;
+  pushNav(() => switchMode("main"));
+  switchMode("study");
+};
 document.getElementById("studyExamTab").onclick = openExams;
 document.getElementById("studyTopicTab").onclick = openTopics;
 document.getElementById("studyListenTab").onclick = openListening;
@@ -1667,7 +1693,7 @@ async function openExams() {
   document.getElementById("studyTopicTab").className = "btn small ghost";
   document.getElementById("studyListenTab").className = "btn small ghost";
   const d = await loadExamBank();
-  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">真题库加载失败（请升级 APK）</div>'; return; }
+  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">真题库没加载出来<br><span style="font-size:12px;color:var(--dim)">多为安装包数据损坏或缓存异常，点下面重试一次</span><br><button class="btn small ok" id="retryLoad" style="margin-top:12px;min-width:150px">重试</button></div>'; return; }
   renderExamList();
 }
 function renderExamList() {
@@ -1706,6 +1732,7 @@ function renderExamList() {
   studyArea().querySelectorAll(".examItem").forEach(b => b.onclick = () => {
     window._exam.key = b.dataset.key;
     window._exam.answers = {};
+    pushNav(() => renderExamList());
     renderExamPaper();
   });
   studyArea().querySelectorAll(".chip[data-year]").forEach(c => c.onclick = () => {
@@ -1803,7 +1830,7 @@ function renderExamPaper() {
     }
   });
   studyArea().innerHTML = html;
-  document.getElementById("examBack").onclick = () => renderExamList();
+  document.getElementById("examBack").onclick = () => { if (NAV_STACK.length) navBack(); else renderExamList(); };
   bindRsButtons();
   studyArea().querySelectorAll(".chip[data-jump]").forEach(c => c.onclick = () => {
     const el = document.getElementById(c.dataset.jump);
@@ -1838,6 +1865,7 @@ function renderExamPaper() {
       else if (xk === k) x.classList.add("sel");
     });
     if (ans) { examRecord(window._exam.key, k === ans); save(); }
+    feedTap(ans ? ans === k : null);
     const pr = document.getElementById("examProg");
     if (pr) pr.textContent = examMetaLabel(ex.meta) + ' · 已答 ' + answeredN() + '/' + qs.length;
   });
@@ -1977,7 +2005,7 @@ async function openListening() {
   document.getElementById("studyTopicTab").className = "btn small ghost";
   document.getElementById("studyListenTab").className = "btn small ok";
   const d = await loadListenBank();
-  if (!d) { studyArea().innerHTML = '<div id="emptyTip">听力原文库加载失败（请升级 APK）</div>'; return; }
+  if (!d) { studyArea().innerHTML = '<div id="emptyTip">听力原文库没加载出来<br><span style="font-size:12px;color:var(--dim)">点下面重试一次，仍不行请重装最新 APK</span><br><button class="btn small ok" id="retryLoad" style="margin-top:12px;min-width:150px">重试</button></div>'; return; }
   await loadExamBank();   // 原文里要标「题 1–4」这类题组边界，需要整卷题型块里的 Questions 行
   renderListenList();
 }
@@ -2000,6 +2028,7 @@ function renderListenList() {
   studyArea().querySelectorAll(".listenItem").forEach(b => b.onclick = () => {
     window._listen.key = b.dataset.key;
     window._listen.showTrans = false;
+    pushNav(() => renderListenList());
     renderListenRead();
   });
 }
@@ -2046,7 +2075,7 @@ function renderListenRead() {
     html += '<div style="margin-top:8px">' + listenTurnsHtml(rec.text || "（无原文）", true, listenGroupTags(window._listen.key)) + '</div>';
   }
   studyArea().innerHTML = html;
-  document.getElementById("listenQuit").onclick = () => renderListenList();
+  document.getElementById("listenQuit").onclick = () => { if (NAV_STACK.length) navBack(); else renderListenList(); };
   bindRsButtons();
   bindSpd("listenAudio");
   studyArea().querySelectorAll(".chip[data-ljump]").forEach(c => c.onclick = () => {
@@ -2363,7 +2392,7 @@ async function openTopics() {
   document.getElementById("studyListenTab").className = "btn small ghost";
   if (window._topic.cat === "listening") await loadListenBank();  // 听力板块要标「有内置音频」
   const d = await loadExamBank();
-  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">题库加载失败（请升级 APK）</div>'; return; }
+  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">题库没加载出来<br><span style="font-size:12px;color:var(--dim)">点下面重试一次，仍不行请重装最新 APK</span><br><button class="btn small ok" id="retryLoad" style="margin-top:12px;min-width:150px">重试</button></div>'; return; }
   renderTopicList();
 }
 // 该套听力有没有内置音频（LISTEN_BANK 覆盖 2019 年以后）
@@ -2501,6 +2530,7 @@ function renderTopicList() {
   });
   studyArea().querySelectorAll(".secItem").forEach(b => b.onclick = () => {
     const a = b.dataset.sec.split("#");
+    pushNav(() => renderTopicList());
     openTopicUnit(a[0], Number(a[1]), Number(a[2]));
   });
   const rsm = document.getElementById("topicResume");
@@ -2670,6 +2700,9 @@ function examBlockHtml(v, cont) {
   if (bank) return bank;
   var nm = t.match(/^(\d{1,3})\.\s(.*)$/);
   if (nm) return '<div class="matchStmt"><b>' + nm[1] + '.</b> ' + esc(tidyText(nm[2])) + '</div>';
+  // 长篇匹配正文的段落标记（A）…O）」：字母做成小色标，扫段落时好认
+  var pm = t.match(/^([A-O])\s*[）)]\s*(.*)$/);
+  if (pm) return '<div class="examText paraHead"><b class="paraTag">' + pm[1] + '</b>' + esc(tidyText(pm[2])) + '</div>';
   var cls = secLineClass(t);
   if (cont && cls === "examText" && /^[a-z(]/.test(t)) cls = "secDir";
   return '<div class="' + cls + '">' + blankify(esc(t)) + '</div>';
@@ -2769,7 +2802,16 @@ function secBindOpts(scope, qs, ansObj, onProgress) {
       else if (xk === k) x.classList.add("sel");
     });
     if (onProgress) onProgress(n, k, ans);
+    feedTap(ans ? ans === k : null);
   });
+}
+/* 选项点击的轻反馈：有标准答案时对/错用不同震动节奏（无震动权限则静默） */
+function feedTap(ok) {
+  try {
+    if (!navigator.vibrate) return;
+    if (ok === null || ok === undefined) navigator.vibrate(12);
+    else navigator.vibrate(ok ? 15 : [18, 40, 18]);
+  } catch (e) { }
 }
 async function openTopicUnit(key, pi, si) {
   const part = secPartsOf(key)[pi];
@@ -2985,9 +3027,11 @@ function renderTopicPart() {
     '<button class="btn small ok" id="secWhole">看整卷</button>' +
     '<button class="btn small ghost" id="secNext"' + (idx < 0 || idx >= list.length - 1 ? ' disabled' : '') + '>下一份 →</button></div>';
   studyArea().innerHTML = html;
-  document.getElementById("topicBack").onclick = () => renderTopicList();
+  document.getElementById("topicBack").onclick = () => { if (NAV_STACK.length) navBack(); else renderTopicList(); };
   document.getElementById("secWhole").onclick = () => {
-    window._exam.key = key; window._exam.answers = {}; renderExamPaper();
+    window._exam.key = key; window._exam.answers = {};
+    pushNav(() => renderTopicPart());
+    renderExamPaper();
   };
   const prev = document.getElementById("secPrev"), next = document.getElementById("secNext");
   if (prev) prev.onclick = () => { if (idx > 0) openTopicUnit(list[idx - 1].key, list[idx - 1].pi, list[idx - 1].si); };
