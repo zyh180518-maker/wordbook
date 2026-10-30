@@ -204,7 +204,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.8.3"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.0"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -519,7 +519,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.8.3";
+const APP_VERSION = "1.9.0";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2009,13 +2009,13 @@ function secList(cat) {
 /* ---------- 题型二级分组（v1.9）：板块内部再拆成「题型块」 ---------- */
 var SEC_TYPE_LABEL = {
   writing: "作文", translation: "翻译",
-  banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读理解",
-  listen_a: "听力 A 对话", listen_b: "听力 B 短文", listen_c: "听力 C 讲座", listening: "听力",
+  banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读理解（合卷）",
+  listen_a: "听力 A 对话", listen_b: "听力 B 短文", listen_c: "听力 C 讲座", listening: "听力（未细分）",
   cloze: "完形填空", vocab: "词汇与结构", errorcorr: "改错", shortanswer: "简答", dictation: "听写", other: "其他"
 };
 var SEC_TYPE_SHORT = {
   banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读",
-  listen_a: "A 对话", listen_b: "B 短文", listen_c: "C 讲座", listening: "听力",
+  listen_a: "A 对话", listen_b: "B 短文", listen_c: "C 讲座", listening: "听力未分",
   cloze: "完形", vocab: "词汇", errorcorr: "改错", shortanswer: "简答", dictation: "听写", other: "其他"
 };
 var SEC_TYPE_ORDER = {
@@ -2364,7 +2364,7 @@ function secUnitBody(key, start, end) {
 }
 function secUnitSub(x) {
   const cat = secGroupOf(x.part.cat);
-  if (cat === "writing") return "作文题干" + (x.meta.writeRef && x.meta.writeRef.length ? " · 有范文" : "");
+  if (cat === "writing") return "题干" + (x.meta.writeRef && x.meta.writeRef.length ? " · 有范文" : "");
   if (cat === "translation") return "汉译英段落" + (x.meta.transRef ? " · 有参考译文" : "");
   let t = (x.unit.title || "").replace(/\s*Section\s*[A-D]\s*/i, "").trim();
   // 标题被并进半句正文（OCR 折行 / 小写开头 / 过长）→ 不当子标题用
