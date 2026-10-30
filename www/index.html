@@ -235,7 +235,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.5"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -559,7 +559,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.2";
+const APP_VERSION = "1.9.5";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1713,7 +1713,7 @@ function renderExamPaper() {
     });
     html += '</div>';
   }
-  let afterH = true;
+  let afterH = true, lastDir = false;
   // 题号速跳（55 题的长卷按 10 题一组，想回第 30 题不用从头滚）
   if (qs.length > 20) {
     const qBi = {};
@@ -1737,6 +1737,7 @@ function renderExamPaper() {
     if (b.t === "bank") {
       html += bankHtml(b.items);
       afterH = false;
+      lastDir = false;
       return;
     }
     if (b.t === "h") {
@@ -1745,9 +1746,12 @@ function renderExamPaper() {
         (!sec && partStarts[bi] !== undefined ? '<button class="chip secOnly" data-part="' + partStarts[bi] + '">单独看 ↗</button>' : '') +
         '</div>';
       afterH = true;
+      lastDir = false;
     } else if (b.t === "text") {
-      // 正文按内容分类渲染：Directions 压成说明体、中文原文放大、词表成网格（v1.9.2）
-      html += examBlockHtml(b.v);
+      // 正文按内容分类渲染：Directions（含续行）压成说明体、中文原文放大、词表成网格（v1.9.2）
+      var t = secNorm(b.v);
+      html += examBlockHtml(b.v, lastDir);
+      lastDir = !parseWordBank(t) && (secLineClass(t) === "secDir" || (lastDir && /^[a-z(]/.test(t)));
       afterH = false;
     } else {
       const sel = window._exam.answers[b.n];
@@ -1756,6 +1760,7 @@ function renderExamPaper() {
         ? '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + esc(b.stem) + '</div>'
         : '<div class="examQ numOnly" id="qq' + bi + '">' + b.n + '.</div>');
       afterH = false;
+      lastDir = false;
       for (const k of "ABCD") {
         if (!b.opts || !b.opts[k]) continue;
         let cls = "examOpt";
@@ -1877,7 +1882,7 @@ function listenTurns(text) {
     // 少量行把「题号 + 问题」粘在对话末尾（如 "… tomorrow 11. Q: What should the man do?"）→ 拆出来
     l.split(/(?=\s\d{1,3}\.\s*[WMQ]\s*[:：])/).map(s => s.trim()).filter(Boolean).forEach(pushLine);
   });
-  return turns;
+  return turns.map(function (x) { x.v = tidyText(x.v); return x; });
 }
 function listenTurnsHtml(text, withId) {
   return listenTurns(text).map((x, i) => {
@@ -2520,7 +2525,10 @@ function secFlow(lines, keepRe) {
   lines.forEach(function (l) {
     if (keepRe && keepRe.test(l)) { flush(); out.push(l); return; }
     if (!buf) { buf = l; return; }
-    var sp = /[A-Za-z0-9]$/.test(buf) && /^[A-Za-z0-9(]/.test(l);
+    // 补空格：扫描件按行断开，句号/逗号结尾的行直接接下一行会粘成 "once.After"；
+    // 中文/全角标点结尾的行之间不补空格
+    var last = buf.slice(-1);
+    var sp = !/\s$/.test(last) && !/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]$/.test(last) && /^[A-Za-z0-9"'“”([]/.test(l);
     buf += (sp ? " " : "") + l;
     if (/[。！？.!?][”’)）]?$/.test(buf) && buf.length >= 26) flush();
   });
@@ -2548,12 +2556,22 @@ function parseWordBank(t) {
     return '<span><b>' + k + '</b> ' + esc(uniq[k]) + '</span>';
   }).join('') + '</div>';
 }
-/* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文） */
-function examBlockHtml(v) {
-  var t = secNorm(v);
+/* 文本收尾清理：扫描件残留的「标点/括号紧贴下一个词」（如 "D).Then" "A) ,B)"）补一个空格 */
+function tidyText(t) {
+  return String(t || "")
+    .replace(/\)([.,;:])(?=[A-Za-z])/g, ")$1 ")
+    .replace(/([A-Za-z]{2,})([.,;:])(?=[A-Za-z])/g, "$1$2 ")
+    .replace(/\s{2,}/g, " ");
+}
+/* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文）
+   cont=true 表示上一块是 Directions 且本块是它的续行 → 仍按说明体渲染 */
+function examBlockHtml(v, cont) {
+  var t = tidyText(secNorm(v));
   var bank = parseWordBank(t);
   if (bank) return bank;
-  return '<div class="' + secLineClass(t) + '">' + esc(t) + '</div>';
+  var cls = secLineClass(t);
+  if (cont && cls === "examText" && /^[a-z(]/.test(t)) cls = "secDir";
+  return '<div class="' + cls + '">' + esc(t) + '</div>';
 }
 /* 选词填空词表在数据里是「一个选项一个块」（A）anywhere / exemption / B） asserts …），
    顺序还按两列排版乱序 → 先扫成一串条目，够 8 条才当成词表，按 A–O 排成网格 */
@@ -2738,7 +2756,7 @@ function renderTopicPart() {
     html += listenTransBox(audioRec.trans);
   } else {
     // 正文：文字先收集，遇到题目/小节标题再冲刷成段落
-    let lines = [], afterH = true;
+    let lines = [], afterH = true, lastDir = false;
     const keep = cat === "writing" ? /^(Directions|You should|Write)/i
       : cat === "translation" ? /^Directions/i
         : /^(Directions|Questions|Passage|[A-O]\))/;
@@ -2748,15 +2766,18 @@ function renderTopicPart() {
       const flow = secFlow(clean, keep);
       lines = [];
       return flow.map(l => {
-        if (/^[A-O]\)/.test(l) && l.length < 40) return '<div class="examText">' + esc(l) + '</div>';
-        return examBlockHtml(l);
+        if (/^[A-O]\)/.test(l) && l.length < 40) { lastDir = false; return '<div class="examText">' + esc(l) + '</div>'; }
+        const wasDir = lastDir;
+        const html0 = examBlockHtml(l, wasDir);
+        lastDir = (secLineClass(secNorm(l)) === "secDir") || (wasDir && /^[a-z(]/.test(l));
+        return html0;
       }).join("");
     };
     let buf = "";
     blocks.forEach((b) => {
       const bi = (b.__bi != null ? b.__bi : 0);
-      if (b.t === "bank") { buf += flush(); buf += bankHtml(b.items); afterH = false; return; }
-      if (b.t === "h") { buf += flush(); afterH = true; buf += '<div class="examH sec" id="sp' + bi + '">' + esc(secNorm(b.v)) + '</div>'; return; }
+      if (b.t === "bank") { buf += flush(); buf += bankHtml(b.items); afterH = false; lastDir = false; return; }
+      if (b.t === "h") { buf += flush(); afterH = true; lastDir = false; buf += '<div class="examH sec" id="sp' + bi + '">' + esc(secNorm(b.v)) + '</div>'; return; }
       if (b.t === "text") { lines.push(secNorm(b.v)); return; }
       buf += flush();
       const sel = ansObj[b.n];
