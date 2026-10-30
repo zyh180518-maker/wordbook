@@ -133,6 +133,19 @@
            font-size: calc(var(--rd, 16px) - 3px); line-height: 1.5; }
   .wBank span { overflow-wrap: anywhere; }
   .wBank b { color: var(--accent); margin-right: 4px; }
+  /* 「Questions 1 to 4」这类题组起点：色块 + 题号标签，避免原文只有男女对话看不出换题 */
+  .qSet { margin: 18px 0 10px; padding: 9px 12px; border-radius: 8px; line-height: 1.6;
+          background: rgba(255,190,80,.10); border-left: 3px solid #c98a1a;
+          font-size: calc(var(--rd, 16px) - 2px); color: var(--txt); }
+  .qSetTag { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 9px;
+             background: #c98a1a; color: #10151f; font-weight: 700; font-size: 12px; }
+  /* 长篇匹配陈述句：逐句一行 + 悬挂缩进，编号加粗 */
+  .matchStmt { font-size: calc(var(--rd, 16px) - 1px); line-height: 1.6; margin: 0 0 10px;
+               padding-left: 2.4em; text-indent: -2.4em; word-break: break-word; }
+  .matchStmt b { color: var(--accent); margin-right: 2px; }
+  /* 缺项提示（原卷扫描丢行） */
+  .bankNote { font-size: 11px; line-height: 1.6; color: var(--no); margin: -2px 0 12px;
+              padding-left: 10px; border-left: 2px solid var(--no); }
   .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
   .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
@@ -235,7 +248,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.5"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.6"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -559,7 +572,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.5";
+const APP_VERSION = "1.9.6";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1856,12 +1869,15 @@ function listenMetaLabel(meta) {
    直接逐行显示就是一团密密麻麻。这里重排成「说话人轮次」：
    M/W/Q 一律另起一块（轮次内部断行并回同一段），题号+问题单独成块。 */
 const LISTEN_WHO_RE = /^(W|M|Q|Woman|Man|Narrator|Speaker|Interviewer|Audio)\s*[:：]/i;
-const LISTEN_HEAD_RE = /^(Section|Part|Conversation|News Report|Passage|Questions?|Directions|Listening)/i;
+const LISTEN_HEAD_RE = /^(Section|Part|Conversation|News Report|News report|Passage|Questions?|Directions|Listening|Recording|Lecture|Talk|Interview|Story|Report|Speech|Broadcast)/i;
 function listenTurns(text) {
   const turns = [];
   const raw = (text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)
     .map(x => x.replace(/\[\d{1,3}\]/g, "").replace(/\s{2,}/g, " ").trim()).filter(Boolean);
   const pushLine = (l) => {
+    // 「Questions 1 to 4 are based on …」= 一组小题的起点，单独成一块并标出题号区间，
+    // 否则整篇原文只有男女交替说话，看不出哪里换了一组题（v1.9.6）
+    if (/^Questions?\s+\d+/i.test(l)) { turns.push({ t: "q", v: l }); return; }
     if (LISTEN_HEAD_RE.test(l)) { turns.push({ t: "h", v: l }); return; }
     const m = l.match(LISTEN_WHO_RE);
     if (m) {
@@ -1884,10 +1900,42 @@ function listenTurns(text) {
   });
   return turns.map(function (x) { x.v = tidyText(x.v); return x; });
 }
-function listenTurnsHtml(text, withId) {
+/* 从整卷题型块里取「Questions 1 to 4 …」这组题号区间，用来在原文里标出题组边界 */
+function listenGroupTags(key) {
+  var ex = (EXAM_BANK && EXAM_BANK.exams) ? EXAM_BANK.exams[key] : null;
+  if (!ex) return [];
+  var out = [];
+  ex.blocks.forEach(function (b) {
+    if (b.t !== "text") return;
+    var t = secNorm(b.v);
+    var m = t.match(/^Questions?\s*(\d+)\s*(?:to|-|and)\s*(\d+)/i);
+    if (m) out.push({ a: Number(m[1]), b: Number(m[2]) });
+  });
+  return out;
+}
+var LISTEN_GROUP_HEAD_RE = /^(Conversation|News Report|News report|Passage|Recording|Lecture|Talk|Interview|Story|Report|Speech|Broadcast)/;
+function listenTurnsHtml(text, withId, groups) {
+  var gi = 0;
   return listenTurns(text).map((x, i) => {
-    const id = (withId && x.t === "h") ? ' id="lh' + i + '"' : '';
+    if (x.t === "h" && LISTEN_GROUP_HEAD_RE.test(x.v)) {
+      // 每个「Conversation One / Passage Two / Recording One…」前标出它对应哪几题
+      var g = (groups && groups[gi]) ? groups[gi] : null;
+      var kind = /^Conversation/i.test(x.v) ? "conversation" : /News/i.test(x.v) ? "news report"
+        : /Passage/i.test(x.v) ? "passage" : /Lecture/i.test(x.v) ? "lecture" : "recording";
+      var label = g ? ("题 " + g.a + "–" + g.b) : ("题组 " + (gi + 1));
+      gi++;
+      return '<div class="qSet"><span class="qSetTag">' + esc(label) + '</span>' +
+        esc(g ? ("Questions " + g.a + " to " + g.b + " are based on the " + kind + " you have just heard.") : x.v) +
+        '</div><div class="listenHead">' + esc(x.v) + '</div>';
+    }
+    const id = (withId && (x.t === "h" || x.t === "q")) ? ' id="' + (x.t === "h" ? "lh" : "lq") + i + '"' : '';
     if (x.t === "h") return '<div class="listenHead"' + id + '>' + esc(x.v) + '</div>';
+    if (x.t === "q") {
+      // 数据里若已有 "Questions 1 to 4 …" 行，直接用它
+      const m = x.v.match(/Questions?\s+(\d+)\s*(?:to|-|and)\s*(\d+)/i);
+      const tag = m ? ('题 ' + m[1] + '–' + m[2]) : (x.v.match(/Questions?\s+(\d+)/i) ? ('题 ' + x.v.match(/Questions?\s+(\d+)/i)[1]) : '题组');
+      return '<div class="qSet"' + id + '><span class="qSetTag">' + esc(tag) + '</span>' + esc(x.v) + '</div>';
+    }
     if (x.t === "d") return '<div class="dlgTurn"><span class="who">' + esc(x.who) + ':</span><span class="say">' + esc(x.v) + '</span></div>';
     return '<div class="listenLine">' + esc(x.v) + '</div>';
   }).join("");
@@ -1912,6 +1960,7 @@ async function openListening() {
   document.getElementById("studyListenTab").className = "btn small ok";
   const d = await loadListenBank();
   if (!d) { studyArea().innerHTML = '<div id="emptyTip">听力原文库加载失败（请升级 APK）</div>'; return; }
+  await loadExamBank();   // 原文里要标「题 1–4」这类题组边界，需要整卷题型块里的 Questions 行
   renderListenList();
 }
 function renderListenList() {
@@ -1963,7 +2012,7 @@ function renderListenRead() {
   }
   if (window._listen.showTrans && rec.trans) {
     // 对照译文：上=原文（按说话人轮次分行），下=中文逐句（可收起；窄屏左右并排会挤成一团）
-    html += '<div class="transBox"><div class="transHead">原文 · 说话人轮次' + (rec.audio ? ' · 本套全部' : '') + '</div>' + listenTurnsHtml(rec.text || "（无原文）") + '</div>';
+    html += '<div class="transBox"><div class="transHead">原文 · 说话人轮次' + (rec.audio ? ' · 本套全部' : '') + '</div>' + listenTurnsHtml(rec.text || "（无原文）", false, listenGroupTags(window._listen.key)) + '</div>';
     html += listenTransBox(rec.trans);
   } else {
     const turns = listenTurns(rec.text || "");
@@ -1976,7 +2025,7 @@ function renderListenRead() {
       });
       html += '</div>';
     }
-    html += '<div style="margin-top:8px">' + listenTurnsHtml(rec.text || "（无原文）", true) + '</div>';
+    html += '<div style="margin-top:8px">' + listenTurnsHtml(rec.text || "（无原文）", true, listenGroupTags(window._listen.key)) + '</div>';
   }
   studyArea().innerHTML = html;
   document.getElementById("listenQuit").onclick = () => renderListenList();
@@ -2524,7 +2573,17 @@ function secFlow(lines, keepRe) {
   function flush() { if (buf) { out.push(buf); buf = ""; } }
   lines.forEach(function (l) {
     if (keepRe && keepRe.test(l)) { flush(); out.push(l); return; }
-    if (!buf) { buf = l; return; }
+    // 带编号的行（"36. …" 长篇匹配陈述句 / 阅读题干）必须各自独立，不能和下一句并成一段
+    if (/^\d{1,3}\.\s/.test(l)) { flush(); out.push(l); return; }
+    if (!buf) {
+      // 扫描件常把陈述句的尾巴拆成下一块（"… is appropriate." / "conditions."）→ 接回上一句
+      var prevOut = out[out.length - 1];
+      if (prevOut && /^\d{1,3}\.\s/.test(prevOut) && /^[a-z(]/.test(l) && l.length < 60) {
+        out[out.length - 1] = prevOut + " " + l;
+        return;
+      }
+      buf = l; return;
+    }
     // 补空格：扫描件按行断开，句号/逗号结尾的行直接接下一行会粘成 "once.After"；
     // 中文/全角标点结尾的行之间不补空格
     var last = buf.slice(-1);
@@ -2545,8 +2604,8 @@ function secLineClass(l) {
    → 识别出来单独成块，按 A–O 排序、两列网格，找词不用逐行扫 */
 function parseWordBank(t) {
   if (!t || t.length < 60) return null;
-  var re = /(?:^|\s)([A-O])\)\s*([A-Za-z][A-Za-z'\u2019\-]*)/g, m, items = [], covered = 0;
-  while ((m = re.exec(t))) { items.push({ k: m[1], v: m[2] }); covered += m[0].length; }
+  var re = /(?:^|\s)([A-O]|[01])\s*[）)]\s*([A-Za-z][A-Za-z'\u2019\-]*)/g, m, items = [], covered = 0;
+  while ((m = re.exec(t))) { items.push({ k: bankLetter(m[1]), v: m[2] }); covered += m[0].length; }
   if (items.length < 6 || covered / t.length < 0.75) return null;
   var uniq = {};
   items.forEach(function (x) { if (!uniq[x.k]) uniq[x.k] = x.v; });
@@ -2569,15 +2628,35 @@ function examBlockHtml(v, cont) {
   var t = tidyText(secNorm(v));
   var bank = parseWordBank(t);
   if (bank) return bank;
+  var nm = t.match(/^(\d{1,3})\.\s(.*)$/);
+  if (nm) return '<div class="matchStmt"><b>' + nm[1] + '.</b> ' + esc(tidyText(nm[2])) + '</div>';
   var cls = secLineClass(t);
   if (cont && cls === "examText" && /^[a-z(]/.test(t)) cls = "secDir";
   return '<div class="' + cls + '">' + esc(t) + '</div>';
 }
 /* 选词填空词表在数据里是「一个选项一个块」（A）anywhere / exemption / B） asserts …），
-   顺序还按两列排版乱序 → 先扫成一串条目，够 8 条才当成词表，按 A–O 排成网格 */
-var BANK_LET_RE = /^([A-O])\s*[）)]\s*(.*)$/;
+   顺序还按两列排版乱序 → 先扫成一串条目，够 8 条才当成词表，按 A–O 排成网格。
+   OCR 常把字母 I 认成数字 1、字母 O 认成 0（"1）maneuver" / "0) threshold"）→ 这里归一化 */
+var BANK_LET_RE = /^([A-O]|[01])\s*[）)]\s*(.*)$/;
+var BANK_LET_FIX = { "0": "O", "1": "I" };
+function bankLetter(ch) { return BANK_LET_FIX[ch] || ch; }
 function preScanBanks(blocks, base) {
   var out = [], i = 0, off = (base || 0);
+  // 先把「陈述句被拆成两块」的尾巴并回上一句（整卷逐块渲染时同样需要）
+  var arr = [];
+  blocks.forEach(function (b) {
+    var prev = arr[arr.length - 1];
+    var t = (b && b.t === "text") ? secNorm(b.v).trim() : "";
+    if (prev && prev.t === "text" && /^\d{1,3}\.\s/.test(secNorm(prev.v)) &&
+        b.t === "text" && /^[a-z(]/.test(t) && t.length < 60) {
+      var merged = Object.assign({}, prev);
+      merged.v = secNorm(prev.v).replace(/\s+$/, "") + " " + t;
+      arr[arr.length - 1] = merged;
+      return;
+    }
+    arr.push(b);
+  });
+  blocks = arr;
   while (i < blocks.length) {
     var b = blocks[i];
     if (b.t === "text" && BANK_LET_RE.test(secNorm(b.v))) {
@@ -2587,7 +2666,7 @@ function preScanBanks(blocks, base) {
         if (c.t !== "text") break;
         var t = secNorm(c.v).replace(/\s+/g, " ").trim();
         var m = t.match(BANK_LET_RE);
-        if (m) { items.push({ k: m[1], v: m[2].trim() }); j++; continue; }
+        if (m) { items.push({ k: bankLetter(m[1]), v: m[2].trim() }); j++; continue; }
         if (!items.length) break;
         if (t.length > 40 || /[.!?。]$/.test(t) || /^(Section|Part|Directions|Questions?)/i.test(t)) break;
         items[items.length - 1].v = (items[items.length - 1].v ? items[items.length - 1].v + " " : "") + t;
@@ -2604,9 +2683,12 @@ function bankHtml(items) {
   var uniq = {}, ks = [];
   items.forEach(function (x) { if (!uniq[x.k]) { uniq[x.k] = x.v; ks.push(x.k); } });
   ks.sort();
+  var miss = [];
+  "ABCDEFGHIJKLMNO".split("").forEach(function (c) { if (!uniq[c]) miss.push(c); });
   return '<div class="wBank">' + ks.map(function (k) {
     return '<span><b>' + k + '</b> ' + esc(uniq[k]) + '</span>';
-  }).join('') + '</div>';
+  }).join('') + '</div>' +
+    (miss.length ? '<div class="bankNote">原卷词表共 15 项（A–O），此处缺 ' + esc(miss.join('、')) + '（扫描件丢行，正在补）</div>' : '');
 }
 function secQHtml(b, first, ans, sel) {
   // 题干缺失（听力等只有选项）→ 只留一个紧凑题号，不占一块色条空白
@@ -2752,11 +2834,12 @@ function renderTopicPart() {
     html += sents.map(s => '<div class="examText">' + esc(s) + '</div>').join('');
   } else if (window._secPart.showText && audioRec && audioRec.text) {
     // 对照视图：上=原文（按说话人轮次分行），下=参考译文（逐句、默认收起）
-    html += '<div class="transBox"><div class="transHead">听力原文 · 说话人轮次 · 本套全部</div>' + listenTurnsHtml(audioRec.text) + '</div>';
+    html += '<div class="transBox"><div class="transHead">听力原文 · 说话人轮次 · 本套全部</div>' + listenTurnsHtml(audioRec.text, false, listenGroupTags(key)) + '</div>';
     html += listenTransBox(audioRec.trans);
   } else {
     // 正文：文字先收集，遇到题目/小节标题再冲刷成段落
     let lines = [], afterH = true, lastDir = false;
+    const seenStmt = [];   // 本页出现过的陈述句编号，用于整体缺号提示
     const keep = cat === "writing" ? /^(Directions|You should|Write)/i
       : cat === "translation" ? /^Directions/i
         : /^(Directions|Questions|Passage|[A-O]\))/;
@@ -2765,13 +2848,32 @@ function renderTopicPart() {
       const clean = lines.filter(l => !secDropLine(l));
       const flow = secFlow(clean, keep);
       lines = [];
-      return flow.map(l => {
-        if (/^[A-O]\)/.test(l) && l.length < 40) { lastDir = false; return '<div class="examText">' + esc(l) + '</div>'; }
+      const outArr = [];
+      for (let fi = 0; fi < flow.length; fi++) {
+        const l = flow[fi];
+        // 连续编号陈述句（长篇匹配 36–45 / 46–55）：按编号排序、逐句一行，缺号的显式提示
+        if (/^\d{1,3}\.\s/.test(l)) {
+          const grp = [];
+          while (fi < flow.length) {
+            const mm = flow[fi].match(/^(\d{1,3})\.\s([\s\S]+)$/);
+            if (!mm) break;
+            grp.push({ n: Number(mm[1]), v: mm[2] });
+            fi++;
+          }
+          fi--;
+          grp.sort((a, b) => a.n - b.n);
+          grp.forEach(x => seenStmt.push(x.n));
+          outArr.push(grp.map(x => '<div class="matchStmt"><b>' + x.n + '.</b> ' + esc(tidyText(x.v)) + '</div>').join(''));
+          lastDir = false;
+          continue;
+        }
+        if (/^[A-O]\)/.test(l) && l.length < 40) { lastDir = false; outArr.push('<div class="examText">' + esc(l) + '</div>'); continue; }
         const wasDir = lastDir;
         const html0 = examBlockHtml(l, wasDir);
         lastDir = (secLineClass(secNorm(l)) === "secDir") || (wasDir && /^[a-z(]/.test(l));
-        return html0;
-      }).join("");
+        outArr.push(html0);
+      }
+      return outArr.join("");
     };
     let buf = "";
     blocks.forEach((b) => {
@@ -2786,6 +2888,15 @@ function renderTopicPart() {
     });
     buf += flush();
     html += buf;
+    // 长篇匹配（36–45 / 46–55）：整页汇总一次缺号提示，比逐段提示准确
+    [36, 46].forEach(function (base) {
+      const have = seenStmt.filter(function (n) { return n >= base && n < base + 10; });
+      if (have.length >= 4) {
+        const miss = [];
+        for (let k = 0; k < 10; k++) if (seenStmt.indexOf(base + k) < 0) miss.push(base + k);
+        if (miss.length) html += '<div class="bankNote">本段陈述句缺第 ' + miss.join('、') + ' 句（原卷扫描丢行，正在补）</div>';
+      }
+    });
   }
   if (writeExtra) html += writeExtra;
   html += '<div class="secNav">' +
