@@ -146,6 +146,10 @@
   /* 缺项提示（原卷扫描丢行） */
   .bankNote { font-size: 11px; line-height: 1.6; color: var(--no); margin: -2px 0 12px;
               padding-left: 10px; border-left: 2px solid var(--no); }
+  /* 选词填空的空格：下划线 + 右上角题号，替代原来 "_34" / "26stress" 这类乱码 */
+  .blank { display: inline-block; min-width: 3em; border-bottom: 1.5px solid var(--accent);
+           text-align: center; vertical-align: baseline; }
+  .blank sup { font-size: 10px; color: var(--dim); }
   .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
   .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
@@ -248,7 +252,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.6"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.7"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -572,7 +576,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.6";
+const APP_VERSION = "1.9.7";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2622,6 +2626,23 @@ function tidyText(t) {
     .replace(/([A-Za-z]{2,})([.,;:])(?=[A-Za-z])/g, "$1$2 ")
     .replace(/\s{2,}/g, " ");
 }
+/* 选词填空的空格标记在扫描件里有四种写法（"_34"、"_ 33"、"n32that"、"26stress"），
+   直接显示就是乱码数字 → 统一成带编号的空格下划线 */
+function blankify(escaped) {
+  var NUM = "(?:2[6-9]|3[0-5])";
+  var out = escaped
+    // 下划线形式：_34 / _ 33
+    .replace(new RegExp("_\\s?(" + NUM + ")(?![0-9])", "g"), '\u2007<span class="blank"><sup>$1</sup></span>')
+    // 数字紧贴单词：26stress / n32that / 33in
+    .replace(new RegExp("(^|[^0-9A-Za-z])n?(" + NUM + ")(?=[A-Za-z])", "g"),
+      function (m, pre, num) { return pre + '\u2007<span class="blank"><sup>' + num + '</sup></span> '; });
+  // 选词填空整段里，独立出现的 26–35 就是空格位置（"letting 27 pleasure-inducing" → 空27）
+  if (window._bankPassage) {
+    out = out.replace(new RegExp("(^|[\\s(\\u201c\"])(" + NUM + ")(?=[\\s,.;:)\\u201d\"]|$)", "g"),
+      function (m, pre, num) { return pre + '\u2007<span class="blank"><sup>' + num + '</sup></span>'; });
+  }
+  return out;
+}
 /* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文）
    cont=true 表示上一块是 Directions 且本块是它的续行 → 仍按说明体渲染 */
 function examBlockHtml(v, cont) {
@@ -2632,7 +2653,7 @@ function examBlockHtml(v, cont) {
   if (nm) return '<div class="matchStmt"><b>' + nm[1] + '.</b> ' + esc(tidyText(nm[2])) + '</div>';
   var cls = secLineClass(t);
   if (cont && cls === "examText" && /^[a-z(]/.test(t)) cls = "secDir";
-  return '<div class="' + cls + '">' + esc(t) + '</div>';
+  return '<div class="' + cls + '">' + blankify(esc(t)) + '</div>';
 }
 /* 选词填空词表在数据里是「一个选项一个块」（A）anywhere / exemption / B） asserts …），
    顺序还按两列排版乱序 → 先扫成一串条目，够 8 条才当成词表，按 A–O 排成网格。
@@ -2750,6 +2771,8 @@ function renderTopicPart() {
   const focus = unitsOfPart[sp.si] || null;
   const bStart = (focus ? focus.start : p.hdrEnd);
   const blocks = preScanBanks(ex.blocks.slice(bStart, focus ? focus.end : p.end), bStart);
+  // 选词填空页：段内独立出现的 26–35 数字就是空格编号（见 blankify）；有词表块即可判定
+  window._bankPassage = (sp.tid === "banked") || ((focus && focus.tid === "banked") || blocks.some(function (x) { return x.t === "bank"; }));
   const qs = blocks.filter(b => b.t === "q");
   const ansObj = window._secPart.ans;
   // 上一份/下一份：只在同一题型里跨年份连续（P3）
