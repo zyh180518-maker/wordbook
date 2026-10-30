@@ -63,7 +63,7 @@
   .btn.ghost { background: var(--line); color: var(--txt); }
   .btn:disabled { opacity: .35; }
   .btn.sel { box-shadow: 0 0 0 2px var(--txt); }
-  .btn.small { flex: none; padding: 10px 16px; font-size: 14px; }
+  .btn.small { flex: none; padding: 11px 16px; font-size: 14px; min-height: 44px; } /* 移动端触控 ≥44px */
   .chip { flex: none; font-size: 12px; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--txt); cursor: pointer; }
   .chip.ok { background: var(--ok); color: #06121f; border-color: var(--ok); }
   .chip.no { background: var(--no); color: #fff; border-color: var(--no); }
@@ -111,7 +111,8 @@
   .transHead { font-size: 12px; color: var(--dim); margin: 0 0 10px; letter-spacing: .4px; }
   /* 译文默认收起（<details>）：原文先看，想对照再展开，避免一屏全是中文 */
   .transFold { padding: 10px 14px; }
-  .transFold > summary { font-size: 12px; color: var(--dim); cursor: pointer; list-style: none; padding: 3px 0; }
+  .transFold > summary { font-size: 12px; color: var(--dim); cursor: pointer; list-style: none;
+    padding: 10px 0; min-height: 44px; display: flex; align-items: center; } /* 可点区域 ≥44px */
   .transFold > summary::-webkit-details-marker { display: none; }
   .transFold[open] > summary { color: var(--accent); margin-bottom: 10px; }
   .zhSent { font-size: calc(var(--rd, 16px) - 1px); line-height: 2.05; margin: 0 0 12px; word-break: break-word; }
@@ -144,12 +145,19 @@
                padding-left: 2.4em; text-indent: -2.4em; word-break: break-word; }
   .matchStmt b { color: var(--accent); margin-right: 2px; }
   /* 缺项提示（原卷扫描丢行） */
+  /* 整卷页「作答说明」：默认收起，首屏直接就是题目 */
+  .examNote { font-size: 11px; line-height: 1.6; margin: 0 0 8px; color: var(--dim); }
+  .examNote > summary { list-style: none; cursor: pointer; padding: 8px 0; min-height: 40px;
+    display: flex; align-items: center; }
+  .examNote > summary::-webkit-details-marker { display: none; }
+  .examNote[open] > summary { color: var(--accent); }
+  .examNote div { margin: 0 0 4px; }
   .bankNote { font-size: 11px; line-height: 1.6; color: var(--no); margin: -2px 0 12px;
               padding-left: 10px; border-left: 2px solid var(--no); }
   /* 选词填空的空格：下划线 + 右上角题号，替代原来 "_34" / "26stress" 这类乱码 */
   .blank { display: inline-block; min-width: 3em; border-bottom: 1.5px solid var(--accent);
            text-align: center; vertical-align: baseline; }
-  .blank sup { font-size: 10px; color: var(--dim); }
+  .blank sup { font-size: 11px; color: var(--dim); }
   .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
   .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
@@ -186,7 +194,7 @@
   .rsBtn:active { background: var(--line); }
   /* 听力播放器吸顶：读 60 行原文时随时能暂停/拖动，不用滚回顶部 */
   .stickyAudio {
-    position: sticky; top: 56px; z-index: 15; background: rgba(15,20,32,.96);
+    position: sticky; top: 62px; z-index: 15; background: rgba(15,20,32,.96); /* 吸顶条 61px，留 1px 不重叠 */
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     padding: 4px 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line);
   }
@@ -203,10 +211,10 @@
   .yearChips { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
     padding: 2px 0 6px; margin-bottom: 6px; scrollbar-width: none; }
   .yearChips::-webkit-scrollbar { display: none; }
-  .yearChips .chip { flex: none; min-height: 34px; padding: 8px 13px; font-size: 13px; }
+  .yearChips .chip { flex: none; min-height: 40px; padding: 9px 13px; font-size: 13px; } /* 触控 ≥40px */
   /* 板块筛选条：必须一屏全见（曾因横滑把听力/阅读/其它藏到屏幕外，用户以为没加） */
   .yearChips.wrapChips { flex-wrap: wrap; overflow-x: visible; padding-bottom: 2px; }
-  .yearChips.wrapChips .chip { min-height: 32px; padding: 7px 10px; font-size: 12.5px; }
+  .yearChips.wrapChips .chip { min-height: 40px; padding: 9px 11px; font-size: 12.5px; }
   /* 题型分组卡片（v1.9 区域首页） */
   .typeCards { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
   .typeCard { flex: 1 1 calc(33% - 6px); min-width: 104px; min-height: 46px; cursor: pointer;
@@ -245,7 +253,8 @@
     padding-left: 10px; border-left: 2px solid var(--line); }
   .secZh { font-size: calc(var(--rd, 16px) + 1px); line-height: 1.85; margin: 0 0 16px;
     text-align: justify; text-justify: inter-ideograph; letter-spacing: 0; word-break: break-word; }
-  .secOnly { float: right; margin: -2px 0 0 8px; font-size: 11px; padding: 3px 9px; border-radius: 11px; }
+  /* 「单独看 ↗」小按钮也在标题里，触控给到 40px 高（v1.9.8 移动端自检） */
+  .secOnly { float: right; margin: -4px 0 0 8px; font-size: 11px; padding: 7px 10px; border-radius: 11px; min-height: 40px; }
   .secNav { display: flex; gap: 8px; margin: 22px 0 8px; }
   .secNav .btn { flex: 1; min-height: 44px; padding: 10px 6px; font-size: 13px; }
 </style>
@@ -1709,12 +1718,15 @@ function renderExamPaper() {
   const ex = EXAM_BANK.exams[window._exam.key];
   const qs = ex.blocks.filter(b => b.t === "q");
   const pblocks = preScanBanks(ex.blocks, 0);   // 选词填空词表成块渲染（原索引保留在 __bi）
+  if (!window._exam.answers) window._exam.answers = {};
   const answeredN = () => Object.keys(window._exam.answers || {}).length;
   let html = '<div class="stickyBar"><button class="btn ghost small" id="examBack">← 列表</button>' +
     '<span class="meta" id="examProg">' + examMetaLabel(ex.meta) + ' · 已答 0/' + qs.length + '</span>' +
     '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
-  html += '<div class="muted" style="font-size:11px;margin-bottom:8px">点选项作答（蓝色=已选；有标准答案的套次即时判对错）</div>';
+  // 通用作答提示默认收起（手机上首屏被提示行吃掉，题干反而要往下滚才能看到）
+  html += '<details class="examNote"><summary>作答说明 ▾</summary>' +
+    '<div>点选项作答：蓝色=已选；有标准答案的套次答完即时标对错。</div></details>';
   if (ex.meta && ex.meta.note) {
     const notePre = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
     html += '<div class="muted" style="font-size:11px;color:var(--no);margin-bottom:8px;line-height:1.6">' + notePre + esc(ex.meta.note) + '</div>';
@@ -2624,6 +2636,7 @@ function parseWordBank(t) {
 /* 文本收尾清理：扫描件残留的「标点/括号紧贴下一个词」（如 "D).Then" "A) ,B)"）补一个空格 */
 function tidyText(t) {
   return String(t || "")
+    .replace(/\s+([,.;:!?])/g, "$1")          // 标点前多余空格："With time , nature" → "With time, nature"
     .replace(/\)([.,;:])(?=[A-Za-z])/g, ")$1 ")
     .replace(/([A-Za-z]{2,})([.,;:])(?=[A-Za-z])/g, "$1$2 ")
     .replace(/\s{2,}/g, " ");
