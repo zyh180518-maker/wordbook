@@ -67,7 +67,7 @@
   .chip { flex: none; font-size: 12px; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--txt); cursor: pointer; }
   .chip.ok { background: var(--ok); color: #06121f; border-color: var(--ok); }
   .chip.no { background: var(--no); color: #fff; border-color: var(--no); }
-  .badge { flex: none; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--line); color: var(--dim); }
+  .badge { flex: none; font-size: 12px; padding: 2px 6px; border-radius: 4px; background: var(--line); color: var(--dim); }
   .row { display: flex; gap: 8px; }
   .row input { flex: 1; }
   details { margin-top: 8px; }
@@ -146,18 +146,18 @@
   .matchStmt b { color: var(--accent); margin-right: 2px; }
   /* 缺项提示（原卷扫描丢行） */
   /* 整卷页「作答说明」：默认收起，首屏直接就是题目 */
-  .examNote { font-size: 11px; line-height: 1.6; margin: 0 0 8px; color: var(--dim); }
+  .examNote { font-size: 12px; line-height: 1.6; margin: 0 0 8px; color: var(--dim); }
   .examNote > summary { list-style: none; cursor: pointer; padding: 8px 0; min-height: 40px;
     display: flex; align-items: center; }
   .examNote > summary::-webkit-details-marker { display: none; }
   .examNote[open] > summary { color: var(--accent); }
   .examNote div { margin: 0 0 4px; }
-  .bankNote { font-size: 11px; line-height: 1.6; color: var(--no); margin: -2px 0 12px;
+  .bankNote { font-size: 12px; line-height: 1.6; color: var(--no); margin: -2px 0 12px;
               padding-left: 10px; border-left: 2px solid var(--no); }
   /* 选词填空的空格：下划线 + 右上角题号，替代原来 "_34" / "26stress" 这类乱码 */
   .blank { display: inline-block; min-width: 3em; border-bottom: 1.5px solid var(--accent);
            text-align: center; vertical-align: baseline; }
-  .blank sup { font-size: 11px; color: var(--dim); }
+  .blank sup { font-size: 12px; color: var(--dim); }
   .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
   .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
@@ -166,7 +166,7 @@
   .feedback.ok { color: var(--ok); }
   .feedback.no { color: var(--no); }
   textarea { width: 100%; background: var(--bg); color: var(--txt); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 15px; resize: vertical; }
-  .muted { color: var(--dim); font-size: 12px; margin-top: 6px; }
+  .muted { color: var(--dim); font-size: 13px; margin-top: 6px; }
   /* ================= 移动端专项（v1.7.8） ================= */
   /* 刘海/手势条安全区：顶部与底部都留出 inset，避免内容被系统栏盖住 */
   body { padding-top: calc(14px + env(safe-area-inset-top)); padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
@@ -185,7 +185,7 @@
     padding: 8px 0; margin: 0 0 8px; border-bottom: 1px solid var(--line);
   }
   .stickyBar .btn { flex: none; padding: 8px 12px; font-size: 13px; min-height: 44px; }
-  .stickyBar .meta { flex: 1; min-width: 0; font-size: 12px; color: var(--dim); text-align: right;
+  .stickyBar .meta { flex: 1; min-width: 0; font-size: 13px; color: var(--dim); text-align: right;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rsBtn {
     flex: none; min-width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line);
@@ -221,7 +221,7 @@
     background: rgba(90,162,255,.06); border: 1px solid var(--line); border-radius: 10px;
     color: var(--fg); text-align: left; padding: 7px 10px; font-size: 13px; }
   .typeCard b { display: block; font-size: 13px; }
-  .typeCard span { display: block; font-size: 11px; color: var(--dim); margin-top: 2px; }
+  .typeCard span { display: block; font-size: 12px; color: var(--dim); margin-top: 2px; }
   .typeCard.ok { border-color: var(--accent); background: rgba(90,162,255,.18); }
   .typeCard.ok b { color: var(--accent); }
   .tyTag { color: var(--accent); font-weight: 700; font-size: 12px; margin-right: 4px; }
@@ -230,7 +230,7 @@
     padding: 9px 11px; border-radius: 10px; background: rgba(255,190,80,.10); border-left: 3px solid #c98a1a; }
   .writeRefBox { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 0 0 12px;
     background: rgba(90,162,255,.05); }
-  .writeRefHead { font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+  .writeRefHead { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
   /* 列表/选项点击目标不低于 44px（手指友好），文字仍可选中复制 */
   .examItem, .listenItem { min-height: 46px; line-height: 1.35; }
   .examOpt { min-height: 46px; }
@@ -241,13 +241,13 @@
   .secItemT { font-weight: 700; font-size: 14px; }
   .secItemS { display: block; font-size: 12px; color: var(--dim); margin-top: 3px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .secItemM { display: block; font-size: 11px; color: var(--accent); margin-top: 4px; }
+  .secItemM { display: block; font-size: 12px; color: var(--accent); margin-top: 4px; }
   /* 板块详情页头部：一眼看清「哪一套 · 哪个板块 · 多少题」 */
   .secHead { margin: 4px 0 12px; padding: 12px 14px; border-radius: 10px;
     background: rgba(90,162,255,.10); border-left: 4px solid var(--accent); }
-  .secHead .k { font-size: 12px; color: var(--dim); }
+  .secHead .k { font-size: 13px; color: var(--dim); }
   .secHead .t { font-size: calc(var(--rd, 16px) + 2px); font-weight: 700; color: var(--accent); margin: 3px 0 5px; }
-  .secHead .m { font-size: 12px; color: var(--dim); }
+  .secHead .m { font-size: 13px; color: var(--dim); }
   /* 说明文字（Directions）压低 + 左侧竖条：一眼区分「考试要求」和「文章正文」 */
   .secDir { font-size: calc(var(--rd, 16px) - 3px); color: var(--dim); line-height: 1.75; margin: 6px 0 18px;
     padding-left: 10px; border-left: 2px solid var(--line); }
@@ -564,7 +564,7 @@
   <div class="box">
     <div style="font-size:15px; font-weight:700; margin-bottom:6px;">💾 备份内容</div>
     <div class="muted" style="font-size:12px; margin-bottom:8px; line-height:1.6;">已尝试下载文件；若手机没有弹出下载，请点「复制全部」或长按下面内容全选复制，粘贴保存到备忘录/文件即可（内容较大时会自动压缩，导入时自动解压）。</div>
-    <textarea id="exportText" readonly style="width:100%; height:160px; font-size:11px; box-sizing:border-box; border:1px solid var(--line); border-radius:6px; padding:8px; color:var(--fg); background:var(--bg, transparent);"></textarea>
+    <textarea id="exportText" readonly style="width:100%; height:160px; font-size:13px; box-sizing:border-box; border:1px solid var(--line); border-radius:6px; padding:8px; color:var(--fg); background:var(--bg, transparent);"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn small ghost" id="exportCopy">📋 复制全部</button>
       <button class="btn small ghost" id="exportClose">关闭</button>
@@ -1689,15 +1689,15 @@ function renderExamList() {
     html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
   }
   html += '</div>';
-  if (years.length > 8) html += '<div class="muted" style="font-size:11px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份）</div>';
+  if (years.length > 8) html += '<div class="muted" style="font-size:12px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份）</div>';
   for (const y of Object.keys(groups).sort().reverse()) {
     html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + y + ' 年</b></div>';
     for (const k of groups[y]) {
       const ex = d.exams[k], p = prog[k];
       const qs = ex.blocks.filter(b => b.t === "q");
       const hasListen = qs.some(q => q.n <= 25);
-      const tag = (hasListen ? "" : ' <span style="color:var(--no);font-size:11px">仅阅读</span>') +
-        (qs.length < 20 ? ' <span style="color:var(--no);font-size:11px">残缺扫描</span>' : '') +
+      const tag = (hasListen ? "" : ' <span style="color:var(--no);font-size:12px">仅阅读</span>') +
+        (qs.length < 20 ? ' <span style="color:var(--no);font-size:12px">残缺扫描</span>' : '') +
         (p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '');
       html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + qs.length + ' 题）' + tag + '</button>';
     }
@@ -1729,7 +1729,7 @@ function renderExamPaper() {
     '<div>点选项作答：蓝色=已选；有标准答案的套次答完即时标对错。</div></details>';
   if (ex.meta && ex.meta.note) {
     const notePre = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
-    html += '<div class="muted" style="font-size:11px;color:var(--no);margin-bottom:8px;line-height:1.6">' + notePre + esc(ex.meta.note) + '</div>';
+    html += '<div class="muted" style="font-size:12px;color:var(--no);margin-bottom:8px;line-height:1.6">' + notePre + esc(ex.meta.note) + '</div>';
   }
   // 段落速跳：长卷（70~90 题）手机上滑很久，给一排 Part/Section 跳转 chips
   const heads = [];
@@ -2421,7 +2421,7 @@ function renderTopicList() {
     html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
   });
   html += '</div>';
-  if (years.length > 8) html += '<div class="muted" style="font-size:11px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份，' + scope.length + ' 份）</div>';
+  if (years.length > 8) html += '<div class="muted" style="font-size:12px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份，' + scope.length + ' 份）</div>';
 
   // ④ 上次看到哪一段
   const lt = topicLast();
@@ -2850,7 +2850,7 @@ function renderTopicPart() {
   // 原卷残缺的说明（OCR 补录的套次会带 note）
   if (ex.meta && ex.meta.note) {
     const notePre2 = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
-    html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">' + notePre2 + esc(ex.meta.note) + '</div>';
+    html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:13px;line-height:1.6">' + notePre2 + esc(ex.meta.note) + '</div>';
   }
   // 作文：先给题目 → 提示手写 → 范文默认收起（写完再点「参考答案」）
   let writeExtra = "";
@@ -2871,7 +2871,7 @@ function renderTopicPart() {
             .map(s => '<div class="examText">' + esc(s) + '</div>').join('') + '</div>';
       }
     } else {
-      writeExtra += '<div class="muted" style="font-size:11px;margin:-2px 0 10px">这套暂无范文，写完后可对照原卷参考答案自己批改</div>';
+      writeExtra += '<div class="muted" style="font-size:13px;margin:-2px 0 10px">这套暂无范文，写完后可对照原卷参考答案自己批改</div>';
     }
   }
   // 翻译：有英文参考译文就能「先自己译 → 点开对照」
@@ -3075,6 +3075,6 @@ applyRdSize();
 })();
 </script>
 
-<div style="text-align:center; color:var(--dim); font-size:11px; margin-top:16px;">仅个人使用，请勿商用</div>
+<div style="text-align:center; color:var(--dim); font-size:13px; margin-top:16px;">仅个人使用，请勿商用</div>
 </body>
 </html>
