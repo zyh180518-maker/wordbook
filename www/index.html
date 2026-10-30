@@ -204,7 +204,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.0"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -279,7 +279,16 @@
       if (md5Bytes(utf8(cache.html)) === cache.m) {
         if (cmp(cache.v, APP_VERSION) > 0) {
           /* 有更高版本缓存：跳转到 Blob URL（全新文档加载，避免 document.write 的全局变量冲突） */
-          var blob = new Blob([cache.html], { type: "text/html;charset=utf-8" });
+          /* ⚠️ blob: 文档里相对路径（fetch cet6-exams.json、listen/*.m4a）会解析成 blob: URL 而彻底失效 →
+             记下当前应用源（Capacitor 为 https://localhost/），并给缓存页注入 <base>，让内置资源照旧可达 */
+          var html2 = cache.html, origin = "";
+          try { if (location.protocol === "http:" || location.protocol === "https:") origin = location.origin + "/"; } catch (e) {}
+          if (origin) {
+            try { localStorage.setItem("wb_origin", origin); } catch (e) {}
+            if (/<head([^>]*)>/i.test(html2)) html2 = html2.replace(/<head([^>]*)>/i, '<head$1><base href="' + origin + '">');
+            else html2 = '<base href="' + origin + '">' + html2;
+          }
+          var blob = new Blob([html2], { type: "text/html;charset=utf-8" });
           var url = URL.createObjectURL(blob);
           location.replace(url);
           return;
@@ -519,7 +528,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.9.1";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -530,6 +539,20 @@ const UPDATE_URLS_DEFAULT = [
 var UPDATE_URLS = UPDATE_URLS_DEFAULT.slice();
 try { var _u = JSON.parse(localStorage.getItem("wb_update_urls") || "null"); if (Array.isArray(_u) && _u.length) UPDATE_URLS = _u; } catch (e) {}
 const WB_CACHE_KEY = "wb_cache";
+
+/* ===== 内置资源根路径（v1.9.1 修复热更 blob 页读不到数据） =====
+   热更缓存页以 blob: URL 加载，相对路径会解析到 blob: → fetch("cet6-exams.json") 必失败，
+   表现为「题库加载失败（请升级 APK）」。这里在 blob/file 上下文改用应用源（Capacitor = https://localhost/），
+   正常 https 页面仍走相对路径（浏览器本地调试也照常）。 */
+const WB_ORIGIN = (function () {
+  var proto = (typeof location !== "undefined" && location.protocol) ? location.protocol : "";
+  if (proto === "blob:" || proto === "file:") {
+    try { var o = localStorage.getItem("wb_origin"); if (o) return String(o).replace(/\/+$/, "") + "/"; } catch (e) {}
+    return "https://localhost/"; /* APK 内 WebView 默认源（capacitor config androidScheme=https） */
+  }
+  return "";
+})();
+function wbUrl(p) { return WB_ORIGIN ? WB_ORIGIN + String(p).replace(/^\/+/, "") : p; }
 
 function wbCmpVer(a, b) {
   var pa = String(a).split("."), pb = String(b).split(".");
@@ -703,13 +726,13 @@ function getReadMode() {
 const STORE_KEY = "wordbook.v1";
 // 内置词典（词→中文释义，离线资源，系统给意思模式与收录自动匹配用；加载失败降级为无词典）
 var DICT = null;
-fetch("dict.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
+fetch(wbUrl("dict.json"), { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
   .then(function (d) { DICT = d; }).catch(function () { DICT = null; });
 // 四六级初始词库（词→中文释义，随 APK 内置；首次运行/重置时可选择从零或导入某一级）
 var BANKS = {}; // {cet4: {...words}, cet6: {...words}}
 const BANK_FILES = { cet4: "cet4.json", cet6: "cet6.json" };
 function loadBank(name) {
-  return fetch(BANK_FILES[name], { cache: "no-store" })
+  return fetch(wbUrl(BANK_FILES[name]), { cache: "no-store" })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) { return (d && d.words) || null; })
     .catch(function () { return null; });
@@ -718,7 +741,7 @@ function loadBank(name) {
 var EXAM_BANK = null;
 function loadExamBank() {
   if (EXAM_BANK) return Promise.resolve(EXAM_BANK);
-  return fetch("cet6-exams.json", { cache: "no-store" })
+  return fetch(wbUrl("cet6-exams.json"), { cache: "no-store" })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) { EXAM_BANK = d; return d; })
     .catch(function () { return null; });
@@ -1772,7 +1795,7 @@ function bindSpd(audioId) {
 var LISTEN_BANK = null;
 function loadListenBank() {
   if (LISTEN_BANK) return Promise.resolve(LISTEN_BANK);
-  return fetch("listening.json", { cache: "no-store" })
+  return fetch(wbUrl("listening.json"), { cache: "no-store" })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) { LISTEN_BANK = d; return d; })
     .catch(function () { return null; });
@@ -1824,7 +1847,7 @@ function renderListenRead() {
   }
   if (rec.audio) {
     // 内置音频：直接播 APK assets 里的 m4a（WebView 原生支持 AAC）；播放器吸顶，滚多远都能暂停
-    html += '<div class="stickyAudio"><audio id="listenAudio" controls preload="metadata" src="' + esc(rec.audio) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
+    html += '<div class="stickyAudio"><audio id="listenAudio" controls preload="metadata" src="' + esc(wbUrl(rec.audio)) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
   } else {
     html += '<div class="muted" style="font-size:12px;margin:6px 0">（该套暂无内置音频，可用电脑播放）</div>';
   }
