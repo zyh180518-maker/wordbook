@@ -99,9 +99,9 @@
   .listenLine.q { color: var(--accent); font-weight: 600; margin-top: 16px; }
   .listenHead { font-size: 15px; font-weight: 700; color: var(--accent); margin: 22px 0 8px; }
   /* 每题：上方大间距 + 虚线分隔，眼睛有落点 */
-  .examQ { font-size: 15px; font-weight: 600; line-height: 1.6; margin: 32px 0 10px; padding-top: 22px; border-top: 1px dashed var(--line); }
+  .examQ { font-size: 15px; font-weight: 600; line-height: 1.6; margin: 32px 0 10px; padding-top: 22px; border-top: 1px dashed var(--line); overflow-wrap: anywhere; }
   .examQ.first { border-top: none; padding-top: 0; margin-top: 12px; }
-  .examOpt { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--txt); padding: 12px 14px; margin: 8px 0; font-size: 14px; line-height: 1.6; cursor: pointer; }
+  .examOpt { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--txt); padding: 12px 14px; margin: 8px 0; font-size: 14px; line-height: 1.6; cursor: pointer; overflow-wrap: anywhere; }
   .examOpt b { color: var(--accent); margin-right: 4px; }
   .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
@@ -2471,45 +2471,52 @@ function renderTopicPart() {
   if (!p) { renderTopicList(); return; }
   const cat = secGroupOf(p.cat);
   const catMeta = SEC_CATS.filter(c => c.id === cat)[0] || {};
-  const blocks = ex.blocks.slice(p.hdrEnd, p.end);
+  const sp = window._secPart;
+  // 题型块（v1.9）：sp.si>=0 时只渲染这一段（Section A/B/C 等），否则渲染整个板块
+  const unitsOfPart = (sp.si >= 0) ? secUnitsOf(key, pi) : [];
+  const focus = unitsOfPart[sp.si] || null;
+  const blocks = ex.blocks.slice(focus ? focus.start : p.hdrEnd, focus ? focus.end : p.end);
   const qs = blocks.filter(b => b.t === "q");
   const ansObj = window._secPart.ans;
-  const sp = window._secPart;
   // 上一份/下一份：只在同一题型里跨年份连续（P3）
   const list = secUnitList(cat).filter(x => !sp.tid || x.tid === sp.tid);
   const idx = list.findIndex(x => x.key === key && x.pi === pi && (sp.si == null || sp.si < 0 || x.si === sp.si));
   const typeName = sp.tid ? secTypeLabel(sp.tid) : (catMeta.name || cat);
+  const focusSub = (focus && focus.title && focus.title !== p.title) ? secShortTitle(focus.title) : null;
+  const focusSize = (focus && (focus.nq || focus.chars)) ? ((focus.nq ? focus.nq + " 题 · " : "") + (focus.chars >= 1000 ? (focus.chars / 1000).toFixed(1) + "k 字符" : focus.chars + " 字符")) : null;
   let html = '<div class="stickyBar"><button class="btn ghost small" id="topicBack">← 专题</button>' +
-    '<span class="meta" id="secProg">' + secExamLabel(ex.meta) + ' · ' + typeName +
+    '<span class="meta" id="secProg">' + typeName +
     (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') + (qs.length ? ' · 已答 0/' + qs.length : '') + '</span>' +
     '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
+  const headMeta = esc(focusSize || secSizeLabel(p)) + (qs.length && !qs.some(q => q.answer) ? ' · 暂无标准答案，可当练习' : '');
   html += '<div class="secHead"><div class="k">' + esc((catMeta.icon || '') + ' ' + secExamLabel(ex.meta)) + '</div>' +
-    '<div class="t">' + esc(secItemSub(p)) + '</div>' +
-    '<div class="m">' + esc(secSizeLabel(p)) + (qs.length && !qs.some(q => q.answer) ? ' · 暂无标准答案，可当练习' : '') + '</div></div>';
+    '<div class="t">' + esc(focusSub || secItemSub(p)) + '</div>' +
+    (headMeta ? '<div class="m">' + headMeta + '</div>' : '') + '</div>';
   // 原卷残缺的说明（OCR 补录的套次会带 note）
   if (ex.meta && ex.meta.note) {
     html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
   }
-  // 作文：先自己写（建议手写），范文默认收起，点「参考答案」才展开
+  // 作文：先给题目 → 提示手写 → 范文默认收起（写完再点「参考答案」）
+  let writeExtra = "";
   if (cat === "writing") {
-    html += '<div class="writeHint">✍️ <b>请在纸上手写</b>：30 分钟，150–200 词（考试要求）。这里只给题目、不提供输入框——写完再点下面的「参考答案」对照，上来就看范文几乎没收益。</div>';
+    writeExtra += '<div class="writeHint">✍️ <b>请在纸上手写</b>：30 分钟，150–200 词（考试要求）。这里只给题目、不提供输入框——写完再点下面的「参考答案」对照，上来就看范文几乎没收益。</div>';
     const refs = (ex.meta && ex.meta.writeRef) || [];
     if (refs.length) {
       const curRef = (window._secPart.showRef ? (window._secPart.refIdx || 0) : -1);
-      html += '<div class="row" style="gap:8px;margin:0 0 10px">';
+      writeExtra += '<div class="row" style="gap:8px;margin:0 0 10px">';
       refs.forEach((r, i) => {
-        html += '<button class="btn small ' + (curRef === i ? "ghost" : "ok") + ' writeRefBtn" data-ref="' + i + '" style="flex:1">' +
+        writeExtra += '<button class="btn small ' + (curRef === i ? "ghost" : "ok") + ' writeRefBtn" data-ref="' + i + '" style="flex:1">' +
           (curRef === i ? '收起范文' : '参考答案 ▾' + (refs.length > 1 ? ' ' + (i + 1) : '')) + '</button>';
       });
-      html += '</div>';
+      writeExtra += '</div>';
       if (curRef >= 0 && refs[curRef]) {
-        html += '<div class="writeRefBox"><div class="writeRefHead">参考范文 ' + (curRef + 1) + '/' + refs.length + '</div>' +
+        writeExtra += '<div class="writeRefBox"><div class="writeRefHead">参考范文 ' + (curRef + 1) + '/' + refs.length + '</div>' +
           refs[curRef].split(/(?<=[.!?])\s+/).filter(Boolean)
             .map(s => '<div class="examText">' + esc(s) + '</div>').join('') + '</div>';
       }
     } else {
-      html += '<div class="muted" style="font-size:11px;margin:-2px 0 10px">这套暂无范文，写完后可对照原卷参考答案自己批改</div>';
+      writeExtra += '<div class="muted" style="font-size:11px;margin:-2px 0 10px">这套暂无范文，写完后可对照原卷参考答案自己批改</div>';
     }
   }
   // 翻译：有英文参考译文就能「先自己译 → 点开对照」
@@ -2583,6 +2590,7 @@ function renderTopicPart() {
     buf += flush();
     html += buf;
   }
+  if (writeExtra) html += writeExtra;
   html += '<div class="secNav">' +
     '<button class="btn small ghost" id="secPrev"' + (idx <= 0 ? ' disabled' : '') + '>← 上一份</button>' +
     '<button class="btn small ok" id="secWhole">看整卷</button>' +
@@ -2628,7 +2636,7 @@ function renderTopicPart() {
   // 已答计数
   const upd = () => {
     const el = document.getElementById("secProg");
-    if (el) el.textContent = secExamLabel(ex.meta) + ' · ' + typeName +
+    if (el) el.textContent = typeName +
       (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') +
       (qs.length ? ' · 已答 ' + Object.keys(ansObj).length + '/' + qs.length : '');
   };
