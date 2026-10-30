@@ -157,6 +157,25 @@
     padding: 2px 0 6px; margin-bottom: 6px; scrollbar-width: none; }
   .yearChips::-webkit-scrollbar { display: none; }
   .yearChips .chip { flex: none; min-height: 34px; padding: 8px 13px; font-size: 13px; }
+  /* 板块筛选条：必须一屏全见（曾因横滑把听力/阅读/其它藏到屏幕外，用户以为没加） */
+  .yearChips.wrapChips { flex-wrap: wrap; overflow-x: visible; padding-bottom: 2px; }
+  .yearChips.wrapChips .chip { min-height: 32px; padding: 7px 10px; font-size: 12.5px; }
+  /* 题型分组卡片（v1.9 区域首页） */
+  .typeCards { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+  .typeCard { flex: 1 1 calc(33% - 6px); min-width: 104px; min-height: 46px; cursor: pointer;
+    background: rgba(90,162,255,.06); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--fg); text-align: left; padding: 7px 10px; font-size: 13px; }
+  .typeCard b { display: block; font-size: 13px; }
+  .typeCard span { display: block; font-size: 11px; color: var(--dim); margin-top: 2px; }
+  .typeCard.ok { border-color: var(--accent); background: rgba(90,162,255,.18); }
+  .typeCard.ok b { color: var(--accent); }
+  .tyTag { color: var(--accent); font-weight: 700; font-size: 12px; margin-right: 4px; }
+  /* 作文区：手写提示 + 范文（默认收起） */
+  .writeHint { font-size: 12px; line-height: 1.65; color: var(--dim); margin: 0 0 10px;
+    padding: 9px 11px; border-radius: 10px; background: rgba(255,190,80,.10); border-left: 3px solid #c98a1a; }
+  .writeRefBox { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 0 0 12px;
+    background: rgba(90,162,255,.05); }
+  .writeRefHead { font-size: 11px; color: var(--dim); margin-bottom: 6px; }
   /* 列表/选项点击目标不低于 44px（手指友好），文字仍可选中复制 */
   .examItem, .listenItem { min-height: 46px; line-height: 1.35; }
   .examOpt { min-height: 46px; }
@@ -185,7 +204,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.8.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.8.3"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -500,7 +519,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.8.2";
+const APP_VERSION = "1.8.3";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1590,6 +1609,7 @@ function renderExamList() {
     html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
   }
   html += '</div>';
+  if (years.length > 8) html += '<div class="muted" style="font-size:11px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份）</div>';
   for (const y of Object.keys(groups).sort().reverse()) {
     html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + y + ' 年</b></div>';
     for (const k of groups[y]) {
@@ -1966,7 +1986,7 @@ function secPartsOf(key) {
   return out;
 }
 function secUsable(p) {
-  if (p.cat === "writing") return p.chars >= 100;      // 只有标题没题干的残缺套次不单列
+  if (p.cat === "writing") return p.chars >= 30;       // 老卷写作只有中文提纲（问题/解决方案），正文很短
   if (p.cat === "translation") return p.cjk >= 40;     // 中文原文残缺/乱码的不单列
   if (p.cat === "listening") return p.nq >= 5 || p.chars >= 600;
   if (p.cat === "reading") return p.chars >= 250 || p.nq >= 5;
@@ -1986,6 +2006,102 @@ function secList(cat) {
   SEC_LIST_CACHE[cat] = arr;
   return arr;
 }
+/* ---------- 题型二级分组（v1.9）：板块内部再拆成「题型块」 ---------- */
+var SEC_TYPE_LABEL = {
+  writing: "作文", translation: "翻译",
+  banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读理解",
+  listen_a: "听力 A 对话", listen_b: "听力 B 短文", listen_c: "听力 C 讲座", listening: "听力",
+  cloze: "完形填空", vocab: "词汇与结构", errorcorr: "改错", shortanswer: "简答", dictation: "听写", other: "其他"
+};
+var SEC_TYPE_SHORT = {
+  banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读",
+  listen_a: "A 对话", listen_b: "B 短文", listen_c: "C 讲座", listening: "听力",
+  cloze: "完形", vocab: "词汇", errorcorr: "改错", shortanswer: "简答", dictation: "听写", other: "其他"
+};
+var SEC_TYPE_ORDER = {
+  listening: ["listen_a", "listen_b", "listen_c", "listening"],
+  reading: ["banked", "match", "careful", "fastread", "reading"],
+  other: ["cloze", "vocab", "errorcorr", "shortanswer", "dictation", "other"],
+  writing: ["writing"], translation: ["translation"]
+};
+var SEC_UNIT_CACHE = {}, SEC_UNITLIST_CACHE = {};
+function secTypeLabel(tid, short) { var m = short ? SEC_TYPE_SHORT : SEC_TYPE_LABEL; return m[tid] || SEC_TYPE_LABEL[tid] || tid; }
+function secUnitId(key, pi, si) { return key + "#" + pi + "#" + si; }
+// 题型块内题号区间 → 阅读三题型（选词填空 26-35 / 长篇匹配 36-45 / 仔细阅读 46-55）
+function secReadTypeByQ(nums) {
+  var a = 0, b = 0, c = 0;
+  nums.forEach(function (n) { if (n >= 26 && n <= 35) a++; else if (n >= 36 && n <= 45) b++; else if (n >= 46 && n <= 55) c++; });
+  if (c >= a && c >= b && c) return "careful";
+  if (b >= a && b) return "match";
+  if (a) return "banked";
+  return null;
+}
+function secReadTypeByText(t) {
+  var s = (t || "").toLowerCase(), c = s.replace(/\s+/g, "");   // OCR 常把词粘连，空格无关匹配
+  if (/passagewithtenblanks|tenblanks|选词填空/.test(c)) return "banked";
+  if (/tenstatements|identifytheparagraph|长篇阅读|matching/.test(c)) return "match";
+  if (/twopassages|passageone|indepth|仔细阅读/.test(c)) return "careful";
+  if (/skimmingandscanning|skimming|快速阅读/.test(c)) return "fastread";
+  return null;
+}
+function secSecLetter(title) {
+  var m = /Section\s*([A-D])/i.exec(title || "");
+  return m ? m[1].toUpperCase() : null;
+}
+function secUnitsOf(key, pi) {
+  var cid = key + "#" + pi;
+  if (SEC_UNIT_CACHE[cid]) return SEC_UNIT_CACHE[cid];
+  var parts = secPartsOf(key), p = parts[pi], ex = EXAM_BANK && EXAM_BANK.exams[key];
+  if (!p || !ex) return [];
+  var segs = [];
+  if (p.secs && p.secs.length) {
+    for (var i = 0; i < p.secs.length; i++) {
+      segs.push({ start: p.secs[i].start, end: (i + 1 < p.secs.length ? p.secs[i + 1].start : p.end), title: p.secs[i].title });
+    }
+    if (segs[0].start > p.hdrEnd) segs[0].start = p.hdrEnd;   // 首个 Section 前的导语并进第一块
+  } else {
+    segs.push({ start: p.hdrEnd, end: p.end, title: p.title });
+  }
+  var cat = secGroupOf(p.cat), out = [];
+  segs.forEach(function (seg, si) {
+    var nums = [], txtLen = 0, tbuf = "";
+    for (var i = seg.start; i < seg.end; i++) {
+      var b = ex.blocks[i];
+      if (b.t === "q") nums.push(b.n);
+      else if (b.t === "text") { txtLen += (b.v || "").length; if (tbuf.length < 900) tbuf += " " + (b.v || ""); }
+    }
+    var tid;
+    if (cat === "writing") tid = "writing";
+    else if (cat === "translation") tid = "translation";
+    else if (cat === "listening") {
+      var L = secSecLetter(seg.title);
+      tid = L === "A" ? "listen_a" : L === "B" ? "listen_b" : L === "C" ? "listen_c" : "listening";
+    } else if (cat === "reading") {
+      var typed = secReadTypeByQ(nums) || secReadTypeByText(seg.title + " " + tbuf) || "reading";
+      tid = typed;
+    } else tid = p.cat;
+    out.push({ si: si, start: seg.start, end: seg.end, tid: tid, title: seg.title, nq: nums.length, chars: txtLen });
+  });
+  SEC_UNIT_CACHE[cid] = out;
+  return out;
+}
+// 某一板块的「题型块」全量列表（按套次倒序）
+function secUnitList(cat) {
+  if (SEC_UNITLIST_CACHE[cat]) return SEC_UNITLIST_CACHE[cat];
+  var bank = EXAM_BANK, arr = [];
+  if (!bank) return arr;
+  Object.keys(bank.exams).sort().reverse().forEach(function (key) {
+    secPartsOf(key).forEach(function (p, pi) {
+      if (secGroupOf(p.cat) !== cat) return;
+      secUnitsOf(key, pi).forEach(function (u) {
+        arr.push({ key: key, pi: pi, si: u.si, meta: bank.exams[key].meta, part: p, unit: u, tid: u.tid, id: secUnitId(key, pi, u.si) });
+      });
+    });
+  });
+  SEC_UNITLIST_CACHE[cat] = arr;
+  return arr;
+}
+function secPartUnits(key, pi) { return secUnitsOf(key, pi); }
 function secSizeLabel(p) {
   var bits = [];
   if (p.nq) bits.push(p.nq + " 题");
@@ -2046,11 +2162,12 @@ function topicMarkSeen(id) {
 function topicLast() {
   try { return JSON.parse(localStorage.getItem(TOPIC_LAST_KEY) || "null"); } catch (e) { return null; }
 }
-function topicSaveLast(cat, key, pi) {
+function topicSaveLast(cat, key, pi, si, unitTid) {
   try {
     localStorage.setItem(TOPIC_LAST_KEY, JSON.stringify({
-      cat: cat, key: key, pi: pi, ts: Date.now(),
-      label: secExamLabel(EXAM_BANK.exams[key].meta) + ' · ' + secCatName(cat)
+      cat: cat, key: key, pi: pi, si: (si == null ? -1 : si), ts: Date.now(),
+      label: secExamLabel(EXAM_BANK.exams[key].meta) + ' · ' + secCatName(cat) +
+        (unitTid ? ' · ' + secTypeLabel(unitTid) : '')
     }));
   } catch (e) { }
 }
@@ -2072,57 +2189,88 @@ function secHasAudio(key) {
 function renderTopicList() {
   scrollTopInstant();
   const cat = window._topic.cat;
-  const all = secList(cat);
-  let html = '<div class="yearChips">';
+  const catInfo = SEC_CATS.filter(c => c.id === cat)[0] || {};
+  const units = secUnitList(cat);
+  const seenMap = topicSeenMap();
+
+  // ① 板块 chips（一屏全见）
+  let html = '<div class="yearChips wrapChips">';
   SEC_CATS.forEach(c => {
-    const n = secList(c.id).length;
+    const n = secUnitList(c.id).length;
     html += '<button class="chip' + (c.id === cat ? " ok" : "") + '" data-cat="' + c.id + '">' + c.icon + ' ' + c.name + ' ' + n + '</button>';
   });
   html += '</div>';
-  const years = Array.from(new Set(all.map(x => x.meta.year))).sort((a, b) => b - a);
+
+  // ② 题型分组卡片（v1.9 区域首页）：这一块里有哪几种题型、各多少份、练过多少
+  const byType = {};
+  units.forEach(u => { (byType[u.tid] = byType[u.tid] || []).push(u); });
+  const order = (SEC_TYPE_ORDER[cat] || []).filter(t => byType[t]);
+  Object.keys(byType).forEach(t => { if (order.indexOf(t) < 0) order.push(t); });
+  let tid = window._topic.tid || "all";
+  if (tid !== "all" && !byType[tid]) tid = "all";
+  window._topic.tid = tid;
+  if (order.length > 1) {
+    const seenOf = arr => arr.filter(u => seenMap[u.id]).length;
+    html += '<div class="typeCards">' +
+      '<button class="typeCard' + (tid === "all" ? " ok" : "") + '" data-tid="all"><b>全部</b>' +
+      '<span>' + units.length + ' 份' + (seenOf(units) ? ' · ✓ ' + seenOf(units) : '') + '</span></button>';
+    order.forEach(t => {
+      const g = byType[t];
+      html += '<button class="typeCard' + (tid === t ? " ok" : "") + '" data-tid="' + t + '"><b>' + esc(secTypeLabel(t)) + '</b>' +
+        '<span>' + g.length + ' 份' + (seenOf(g) ? ' · ✓ ' + seenOf(g) : '') + '</span></button>';
+    });
+    html += '</div>';
+  }
+
+  // ③ 年份 chips（只列当前题型里存在的年份）
+  const scope = tid === "all" ? units : units.filter(u => u.tid === tid);
+  const years = Array.from(new Set(scope.map(x => x.meta.year))).sort((a, b) => b - a);
   let cur = window._topic.year;
   if (cur !== "all" && !years.some(y => String(y) === String(cur))) cur = "all";
   window._topic.year = cur;
-  const shown = cur === "all" ? all : all.filter(x => String(x.meta.year) === String(cur));
+  const shown = cur === "all" ? scope : scope.filter(x => String(x.meta.year) === String(cur));
   html += '<div class="yearChips">';
-  html += '<button class="chip' + (cur === "all" ? " ok" : "") + '" data-year="all">全部 ' + all.length + '</button>';
+  html += '<button class="chip' + (cur === "all" ? " ok" : "") + '" data-year="all">全部 ' + scope.length + '</button>';
   years.forEach(y => {
-    const n = all.filter(x => x.meta.year === y).length;
+    const n = scope.filter(x => x.meta.year === y).length;
     html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
   });
   html += '</div>';
-  // 上次看到哪一段：手机上一进来就能接着练，不用再翻年份
+  if (years.length > 8) html += '<div class="muted" style="font-size:11px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份，' + scope.length + ' 份）</div>';
+
+  // ④ 上次看到哪一段
   const lt = topicLast();
-  if (lt && lt.cat && lt.label && !(window._topic.q || "").trim()) {
-    html += '<button class="btn small ok" id="topicResume" style="width:100%;text-align:left;margin:0 0 8px">▶ 上次看到：' + esc(lt.label) + '　<b>继续 →</b></button>';
+  if (lt && lt.key && !(window._topic.q || "").trim()) {
+    html += '<button class="btn small ok" id="topicResume" style="width:100%;text-align:left;margin:0 0 8px">▶ 上次看到：' +
+      esc(lt.label || secExamLabel(EXAM_BANK.exams[lt.key].meta)) + '　<b>继续 →</b></button>';
   }
-  // 搜索（阅读 109 份、听力 85 份，靠翻页太慢）
+
+  // ⑤ 搜索（跨全部板块 + 跨年份）
   html += '<div class="row" style="gap:6px;margin:0 0 8px">' +
-    '<input id="topicSearch" placeholder="搜年份/套次/板块名（如 2021、梅花、Cloze）" value="' + esc(window._topic.q || "") +
+    '<input id="topicSearch" placeholder="搜年份/套次/题型/内容（如 2021、梅花、选词填空、Cloze）" value="' + esc(window._topic.q || "") +
     '" style="flex:1;font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)">' +
     '<button class="btn ghost small" id="topicClear" style="flex:none;padding:9px 12px">清空</button></div>';
-  const hint = (SEC_CATS.filter(c => c.id === cat)[0] || {}).hint || "";
+
   const qstr = (window._topic.q || "").trim().toLowerCase();
   let shown2 = shown;
   if (qstr) {
-    // 搜索跨全部板块（在作文里搜「梅花」也能找到翻译那篇）
-    const allCat = SEC_CATS.reduce((acc, c) => acc.concat(secList(c.id)), []);
+    const allCat = SEC_CATS.reduce((acc, c) => acc.concat(secUnitList(c.id)), []);
     shown2 = allCat
-      .filter(x => (secExamLabel(x.meta) + ' ' + secItemSub(x.part) + ' ' + x.part.title + ' ' +
-        secCatName(secGroupOf(x.part.cat)) + ' ' + secBodyText(x.key, x.pi))
+      .filter(x => (secExamLabel(x.meta) + ' ' + secTypeLabel(x.tid) + ' ' + secTypeLabel(x.tid, true) + ' ' +
+        (x.unit.title || '') + ' ' + (x.part.title || '') + ' ' + secCatName(secGroupOf(x.part.cat)) + ' ' +
+        secUnitBody(x.key, x.unit.start, x.unit.end))
         .toLowerCase().indexOf(qstr) >= 0)
       .sort((a, b) => (a.key < b.key ? 1 : -1));
   }
   let extra = "";
   if (cat === "listening" && LISTEN_BANK) {
-    const bank = Object.keys(LISTEN_BANK.cet6 || {});
-    const onlyAudio = bank.filter(k => (EXAM_BANK.exams || {})[k] === undefined).length;
+    const onlyAudio = Object.keys(LISTEN_BANK.cet6 || {}).filter(k => (EXAM_BANK.exams || {})[k] === undefined).length;
     if (onlyAudio && !qstr) extra = '；另有 <b>' + onlyAudio + '</b> 套只有音频+原文（试卷未收录），列在下方';
   }
   html += '<div class="muted" style="margin:2px 0 10px;line-height:1.6">' +
     (qstr ? '全板块搜索「' + esc(window._topic.q) + '」· 命中 <b>' + shown2.length + '</b> 处'
-      : hint + ' · 共 <b>' + shown2.length + '</b> 份，点开即只看这一段' + extra) + '</div>';
-  const seenMap = topicSeenMap();
+      : (catInfo.hint || '') + ' · 共 <b>' + shown2.length + '</b> 份，点开即只看这一段' + extra) + '</div>';
+
   if (!shown2.length) {
     html += '<div id="emptyTip">' + (qstr ? '没搜到「' + esc(window._topic.q) + '」，换个词试试' : '该板块暂无可用内容') + '</div>';
   } else {
@@ -2132,13 +2280,14 @@ function renderTopicList() {
         lastY = x.meta.year;
         html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + lastY + ' 年</b></div>';
       }
-      const id = x.key + '#' + x.pi;
-      html += '<button class="btn ghost small secItem" data-sec="' + id + '">' +
-        '<span class="secItemT">' + secExamLabel(x.meta) + (seenMap[id] ? ' <span style="color:var(--ok);font-size:12px">✓ 看过</span>' : '') + '</span>' +
-        '<span class="secItemS">' + (qstr ? '<b style="color:var(--accent)">[' + secCatName(secGroupOf(x.part.cat)) + ']</b> ' : '') + esc(secItemSub(x.part)) + '</span>' +
-        '<span class="secItemM">' + secSizeLabel(x.part) + (cat === "listening" && secHasAudio(x.key) ? ' · 🎵 内置音频' : '') + '</span></button>';
+      html += '<button class="btn ghost small secItem" data-sec="' + x.key + '#' + x.pi + '#' + x.si + '">' +
+        '<span class="secItemT">' + secExamLabel(x.meta) + (seenMap[x.id] ? ' <span style="color:var(--ok);font-size:12px">✓ 看过</span>' : '') + '</span>' +
+        '<span class="secItemS">' + (qstr ? '<b style="color:var(--accent)">[' + secCatName(secGroupOf(x.part.cat)) + ']</b> ' : '') +
+        '<b class="tyTag">' + esc(secTypeLabel(x.tid, true)) + '</b> ' + esc(secUnitSub(x)) + '</span>' +
+        '<span class="secItemM">' + secUnitMeta(x) + '</span></button>';
     });
   }
+
   // 听力：只有音频+原文的套次（试卷未收录）也列出来，点开直接听
   if (cat === "listening" && LISTEN_BANK && !qstr) {
     const onlyAudio = Object.keys(LISTEN_BANK.cet6 || {})
@@ -2155,22 +2304,27 @@ function renderTopicList() {
     }
   }
   studyArea().innerHTML = html;
+
   studyArea().querySelectorAll(".chip[data-cat]").forEach(c => c.onclick = () => {
-    window._topic.cat = c.dataset.cat; window._topic.year = "all"; openTopics();
+    window._topic.cat = c.dataset.cat; window._topic.year = "all"; window._topic.tid = "all"; openTopics();
+  });
+  studyArea().querySelectorAll(".typeCard").forEach(c => c.onclick = () => {
+    window._topic.tid = c.dataset.tid; window._topic.year = "all"; renderTopicList();
   });
   studyArea().querySelectorAll(".chip[data-year]").forEach(c => c.onclick = () => {
     window._topic.year = c.dataset.year; renderTopicList();
   });
   studyArea().querySelectorAll(".secItem").forEach(b => b.onclick = () => {
-    const parts2 = b.dataset.sec.split("#");
-    openTopicPart(parts2[0], Number(parts2[1]));
+    const a = b.dataset.sec.split("#");
+    openTopicUnit(a[0], Number(a[1]), Number(a[2]));
   });
   const rsm = document.getElementById("topicResume");
   if (rsm) rsm.onclick = () => {
     const lt2 = topicLast();
     if (!lt2 || !lt2.key) return;
     window._topic.cat = lt2.cat || window._topic.cat;
-    openTopicPart(lt2.key, lt2.pi);
+    window._topic.tid = "all"; window._topic.year = "all";
+    openTopicUnit(lt2.key, lt2.pi, lt2.si == null ? -1 : lt2.si);
   };
   const sIn = document.getElementById("topicSearch");
   if (sIn) sIn.oninput = () => {
@@ -2183,7 +2337,6 @@ function renderTopicList() {
   const sClr = document.getElementById("topicClear");
   if (sClr) sClr.onclick = () => { window._topic.q = ""; renderTopicList(); };
   studyArea().querySelectorAll(".listenOnly").forEach(b => b.onclick = () => {
-    // 跳到「听力」页的原文阅读（该套没有试题，只有音频+原文）
     document.getElementById("studyExamTab").className = "btn small ghost";
     document.getElementById("studyTopicTab").className = "btn small ghost";
     document.getElementById("studyListenTab").className = "btn small ok";
@@ -2193,7 +2346,42 @@ function renderTopicList() {
     renderListenRead();
   });
 }
-
+// 题型块正文前 400 字符（搜索用）
+var SEC_UNIT_TEXT = {};
+function secUnitBody(key, start, end) {
+  const cid = key + "|" + start + "|" + end;
+  if (SEC_UNIT_TEXT[cid] !== undefined) return SEC_UNIT_TEXT[cid];
+  const ex = EXAM_BANK && EXAM_BANK.exams[key];
+  let t = "";
+  if (ex) {
+    for (let i = start; i < end && t.length < 400; i++) {
+      const b = ex.blocks[i];
+      if (b && b.t === "text") t += " " + (b.v || "");
+    }
+  }
+  SEC_UNIT_TEXT[cid] = t;
+  return t;
+}
+function secUnitSub(x) {
+  const cat = secGroupOf(x.part.cat);
+  if (cat === "writing") return "作文题干" + (x.meta.writeRef && x.meta.writeRef.length ? " · 有范文" : "");
+  if (cat === "translation") return "汉译英段落" + (x.meta.transRef ? " · 有参考译文" : "");
+  const t = (x.unit.title || "").replace(/\s*Section\s*[A-D]\s*/i, "").trim();
+  const base = secShortTitle(x.part.title).replace(/^Part\s+[IVXⅠⅡⅢⅣⅤⅥ0-9]+\s*/i, "").replace(/[（(].*$/, "").trim();
+  if (t) return secShortTitle(t).slice(0, 40);
+  if (/^(Reading|Listening)\s*Comprehension/i.test(base)) return "";   // 题型标签已经说明，不重复
+  return base || "";
+}
+function secUnitMeta(x) {
+  const bits = [];
+  if (x.unit.nq) bits.push(x.unit.nq + " 题");
+  const cat = secGroupOf(x.part.cat);
+  if (cat === "translation" && x.part.cjk) bits.push(x.part.cjk + " 字中文");
+  if (x.unit.chars >= 1000) bits.push((x.unit.chars / 1000).toFixed(1) + "k 字符");
+  else if (x.unit.chars >= 100) bits.push(x.unit.chars + " 字符");
+  if (cat === "listening" && secHasAudio(x.key)) bits.push("🎵 内置音频");
+  return bits.join(" · ");
+}
 /* ---------- 板块详情页 ---------- */
 function secDropLine(s) {
   var t = s.trim();
@@ -2202,6 +2390,8 @@ function secDropLine(s) {
   if (!/[A-Za-z\u4e00-\u9fa5]/.test(t)) return true;                // 没字没词，扔掉
   if (t.length < 18 && /\d+\s*(min|minute)/i.test(t)) return true;  // (30 minutes)
   if (/[~¥#]/.test(t)) return true;                                 // 字体映射损坏的乱码行
+  // 扫描件水印/推广行（OCR 会把书页边的广告字认进来）
+  if (/扫码|淘宝|店铺|微信公众|公众号|用.{0,6}App/i.test(t) && t.length <= 24) return true;
   if (t.length > 6 && (t.match(/_/g) || []).length > t.length * 0.6) return true;  // 大半是下划线的答题格
   if (/^(姓\s*名|准考证|考号|座位号|答题卡)/.test(t)) return true;      // 答题卡抬头
   return false;
@@ -2253,17 +2443,23 @@ function secBindOpts(scope, qs, ansObj, onProgress) {
     if (onProgress) onProgress(n, k, ans);
   });
 }
-async function openTopicPart(key, pi) {
+async function openTopicUnit(key, pi, si) {
   const part = secPartsOf(key)[pi];
   const cat = part ? secGroupOf(part.cat) : window._topic.cat;
   if (cat === "listening") await loadListenBank();
   window._topic.cat = cat;   // 从搜索/整卷跳进来时同步板块
-  window._secPart = { key: key, pi: pi, ans: SEC_ANS[key + "#" + pi] || {} };
+  const units = (part && si >= 0) ? secUnitsOf(key, pi) : [];
+  const focus = (si >= 0 && units[si]) ? units[si] : null;
+  window._secPart = {
+    key: key, pi: pi, si: focus ? si : -1, tid: focus ? focus.tid : null,
+    ans: SEC_ANS[key + "#" + pi] || {}
+  };
   SEC_ANS[key + "#" + pi] = window._secPart.ans;
-  topicSaveLast(cat, key, pi);
-  topicMarkSeen(key + "#" + pi);
+  topicSaveLast(cat, key, pi, window._secPart.si, window._secPart.tid);
+  topicMarkSeen(focus ? secUnitId(key, pi, si) : key + "#" + pi);
   renderTopicPart();
 }
+async function openTopicPart(key, pi) { return openTopicUnit(key, pi, -1); }
 function renderTopicPart() {
   scrollTopInstant();
   const key = window._secPart.key, pi = window._secPart.pi;
@@ -2274,10 +2470,14 @@ function renderTopicPart() {
   const blocks = ex.blocks.slice(p.hdrEnd, p.end);
   const qs = blocks.filter(b => b.t === "q");
   const ansObj = window._secPart.ans;
-  const list = secList(cat).filter(x => window._topic.year === "all" || String(x.meta.year) === String(window._topic.year));
-  const idx = list.findIndex(x => x.key === key && x.pi === pi);
+  const sp = window._secPart;
+  // 上一份/下一份：只在同一题型里跨年份连续（P3）
+  const list = secUnitList(cat).filter(x => !sp.tid || x.tid === sp.tid);
+  const idx = list.findIndex(x => x.key === key && x.pi === pi && (sp.si == null || sp.si < 0 || x.si === sp.si));
+  const typeName = sp.tid ? secTypeLabel(sp.tid) : (catMeta.name || cat);
   let html = '<div class="stickyBar"><button class="btn ghost small" id="topicBack">← 专题</button>' +
-    '<span class="meta" id="secProg">' + secExamLabel(ex.meta) + ' · ' + (catMeta.name || cat) + (qs.length ? ' · 已答 0/' + qs.length : '') + '</span>' +
+    '<span class="meta" id="secProg">' + secExamLabel(ex.meta) + ' · ' + typeName +
+    (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') + (qs.length ? ' · 已答 0/' + qs.length : '') + '</span>' +
     '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
   html += '<div class="secHead"><div class="k">' + esc((catMeta.icon || '') + ' ' + secExamLabel(ex.meta)) + '</div>' +
@@ -2286,6 +2486,27 @@ function renderTopicPart() {
   // 原卷残缺的说明（OCR 补录的套次会带 note）
   if (ex.meta && ex.meta.note) {
     html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
+  }
+  // 作文：先自己写（建议手写），范文默认收起，点「参考答案」才展开
+  if (cat === "writing") {
+    html += '<div class="writeHint">✍️ 建议手写：30 分钟，150–200 词。写完再点下面的「参考答案」对照，先看范文收益很低。</div>';
+    const refs = (ex.meta && ex.meta.writeRef) || [];
+    if (refs.length) {
+      const curRef = (window._secPart.showRef ? (window._secPart.refIdx || 0) : -1);
+      html += '<div class="row" style="gap:8px;margin:0 0 10px">';
+      refs.forEach((r, i) => {
+        html += '<button class="btn small ' + (curRef === i ? "ghost" : "ok") + ' writeRefBtn" data-ref="' + i + '" style="flex:1">' +
+          (curRef === i ? '收起范文' : '参考答案 ▾' + (refs.length > 1 ? ' ' + (i + 1) : '')) + '</button>';
+      });
+      html += '</div>';
+      if (curRef >= 0 && refs[curRef]) {
+        html += '<div class="writeRefBox"><div class="writeRefHead">参考范文 ' + (curRef + 1) + '/' + refs.length + '</div>' +
+          esc(refs[curRef]).split(/(?<=[.!?])\s+/).filter(Boolean)
+            .map(s => '<div class="examText">' + esc(s) + '</div>').join('') + '</div>';
+      }
+    } else {
+      html += '<div class="muted" style="font-size:11px;margin:-2px 0 10px">这套暂无范文，写完后可对照原卷参考答案自己批改</div>';
+    }
   }
   // 翻译：有英文参考译文就能「先自己译 → 点开对照」
   if (cat === "translation" && ex.meta && ex.meta.transRef) {
@@ -2368,8 +2589,22 @@ function renderTopicPart() {
     window._exam.key = key; window._exam.answers = {}; renderExamPaper();
   };
   const prev = document.getElementById("secPrev"), next = document.getElementById("secNext");
-  if (prev) prev.onclick = () => { if (idx > 0) openTopicPart(list[idx - 1].key, list[idx - 1].pi); };
-  if (next) next.onclick = () => { if (idx >= 0 && idx < list.length - 1) openTopicPart(list[idx + 1].key, list[idx + 1].pi); };
+  if (prev) prev.onclick = () => { if (idx > 0) openTopicUnit(list[idx - 1].key, list[idx - 1].pi, list[idx - 1].si); };
+  if (next) next.onclick = () => { if (idx >= 0 && idx < list.length - 1) openTopicUnit(list[idx + 1].key, list[idx + 1].pi, list[idx + 1].si); };
+  studyArea().querySelectorAll(".writeRefBtn").forEach(b => b.onclick = () => {
+    const i = Number(b.dataset.ref);
+    if (window._secPart.showRef && (window._secPart.refIdx || 0) === i) { window._secPart.showRef = false; }
+    else { window._secPart.showRef = true; window._secPart.refIdx = i; }
+    renderTopicPart();
+  });
+  // 从题型分组点进来：直接滚到该题型块的标题行
+  if (sp.si != null && sp.si >= 0) {
+    const u = secUnitsOf(key, pi)[sp.si];
+    if (u) {
+      const el = document.getElementById("sp" + u.start);
+      if (el) setTimeout(() => { try { el.scrollIntoView({ block: "start" }); } catch (e) { } }, 0);
+    }
+  }
   const so = document.getElementById("secOrig"), st = document.getElementById("secText");
   if (so) so.onclick = () => { window._secPart.showText = false; renderTopicPart(); };
   if (st) st.onclick = () => { window._secPart.showText = true; renderTopicPart(); };
@@ -2389,7 +2624,9 @@ function renderTopicPart() {
   // 已答计数
   const upd = () => {
     const el = document.getElementById("secProg");
-    if (el) el.textContent = secExamLabel(ex.meta) + ' · ' + (catMeta.name || cat) + (qs.length ? ' · 已答 ' + Object.keys(ansObj).length + '/' + qs.length : '');
+    if (el) el.textContent = secExamLabel(ex.meta) + ' · ' + typeName +
+      (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') +
+      (qs.length ? ' · 已答 ' + Object.keys(ansObj).length + '/' + qs.length : '');
   };
   studyArea().querySelectorAll(".examOpt").forEach(btn => {
     const f = btn.onclick;
