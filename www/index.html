@@ -20,7 +20,7 @@
   body {
     background: var(--bg); color: var(--txt);
     font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    max-width: 640px; margin: 0 auto; padding: 14px 14px 90px;
+    max-width: 640px; margin: 0 auto; padding: 14px 10px 90px; /* v1.9.2 左右各收 4px：手机上正文列宽 +8px（少折行） */
   }
   header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   /* 分区模式：备考专区只显示 studyCard，背单词模式隐藏 studyCard */
@@ -44,6 +44,8 @@
   .tab.active { background: var(--accent); color: #06121f; border-color: var(--accent); font-weight: 600; }
   .tab small { display: block; font-size: 11px; opacity: .75; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  /* 备考专区：卡片内留白收紧（手机上正文列宽 +12px，长句少折行） */
+  body.mode-study #studyCard { padding: 12px 10px; border: none; background: transparent; }
   .bigWord { font-size: 34px; font-weight: 700; text-align: center; word-break: break-all; line-height: 1.35; }
   .trans { text-align: center; color: var(--dim); font-size: 16px; margin-top: 10px; min-height: 24px; }
   .poolRow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: var(--dim); }
@@ -87,22 +89,50 @@
   .hint { color: var(--dim); font-size: 12px; }
   /* 真题试卷视图 */
   /* 大题（Part I/II/III/IV）：强区分——色块+左边条+大间距 */
-  .examH { font-size: 16px; font-weight: 700; margin: 36px 0 14px; padding: 12px 14px; color: var(--accent);
+  .examH { font-size: var(--rd, 16px); font-weight: 700; margin: 32px 0 14px; padding: 12px 14px; color: var(--accent);
             background: rgba(90,162,255,.12); border-left: 4px solid var(--accent); border-radius: 8px; letter-spacing: .5px; }
   /* 小节（Section A/B/C）：次强区分——浅色块+中间距 */
-  .examH.sec { font-size: 14px; font-weight: 700; margin: 26px 0 10px; padding: 8px 12px; color: var(--txt);
+  .examH.sec { font-size: calc(var(--rd, 16px) - 1px); font-weight: 700; margin: 22px 0 10px; padding: 8px 12px; color: var(--txt);
                background: rgba(90,162,255,.06); border-left: 3px solid var(--dim); border-radius: 6px; }
-  .examText { font-size: 14px; line-height: 1.95; margin: 12px 0; word-break: break-word; }
+  .examText { font-size: 14px; line-height: 2.0; margin: 14px 0; word-break: break-word; }
   /* 听力原文逐行排版 */
-  .listenLine { font-size: 14px; line-height: 1.75; margin: 7px 0; word-break: break-word; }
+  .listenLine { font-size: 14px; line-height: 1.9; margin: 9px 0; word-break: break-word; }
   .listenLine.dlg { padding: 2px 0 2px 12px; border-left: 2px solid var(--line); }
   .listenLine.q { color: var(--accent); font-weight: 600; margin-top: 16px; }
-  .listenHead { font-size: 15px; font-weight: 700; color: var(--accent); margin: 22px 0 8px; }
-  /* 每题：上方大间距 + 虚线分隔，眼睛有落点 */
-  .examQ { font-size: 15px; font-weight: 600; line-height: 1.6; margin: 32px 0 10px; padding-top: 22px; border-top: 1px dashed var(--line); overflow-wrap: anywhere; }
-  .examQ.first { border-top: none; padding-top: 0; margin-top: 12px; }
-  .examOpt { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--txt); padding: 12px 14px; margin: 8px 0; font-size: 14px; line-height: 1.6; cursor: pointer; overflow-wrap: anywhere; }
-  .examOpt b { color: var(--accent); margin-right: 4px; }
+  .listenHead { font-size: 15px; font-weight: 700; color: var(--accent); margin: 26px 0 10px; }
+  /* 对话轮次（听力原文重排，v1.9.2）：说话人另起一块，轮次之间留白，不再一行挤满 */
+  .dlgTurn { padding: 0 0 0 12px; margin: 0 0 13px; border-left: 3px solid rgba(90,162,255,.35);
+             font-size: var(--rd, 16px); line-height: 1.95; word-break: break-word; }
+  .dlgTurn:last-child { margin-bottom: 4px; }
+  .dlgTurn .who { display: inline-block; min-width: 22px; font-weight: 700; color: var(--accent); margin-right: 6px; }
+  /* 对照译文盒子：原文 + 逐句中文 */
+  .transBox { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px;
+              background: var(--card); }
+  .transHead { font-size: 12px; color: var(--dim); margin: 0 0 10px; letter-spacing: .4px; }
+  /* 译文默认收起（<details>）：原文先看，想对照再展开，避免一屏全是中文 */
+  .transFold { padding: 10px 14px; }
+  .transFold > summary { font-size: 12px; color: var(--dim); cursor: pointer; list-style: none; padding: 3px 0; }
+  .transFold > summary::-webkit-details-marker { display: none; }
+  .transFold[open] > summary { color: var(--accent); margin-bottom: 10px; }
+  .zhSent { font-size: calc(var(--rd, 16px) - 1px); line-height: 2.05; margin: 0 0 12px; word-break: break-word; }
+  .zhSent:last-child { margin-bottom: 0; }
+  /* 每题（v1.9.2）：不再用 54px 空白分隔，改成「左色条 + 浅色块」，题干本身就是落点 */
+  .examQ { font-size: calc(var(--rd, 16px) + 1px); font-weight: 600; line-height: 1.55;
+           margin: 22px 0 8px; padding: 10px 12px; background: rgba(90,162,255,.07);
+           border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; overflow-wrap: anywhere; }
+  .examQ.first { margin-top: 10px; }
+  /* 只有选项没有题干（听力常见）：只给紧凑题号，不画色块 */
+  .examQ.numOnly { background: none; border-left: none; padding: 0; margin: 18px 0 6px;
+                   font-size: calc(var(--rd, 16px) - 1px); color: var(--dim); }
+  .examOpt { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--txt); padding: 11px 13px 11px 30px; margin: 0 0 10px; font-size: calc(var(--rd, 16px) - 1px); line-height: 1.6; cursor: pointer; overflow-wrap: anywhere; text-indent: -16px; }
+  .examOpt b { display: inline-block; width: 16px; text-indent: 0; color: var(--accent); margin-right: 0; }
+  .examOpt:active { background: #243049; }
+  /* 选词填空词表（v1.9.2）：扫描件里挤成一段流动文字、字母还乱序 → 两列网格 + 按 A–O 排序 */
+  .wBank { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 14px 0 18px;
+           padding: 12px; border: 1px dashed var(--line); border-radius: 10px;
+           font-size: calc(var(--rd, 16px) - 3px); line-height: 1.5; }
+  .wBank span { overflow-wrap: anywhere; }
+  .wBank b { color: var(--accent); margin-right: 4px; }
   .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
   .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
@@ -125,15 +155,15 @@
   .listenHead { font-size: calc(var(--rd, 16px) + 1px); }
   /* 吸顶工具条：任何滚动位置都能一键返回/调字号，不占正文阅读宽度 */
   .stickyBar {
-    position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; align-items: center;
+    position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; align-items: center;
     background: rgba(15,20,32,.94); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     padding: 8px 0; margin: 0 0 8px; border-bottom: 1px solid var(--line);
   }
-  .stickyBar .btn { flex: none; padding: 8px 12px; font-size: 13px; min-height: 40px; }
+  .stickyBar .btn { flex: none; padding: 8px 12px; font-size: 13px; min-height: 44px; }
   .stickyBar .meta { flex: 1; min-width: 0; font-size: 12px; color: var(--dim); text-align: right;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rsBtn {
-    flex: none; min-width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line);
+    flex: none; min-width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--card); color: var(--txt); font-size: 14px; font-weight: 700; cursor: pointer;
   }
   .rsBtn:active { background: var(--line); }
@@ -191,12 +221,13 @@
   .secHead { margin: 4px 0 12px; padding: 12px 14px; border-radius: 10px;
     background: rgba(90,162,255,.10); border-left: 4px solid var(--accent); }
   .secHead .k { font-size: 12px; color: var(--dim); }
-  .secHead .t { font-size: 16px; font-weight: 700; color: var(--accent); margin: 3px 0 5px; }
+  .secHead .t { font-size: calc(var(--rd, 16px) + 2px); font-weight: 700; color: var(--accent); margin: 3px 0 5px; }
   .secHead .m { font-size: 12px; color: var(--dim); }
-  /* 说明文字（Directions）压低、中文原文放大：练习时不抢眼、看得清 */
-  .secDir { font-size: calc(var(--rd, 16px) - 3px); color: var(--dim); line-height: 1.75; margin: 8px 0; }
-  .secZh { font-size: calc(var(--rd, 16px) + 1px); line-height: 2.1; margin: 10px 0;
-    letter-spacing: .3px; word-break: break-word; }
+  /* 说明文字（Directions）压低 + 左侧竖条：一眼区分「考试要求」和「文章正文」 */
+  .secDir { font-size: calc(var(--rd, 16px) - 3px); color: var(--dim); line-height: 1.75; margin: 6px 0 18px;
+    padding-left: 10px; border-left: 2px solid var(--line); }
+  .secZh { font-size: calc(var(--rd, 16px) + 1px); line-height: 1.85; margin: 0 0 16px;
+    text-align: justify; text-justify: inter-ideograph; letter-spacing: 0; word-break: break-word; }
   .secOnly { float: right; margin: -2px 0 0 8px; font-size: 11px; padding: 3px 9px; border-radius: 11px; }
   .secNav { display: flex; gap: 8px; margin: 22px 0 8px; }
   .secNav .btn { flex: 1; min-height: 44px; padding: 10px 6px; font-size: 13px; }
@@ -204,7 +235,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.1"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.2"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -528,7 +559,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.1";
+const APP_VERSION = "1.9.2";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1659,6 +1690,7 @@ function renderExamPaper() {
   scrollTopInstant();
   const ex = EXAM_BANK.exams[window._exam.key];
   const qs = ex.blocks.filter(b => b.t === "q");
+  const pblocks = preScanBanks(ex.blocks, 0);   // 选词填空词表成块渲染（原索引保留在 __bi）
   const answeredN = () => Object.keys(window._exam.answers || {}).length;
   let html = '<div class="stickyBar"><button class="btn ghost small" id="examBack">← 列表</button>' +
     '<span class="meta" id="examProg">' + examMetaLabel(ex.meta) + ' · 已答 0/' + qs.length + '</span>' +
@@ -1700,7 +1732,13 @@ function renderExamPaper() {
   if (secPartsOf(window._exam.key).length > 1) {
     secPartsOf(window._exam.key).forEach((p, pi) => { partStarts[p.start] = pi; });
   }
-  ex.blocks.forEach((b, bi) => {
+  pblocks.forEach((b) => {
+    const bi = (b.__bi != null ? b.__bi : 0);
+    if (b.t === "bank") {
+      html += bankHtml(b.items);
+      afterH = false;
+      return;
+    }
     if (b.t === "h") {
       const sec = /^Section/i.test(b.v);
       html += '<div class="examH' + (sec ? ' sec' : '') + '" id="eh' + bi + '">' + esc(b.v) +
@@ -1708,12 +1746,15 @@ function renderExamPaper() {
         '</div>';
       afterH = true;
     } else if (b.t === "text") {
-      html += '<div class="examText">' + esc(b.v) + '</div>';
+      // 正文按内容分类渲染：Directions 压成说明体、中文原文放大、词表成网格（v1.9.2）
+      html += examBlockHtml(b.v);
       afterH = false;
     } else {
       const sel = window._exam.answers[b.n];
       const ans = b.answer;
-      html += '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + (b.stem ? esc(b.stem) : '') + '</div>';
+      html += (b.stem
+        ? '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + esc(b.stem) + '</div>'
+        : '<div class="examQ numOnly" id="qq' + bi + '">' + b.n + '.</div>');
       afterH = false;
       for (const k of "ABCD") {
         if (!b.opts || !b.opts[k]) continue;
@@ -1804,6 +1845,61 @@ window._listen = { level: "cet6", key: null, showTrans: false };
 function listenMetaLabel(meta) {
   return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" + (meta.set > 1 ? " 第" + meta.set + "套" : "");
 }
+
+/* ===== 听力原文排版（v1.9.2）=====
+   扫描件抽出来的原文是「每行一个 PDF 行」，句子被硬换行切断、说话人挤在一起，
+   直接逐行显示就是一团密密麻麻。这里重排成「说话人轮次」：
+   M/W/Q 一律另起一块（轮次内部断行并回同一段），题号+问题单独成块。 */
+const LISTEN_WHO_RE = /^(W|M|Q|Woman|Man|Narrator|Speaker|Interviewer|Audio)\s*[:：]/i;
+const LISTEN_HEAD_RE = /^(Section|Part|Conversation|News Report|Passage|Questions?|Directions|Listening)/i;
+function listenTurns(text) {
+  const turns = [];
+  const raw = (text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)
+    .map(x => x.replace(/\[\d{1,3}\]/g, "").replace(/\s{2,}/g, " ").trim()).filter(Boolean);
+  const pushLine = (l) => {
+    if (LISTEN_HEAD_RE.test(l)) { turns.push({ t: "h", v: l }); return; }
+    const m = l.match(LISTEN_WHO_RE);
+    if (m) {
+      const tag = m[1].length <= 2 ? m[1].toUpperCase() : m[1].slice(0, 1).toUpperCase();
+      turns.push({ t: "d", who: tag, v: l.slice(m[0].length).trim() });
+      return;
+    }
+    // 续行：并回上一轮（扫描硬换行），中英文之间按需补一个空格
+    if (turns.length && turns[turns.length - 1].t === "d") {
+      const prev = turns[turns.length - 1];
+      const needSpace = /[A-Za-z0-9,;:]$/.test(prev.v) && /^[A-Za-z0-9("(]/.test(l);
+      prev.v += (needSpace ? " " : "") + l;
+      return;
+    }
+    turns.push({ t: "p", v: l });
+  };
+  raw.forEach(l => {
+    // 少量行把「题号 + 问题」粘在对话末尾（如 "… tomorrow 11. Q: What should the man do?"）→ 拆出来
+    l.split(/(?=\s\d{1,3}\.\s*[WMQ]\s*[:：])/).map(s => s.trim()).filter(Boolean).forEach(pushLine);
+  });
+  return turns;
+}
+function listenTurnsHtml(text, withId) {
+  return listenTurns(text).map((x, i) => {
+    const id = (withId && x.t === "h") ? ' id="lh' + i + '"' : '';
+    if (x.t === "h") return '<div class="listenHead"' + id + '>' + esc(x.v) + '</div>';
+    if (x.t === "d") return '<div class="dlgTurn"><span class="who">' + esc(x.who) + ':</span><span class="say">' + esc(x.v) + '</span></div>';
+    return '<div class="listenLine">' + esc(x.v) + '</div>';
+  }).join("");
+}
+/* 参考译文：默认收起（原文先看），展开才显示逐句中文 */
+function listenTransBox(trans) {
+  if (!trans) return '<div class="transBox"><div class="transHead">参考译文</div><div class="muted" style="font-size:12px">该套暂无参考译文，只有原文</div></div>';
+  const blocks = listenSentenceBlocks(trans);
+  const n = (trans.split(/(?<=[。！？.!?])\s+/).filter(Boolean) || []).length;
+  return '<details class="transBox transFold"><summary>参考译文 · ' + n + ' 句（点开对照）</summary>' + blocks + '</details>';
+}
+/* 译文按句断开，手机上每句一行，方便和原文逐句对照 */
+function listenSentenceBlocks(text) {
+  return (text || "").replace(/\*\*/g, "").replace(/^#{1,6}\s*/gm, "").replace(/^>\s*/gm, "").trim()
+    .split(/(?<=[。！？.!?])\s+/).map(x => x.trim()).filter(Boolean)
+    .map(s => '<div class="zhSent">' + esc(s) + '</div>').join("");
+}
 async function openListening() {
   switchMode("study");
   document.getElementById("studyExamTab").className = "btn small ghost";
@@ -1860,29 +1956,23 @@ function renderListenRead() {
     if (rec.audio) html += spdHtml();
     html += '</div>';
   }
-  let text = window._listen.showTrans && rec.trans ? rec.trans : (rec.text || "（无原文）");
   if (window._listen.showTrans && rec.trans) {
-    // 译文是 md 源：剥掉标题/引用/加粗标记，纯文本阅读更干净
-    text = text.replace(/^#{1,6}\s*/gm, "").replace(/^>\s*/gm, "").replace(/\*\*/g, "").trim();
+    // 对照译文：上=原文（按说话人轮次分行），下=中文逐句（可收起；窄屏左右并排会挤成一团）
+    html += '<div class="transBox"><div class="transHead">原文 · 说话人轮次' + (rec.audio ? ' · 本套全部' : '') + '</div>' + listenTurnsHtml(rec.text || "（无原文）") + '</div>';
+    html += listenTransBox(rec.trans);
+  } else {
+    const turns = listenTurns(rec.text || "");
+    const heads2 = [];   // 段落速跳（Section/Conversation 等标题）
+    turns.forEach((x, i) => { if (x.t === "h") heads2.push({ i: i, v: x.v }); });
+    if (heads2.length >= 2) {
+      html += '<div class="yearChips" style="margin:0 0 4px">';
+      heads2.forEach((h, n) => {
+        html += '<button class="chip" data-ljump="lh' + h.i + '" title="' + esc(h.v) + '">' + (n + 1) + '. ' + esc(h.v.replace(/\s*\(.*/, "")) + '</button>';
+      });
+      html += '</div>';
+    }
+    html += '<div style="margin-top:8px">' + listenTurnsHtml(rec.text || "（无原文）", true) + '</div>';
   }
-  const lines = text.split(/\r?\n/).map(x => x.trim()).filter(Boolean)
-    .map(x => x.replace(/\[\d{1,3}\]/g, "").replace(/\s{2,}/g, " ").trim()).filter(Boolean);
-  const heads2 = [];   // 段落速跳（Section/Conversation 等标题）
-  lines.forEach((l, i) => {
-    if (/^(Section|Part|News Report|Conversation|Listening|Questions)\b/i.test(l)) heads2.push({ i, v: l });
-  });
-  if (heads2.length > 2) {
-    html += '<div class="yearChips" style="margin:0 0 4px">';
-    heads2.forEach((h, n) => {
-      html += '<button class="chip" data-ljump="lh' + h.i + '" title="' + esc(h.v) + '">' + (n + 1) + '. ' + esc(h.v.replace(/\s*\(.*/, "")) + '</button>';
-    });
-    html += '</div>';
-  }
-  html += '<div style="margin-top:8px">' + lines.map((l, i) => {
-    if (/^(Section|Part|News Report|Conversation|Listening|Questions)\b/i.test(l)) return '<div class="listenHead" id="lh' + i + '">' + esc(l) + '</div>';
-    if (/^[WMQ]:?\s/.test(l)) return '<div class="listenLine dlg">' + esc(l) + '</div>';
-    return '<div class="listenLine">' + esc(l) + '</div>';
-  }).join('') + '</div>';
   studyArea().innerHTML = html;
   document.getElementById("listenQuit").onclick = () => renderListenList();
   bindRsButtons();
@@ -2443,8 +2533,68 @@ function secLineClass(l) {
   if (cjk >= 8 && cjk >= l.length * 0.35) return "secZh";
   return "examText";
 }
+/* 选词填空词表：扫描件里是「A) word B) word …」挤成一段，字母顺序还乱（A,B,C,K,D,L…）
+   → 识别出来单独成块，按 A–O 排序、两列网格，找词不用逐行扫 */
+function parseWordBank(t) {
+  if (!t || t.length < 60) return null;
+  var re = /(?:^|\s)([A-O])\)\s*([A-Za-z][A-Za-z'\u2019\-]*)/g, m, items = [], covered = 0;
+  while ((m = re.exec(t))) { items.push({ k: m[1], v: m[2] }); covered += m[0].length; }
+  if (items.length < 6 || covered / t.length < 0.75) return null;
+  var uniq = {};
+  items.forEach(function (x) { if (!uniq[x.k]) uniq[x.k] = x.v; });
+  var ks = Object.keys(uniq).sort();
+  if (ks.length < 6) return null;
+  return '<div class="wBank">' + ks.map(function (k) {
+    return '<span><b>' + k + '</b> ' + esc(uniq[k]) + '</span>';
+  }).join('') + '</div>';
+}
+/* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文） */
+function examBlockHtml(v) {
+  var t = secNorm(v);
+  var bank = parseWordBank(t);
+  if (bank) return bank;
+  return '<div class="' + secLineClass(t) + '">' + esc(t) + '</div>';
+}
+/* 选词填空词表在数据里是「一个选项一个块」（A）anywhere / exemption / B） asserts …），
+   顺序还按两列排版乱序 → 先扫成一串条目，够 8 条才当成词表，按 A–O 排成网格 */
+var BANK_LET_RE = /^([A-O])\s*[）)]\s*(.*)$/;
+function preScanBanks(blocks, base) {
+  var out = [], i = 0, off = (base || 0);
+  while (i < blocks.length) {
+    var b = blocks[i];
+    if (b.t === "text" && BANK_LET_RE.test(secNorm(b.v))) {
+      var items = [], j = i;
+      while (j < blocks.length) {
+        var c = blocks[j];
+        if (c.t !== "text") break;
+        var t = secNorm(c.v).replace(/\s+/g, " ").trim();
+        var m = t.match(BANK_LET_RE);
+        if (m) { items.push({ k: m[1], v: m[2].trim() }); j++; continue; }
+        if (!items.length) break;
+        if (t.length > 40 || /[.!?。]$/.test(t) || /^(Section|Part|Directions|Questions?)/i.test(t)) break;
+        items[items.length - 1].v = (items[items.length - 1].v ? items[items.length - 1].v + " " : "") + t;
+        j++;
+      }
+      if (items.length >= 8) { out.push({ t: "bank", items: items, __bi: off + i }); i = j; continue; }
+    }
+    b.__bi = off + i;
+    out.push(b); i++;
+  }
+  return out;
+}
+function bankHtml(items) {
+  var uniq = {}, ks = [];
+  items.forEach(function (x) { if (!uniq[x.k]) { uniq[x.k] = x.v; ks.push(x.k); } });
+  ks.sort();
+  return '<div class="wBank">' + ks.map(function (k) {
+    return '<span><b>' + k + '</b> ' + esc(uniq[k]) + '</span>';
+  }).join('') + '</div>';
+}
 function secQHtml(b, first, ans, sel) {
-  var html = '<div class="examQ' + (first ? ' first' : '') + '">' + b.n + '. ' + (b.stem ? esc(b.stem) : '') + '</div>';
+  // 题干缺失（听力等只有选项）→ 只留一个紧凑题号，不占一块色条空白
+  var html = (b.stem
+    ? '<div class="examQ' + (first ? ' first' : '') + '">' + b.n + '. ' + esc(b.stem) + '</div>'
+    : '<div class="examQ numOnly">' + b.n + '.</div>');
   for (var i = 0; i < 4; i++) {
     var k = "ABCD".charAt(i);
     if (!b.opts || !b.opts[k]) continue;
@@ -2498,7 +2648,8 @@ function renderTopicPart() {
   // 题型块（v1.9）：sp.si>=0 时只渲染这一段（Section A/B/C 等），否则渲染整个板块
   const unitsOfPart = (sp.si >= 0) ? secUnitsOf(key, pi) : [];
   const focus = unitsOfPart[sp.si] || null;
-  const blocks = ex.blocks.slice(focus ? focus.start : p.hdrEnd, focus ? focus.end : p.end);
+  const bStart = (focus ? focus.start : p.hdrEnd);
+  const blocks = preScanBanks(ex.blocks.slice(bStart, focus ? focus.end : p.end), bStart);
   const qs = blocks.filter(b => b.t === "q");
   const ansObj = window._secPart.ans;
   // 上一份/下一份：只在同一题型里跨年份连续（P3）
@@ -2567,11 +2718,13 @@ function renderTopicPart() {
     if (lv) audioRec = LISTEN_BANK[lv][key];
   }
   if (audioRec && audioRec.audio) {
-    html += '<div class="stickyAudio"><audio id="secAudio" controls preload="metadata" src="' + esc(audioRec.audio) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
+    // 听力：默认只给「选项 + 播放器」，像考试一样先听；原文/译文收进「对照译文」，点了才看
+    html += '<div class="stickyAudio"><audio id="secAudio" controls preload="metadata" src="' + esc(wbUrl(audioRec.audio)) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
+    const showTxt = !!window._secPart.showText;
     html += '<div class="row" style="gap:8px;margin-bottom:10px">';
     if (audioRec.text) {
-      html += '<button class="btn small ' + (window._secPart.showText ? "ghost" : "ok") + '" id="secOrig" style="flex:1">做题</button>' +
-        '<button class="btn small ' + (window._secPart.showText ? "ok" : "ghost") + '" id="secText" style="flex:1">听力原文</button>';
+      html += '<button class="btn small ' + (showTxt ? "ghost" : "ok") + '" id="secText" style="flex:1">' +
+        (showTxt ? '← 回到题目' : '对照译文 ▾') + '</button>';
     }
     html += spdHtml() + '</div>';
   }
@@ -2580,11 +2733,9 @@ function renderTopicPart() {
     const sents = ex.meta.transRef.split(/(?<=[.!?])\s+/).filter(Boolean);
     html += sents.map(s => '<div class="examText">' + esc(s) + '</div>').join('');
   } else if (window._secPart.showText && audioRec && audioRec.text) {
-    const tl = audioRec.text.split(/\r?\n/).map(x => x.trim()).filter(Boolean)
-      .map(x => x.replace(/\[\d{1,3}\]/g, "").replace(/\s{2,}/g, " ").trim()).filter(Boolean);
-    html += tl.map(l => /^(Section|Part|News Report|Conversation|Listening|Questions)\b/i.test(l)
-      ? '<div class="listenHead">' + esc(l) + '</div>'
-      : (/^[WMQ]:?\s/.test(l) ? '<div class="listenLine dlg">' + esc(l) + '</div>' : '<div class="listenLine">' + esc(l) + '</div>')).join('');
+    // 对照视图：上=原文（按说话人轮次分行），下=参考译文（逐句、默认收起）
+    html += '<div class="transBox"><div class="transHead">听力原文 · 说话人轮次 · 本套全部</div>' + listenTurnsHtml(audioRec.text) + '</div>';
+    html += listenTransBox(audioRec.trans);
   } else {
     // 正文：文字先收集，遇到题目/小节标题再冲刷成段落
     let lines = [], afterH = true;
@@ -2598,11 +2749,13 @@ function renderTopicPart() {
       lines = [];
       return flow.map(l => {
         if (/^[A-O]\)/.test(l) && l.length < 40) return '<div class="examText">' + esc(l) + '</div>';
-        return '<div class="' + secLineClass(l) + '">' + esc(l) + '</div>';
+        return examBlockHtml(l);
       }).join("");
     };
     let buf = "";
-    blocks.forEach((b, bi) => {
+    blocks.forEach((b) => {
+      const bi = (b.__bi != null ? b.__bi : 0);
+      if (b.t === "bank") { buf += flush(); buf += bankHtml(b.items); afterH = false; return; }
       if (b.t === "h") { buf += flush(); afterH = true; buf += '<div class="examH sec" id="sp' + bi + '">' + esc(secNorm(b.v)) + '</div>'; return; }
       if (b.t === "text") { lines.push(secNorm(b.v)); return; }
       buf += flush();
@@ -2640,9 +2793,8 @@ function renderTopicPart() {
       if (el) setTimeout(() => { try { el.scrollIntoView({ block: "start" }); } catch (e) { } }, 0);
     }
   }
-  const so = document.getElementById("secOrig"), st = document.getElementById("secText");
-  if (so) so.onclick = () => { window._secPart.showText = false; renderTopicPart(); };
-  if (st) st.onclick = () => { window._secPart.showText = true; renderTopicPart(); };
+  const stx = document.getElementById("secText");
+  if (stx) stx.onclick = () => { window._secPart.showText = !window._secPart.showText; renderTopicPart(); };
   const ro = document.getElementById("refOrig"), rs = document.getElementById("refShow");
   if (ro) ro.onclick = () => { window._secPart.showRef = false; renderTopicPart(); };
   if (rs) rs.onclick = () => { window._secPart.showRef = true; renderTopicPart(); };
