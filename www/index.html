@@ -252,7 +252,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.7"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.8"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -576,7 +576,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.7";
+const APP_VERSION = "1.9.8";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1688,6 +1688,7 @@ function renderExamList() {
       const qs = ex.blocks.filter(b => b.t === "q");
       const hasListen = qs.some(q => q.n <= 25);
       const tag = (hasListen ? "" : ' <span style="color:var(--no);font-size:11px">仅阅读</span>') +
+        (qs.length < 20 ? ' <span style="color:var(--no);font-size:11px">残缺扫描</span>' : '') +
         (p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '');
       html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + qs.length + ' 题）' + tag + '</button>';
     }
@@ -1715,7 +1716,8 @@ function renderExamPaper() {
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
   html += '<div class="muted" style="font-size:11px;margin-bottom:8px">点选项作答（蓝色=已选；有标准答案的套次即时判对错）</div>';
   if (ex.meta && ex.meta.note) {
-    html += '<div class="muted" style="font-size:11px;color:var(--no);margin-bottom:8px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
+    const notePre = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
+    html += '<div class="muted" style="font-size:11px;color:var(--no);margin-bottom:8px;line-height:1.6">' + notePre + esc(ex.meta.note) + '</div>';
   }
   // 段落速跳：长卷（70~90 题）手机上滑很久，给一排 Part/Section 跳转 chips
   const heads = [];
@@ -2630,17 +2632,21 @@ function tidyText(t) {
    直接显示就是乱码数字 → 统一成带编号的空格下划线 */
 function blankify(escaped) {
   var NUM = "(?:2[6-9]|3[0-5])";
+  var BLANK = function (num) { return '\u2007<span class="blank"><sup>' + num + '</sup></span>'; };
   var out = escaped
-    // 下划线形式：_34 / _ 33
-    .replace(new RegExp("_\\s?(" + NUM + ")(?![0-9])", "g"), '\u2007<span class="blank"><sup>$1</sup></span>')
+    // 下划线形式（含两侧多余下划线）：_26thought / _ 29 , / _30__ / _ 31_ / _ 33 _
+    .replace(new RegExp("_+\\s?(" + NUM + ")\\s?_+(?![0-9])", "g"), function (m, num) { return BLANK(num) + " "; })
+    .replace(new RegExp("_+\\s?(" + NUM + ")(?![0-9])", "g"), function (m, num) { return BLANK(num); })
     // 数字紧贴单词：26stress / n32that / 33in
     .replace(new RegExp("(^|[^0-9A-Za-z])n?(" + NUM + ")(?=[A-Za-z])", "g"),
-      function (m, pre, num) { return pre + '\u2007<span class="blank"><sup>' + num + '</sup></span> '; });
+      function (m, pre, num) { return pre + BLANK(num) + " "; });
   // 选词填空整段里，独立出现的 26–35 就是空格位置（"letting 27 pleasure-inducing" → 空27）
   if (window._bankPassage) {
     out = out.replace(new RegExp("(^|[\\s(\\u201c\"])(" + NUM + ")(?=[\\s,.;:)\\u201d\"]|$)", "g"),
-      function (m, pre, num) { return pre + '\u2007<span class="blank"><sup>' + num + '</sup></span>'; });
+      function (m, pre, num) { return pre + BLANK(num); });
   }
+  // 收尾：清掉残留的下划线标记，避免出现 "__" " _ "
+  out = out.replace(/_+/g, " ").replace(/\u2007\s+/g, "\u2007").replace(/\s{2,}/g, " ");
   return out;
 }
 /* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文）
@@ -2693,7 +2699,18 @@ function preScanBanks(blocks, base) {
         items[items.length - 1].v = (items[items.length - 1].v ? items[items.length - 1].v + " " : "") + t;
         j++;
       }
-      if (items.length >= 8) { out.push({ t: "bank", items: items, __bi: off + i }); i = j; continue; }
+      // 词表判据：≥12 项且绝大多数是「单个小写单词」——
+      // 否则会把整卷里连续的选择题选项块（"A) Less concern with money"）误当成选词填空词表
+      if (items.length >= 10) {
+        var wordish = 0;
+        items.forEach(function (x) {
+          // 词表里的词可能被 OCR 成首字母大写（"B) Embarking"），也可能是小写单词/双词短语；
+          // 选择题选项（"A) Less concern with money"）词数多，会被下面两条规则挡掉
+          if (/^[a-z][a-z'\u2019\-]*(?:\s+[a-z][a-z'\u2019\-]*)?$/.test(x.v) ||
+              /^[A-Z][a-z'\u2019\-]{2,}$/.test(x.v)) wordish++;
+        });
+        if (wordish >= 10) { out.push({ t: "bank", items: items, __bi: off + i }); i = j; continue; }
+      }
     }
     b.__bi = off + i;
     out.push(b); i++;
@@ -2773,6 +2790,30 @@ function renderTopicPart() {
   const blocks = preScanBanks(ex.blocks.slice(bStart, focus ? focus.end : p.end), bStart);
   // 选词填空页：段内独立出现的 26–35 数字就是空格编号（见 blankify）；有词表块即可判定
   window._bankPassage = (sp.tid === "banked") || ((focus && focus.tid === "banked") || blocks.some(function (x) { return x.t === "bank"; }));
+  // 扫描件的词表常被拆成两列、右列（I–O）跑到该 Section 之外 → 从整套块里补回缺失字母
+  if (window._bankPassage) {
+    var bankBlock = blocks.filter(function (x) { return x.t === "bank"; })[0];
+    var have = bankBlock ? bankBlock.items.map(function (x) { return x.k; }) : [];
+    var missing = "ABCDEFGHIJKLMNO".split("").filter(function (c) { return have.indexOf(c) < 0; });
+    if (missing.length) {
+      var extras = [];
+      ex.blocks.forEach(function (b) {
+        if (b.t !== "text") return;
+        var t = secNorm(b.v).trim();
+        var m = t.match(/^([A-O01])\s*[）)]\s*([a-z][a-z'\u2019\-]*)$/);
+        if (m && t.length < 30) extras.push({ k: bankLetter(m[1]), v: m[2] });
+      });
+      var merged = [];
+      missing.forEach(function (c) {
+        var hit = extras.filter(function (x) { return x.k === c; })[0];
+        if (hit) merged.push(hit);
+      });
+      if (merged.length) {
+        if (bankBlock) bankBlock.items = bankBlock.items.concat(merged);
+        else blocks.unshift({ t: "bank", items: merged, __bi: 0 });
+      }
+    }
+  }
   const qs = blocks.filter(b => b.t === "q");
   const ansObj = window._secPart.ans;
   // 上一份/下一份：只在同一题型里跨年份连续（P3）
@@ -2786,13 +2827,17 @@ function renderTopicPart() {
     (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') + (qs.length ? ' · 已答 0/' + qs.length : '') + '</span>' +
     '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
-  const headMeta = esc(focusSize || secSizeLabel(p)) + (qs.length && !qs.some(q => q.answer) ? ' · 暂无标准答案，可当练习' : '');
+  const bankMissing = window._bankPassage && !blocks.some(function (x) { return x.t === "bank"; });
+  const headMeta = esc(focusSize || secSizeLabel(p)) +
+    (qs.length && !qs.some(q => q.answer) ? ' · 暂无标准答案，可当练习' : '') +
+    (bankMissing ? ' · 词表扫描缺失（正在补）' : '');
   html += '<div class="secHead"><div class="k">' + esc((catMeta.icon || '') + ' ' + secExamLabel(ex.meta)) + '</div>' +
     '<div class="t">' + esc(focusSub || secItemSub(p)) + '</div>' +
     (headMeta ? '<div class="m">' + headMeta + '</div>' : '') + '</div>';
   // 原卷残缺的说明（OCR 补录的套次会带 note）
   if (ex.meta && ex.meta.note) {
-    html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">⚠ ' + esc(ex.meta.note) + '</div>';
+    const notePre2 = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
+    html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:11px;line-height:1.6">' + notePre2 + esc(ex.meta.note) + '</div>';
   }
   // 作文：先给题目 → 提示手写 → 范文默认收起（写完再点「参考答案」）
   let writeExtra = "";
