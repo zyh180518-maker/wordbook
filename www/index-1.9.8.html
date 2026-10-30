@@ -1,0 +1,3080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#5aa2ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="单词复习本">
+<link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAALn0lEQVR42u2de4xU1R3HP/fu7GP2ASsoyENCQaV2oSi+owul1ZqIj7Y2tWnVJqam0drYFlOiNtaEtJFaTYw1adOWpigWtZQishqtIfhAAUGU14rIy5Vl2QX2NbPzunP7x6iVsnR3Z+7M3nvP9/MPZHZyZ+ae7/f8fuec3znXwmd8b4nrIkLLU7dYlp++jyWxC5NNYUn0wmQzWBK+MNkIloQvTDaCJeELk41gSfjCZCPYEr8IEl5rzJLwhcnRwJb4hcnRwPL6Cyy9mUY1jSgm33+C17yKBJZX4pfwxXAaIV8T2BK/CCqf112+6ZAt8QuTTWBL/MJkE9ia7REYPDtka7ZHhC0KDMUEtnp+YXIksHWbhMnY6v2FyVHAlviFySawvVqOFgIflUcUlAKp9xemRAF7OFwnhB96/34NMNTeXyYQQRF/f9q2h9uBQgyn7iyvc3+tEAu/C//zpdMRP7pSCEq9EKaZH4GBM0IqhRCKAEIYbQClP8LUNEgRQCgCCCEDBJyG02Hh1TB5lBpVGGSA02rhp3Pg3ithymi4aw5UV6hhxeCwgjoArozA9TPg6nOgvOz4v21ugUfWgEb2YiAigXMscNkU+O4sOCXa/3tmTYRrGmDVdjWwCJEBpoyGH1wEZ5468Hu/cx7s7oCdbWpkEXAD1EfhxvOgcergDzO1LbizEe5bDZ19hX3+xHpYdK3EUgh/fhPW7NYgeGjutOHaBnj4epg9degn+dZH4fbLwF9PphWKAINg1kS46QIYW1fYdaaPg+saYOU2NbYIgAEmjISbL4QZ47y75g3n5sYCu9rV4MLnKdAFZ3grfoAyC37cCDVaHxB+N8Bz2+H9w95f99QauO1SNbjwuQFcFx5/HeIp76994ST42tlqdOHzWaAjMVi8vjjXvul8GDdCDS98Pg365j54fY/3162IwB2X58YFQvh6HeCvG6C9l6KsKH9rphpf+NwAiTT8YV1xitqumw5nnSYByAA+p7kNXmouwg+3cqlQVUQikAF8zrJ3oK3H++uOqYWbLpQIZACfk8rAH9flpki9Zu6Z8OXxEoIM4HPePwwvNhfn2j+8BKLlEoMM4HOeeQdau72/7uiaXOGdQMVwvk6FHPjLW/DLr3t/7a+cCRv2w7sHT/xbdwL++Z6ZAhlTC5dPkQF8w842WPshzJlahFToUljwHMTTJxpg+btmGmD6uHAbIJCnQjy1KSdKrznUrRMlNAYIAL1JePJtPK09euxV+PXL0BGTKDQGCABv7IXGKTCjgCnMtAOrd+R2i6UyEoMiQMBYvD43MM6HzS3wi+fg2S0SvyJAQDncC6u2wQ1DKGxr7YYlG+G9g2p8EXADQO7wq8apuek6BiisW7EVXtgJTlYNL0JyNmjagSc2nvzvLrl9BfNXwvPbJX4RsgjwaT6/5WM4d8Lxr+87Cn/bkN9pED9phEsmmyGCrgTc8awMEGiWbMwdkV5eBj3JXNnEmt3FKaATMoDvaOvJjQfqKnMzO7GUGlcYZAAwt1xB6AkxQsgAQsgAQsgAQsgAQsgAQsgAQsgAQsgAQuCrleC75sBFk0r3eQtWQUunGl4oAgghAwilQIL+n02wdJMZvzXrygCCE49eEUqBhJABhJABhJABhJABhJABhJABhEDrAKHnvIlw99zw/J639sFjr6ldFQGEDKBbIGQAITQGGB4OdsGuwwO/L1oBZ9SrwUTIDPDslsG9b9oYuP8qNZhQCiREeKdBO9u7+n29tyIC1BR8/Z5jvXR2DO3BYrE6bz7bL6SSaTrb44N6b2/Um98e7+2jsz1F/WkjZYCBxC7CS39tPpymiEj0wk+mKLUZIhK+8KMZSmWEiIQvTDZCRMIXJhshIuELk40QkfhLQyoDWY8eWVlVbhltBC9NEJHwS8PDL8Z5fVfak2ut+tlIbEvRwAsj2BK/CNOaQkkNIPGLoJvAlviFySawJX5hsglsiV+YbAJb4hcmm8CW+IXJJrAlfmGyCWyJX5hsAm2JFGhPsHp/YWgUsCV+YbIJlAIJpUDq/YWpUUCnQ5eIe66p1k0IQgRQ7y9MigIaA/wPDRMiXDWjQjfCxAhgeu9/ZUMFv/l2DePr1S+YEgU0BgBsC26dXcU3z68EIFph6aZg2Nmgpvb+1RUWC+ZVc8EXIse9JszYWG90BBhfb3P/N2o4Y5R9wrMIhE6HDjUzJ0W455pq6qqsfqOCMMgApqU/82ZW8KO5UcpOMtbtzxQinGmQcRHg1saq4/J9GQBNg5rEQOIHqIvKADKAwVRGLCo0QQyAZckARlJXpVtjwoSArdqf/qmvVhoEUBvi8VBne5dWgk/GqBqLD/Hn6dCFknYG/z3GjrC1DmAip9TYvj0dupScM75MYwAzDaAUKFphcfbp3hjAJ8FPBhiuCBBErvhSuWcP4xhK2iUD0N/UZGk/b8wIsyNAVbn1WXWsFzhZRQCCNBsxps7sCHDr7CrGjvTuHvSlFAEKM0BliQ0wwlwD3HhxJfNmelsS25NwNQtUCBNHlVaQNZUWNZUWsaRrjPC/OK6MWy6rYuYk72XR3ScDFMS0caX9qk+vTxL3ofhv/2qUEVGLnoRLd59Ld1+WWBLiKZdY0iWeckmkXZJpSGVcUhlwXJds9pM83ILyMovaytxAf+Iom2mnl3H+5PKidjIdvVkZIF8qIhZTx5SVaJEIHn0pzpqd/pyzryyH2dPKAxVZjsVyRpQB8mTOtHLKS6D/7j6XhStj7DjoHPf6hj0Z5j3ij5KRDw45XNkQrNRq/xEHrQQXwLxzi79H8aOjWR5YEeNQV9bX92LXIYegsa9dBsibS6aWc9bY4nb/m/dnePD5eCAGvHs7HDIORAJUobCz1VEpBHmVJFvceUW0qJ/x4tYUD6yIBWa2J+PkTBAUXGBbS0YGyIcJp9hFK0t2gSVvJHjs5T7frlKGIQ16v9WhM+7KAPnQ3Oqw9M1EUXrRh5riPL0+SRDZ3RYcA/i9Atb3y53L1id5Z793IbQ34XLf8hhrm9MElaBEgIwDr+xIyQCFltH+7oU4R2OFh9G2rizzl/X6OicdDAeOOCTS/h+z/Ht7yrcrwIGqBeqMu/x2dZxsAffyw8MOP/97Ly1HswSdrAv7Ovz9O1IZl2UBSDEDU/G1tSXD0nX5jQe2HMiw4JmYrwdjQ2Vvu7/ToKfeStLek5UBvOTpDUk2D3E8sLY5za9WxHxbjhtGA2xtybB8Y1JbIosyHmiKc3SQhVX/2pTkoaY4GYfQ4dcU6ONjWR58vrB0VQb4P3T1uSxq6hvwBi9+NcGf1iYIazGzHyPA/g6He/8RrFTTbppfH7i9f9taMjx5kvFA1oVHX+pj+dtJwkw85XK42z9R4JUdKe5eFqOjJziTDE3z663AHovyzPok0ydEmDU5cty886KmOOs+SGMCezucYd+5tv3jDE+sS7L1o4zOBSp1jclDL8T5/c21jK61SaRdFq6Ms+VABlPY157l4iml/cxY0mVPu8O7BzKs+yDj61Ln0B+M1d3nsmh1H/deW83ClTGaWx1MYo9H44CMA7GUSyzh0pt0P9tt1hnPcizmcqQ3S3uPS2un48mCpAzgcQi+bXEP8ZSLaew86LBiUxInm9vJ5mRd0k7u/xkntwsr9em/n2yPTGZy2yUT6f9un0w7GMtnA+CrH+50EcIQPp380fFnAj0gQwjTDRDE9QAhCkl/FAGEIsDJnCFE2Ht/RQChCDCQQ4QIa++vCCAUAQbrFCHC1vsrAghFgKE6Roiw9P4DRgCZQIRZ/EqBhFKgQh0kRFB7/0FHAJlAhFH8Q0qBZAIRNvEPeQwgE4gwiT+vQbBMIMIi/rxngWQCEQbxFzQNKhOIoIu/4HUAmUAEWfyeLITJBCKo4ofPHYviBTpaRQRF+EUphVA0EEESv+cRQNFABEX4RTeAjCCCkFWULGWREYQf0+mS5+wygvDTOHJYB60ygxjuyRPfzdrIFBJ7KfkPDFKfxhI+DosAAAAASUVORK5CYII=">
+<title>单词复习本</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0f1420; --card: #1a2233; --line: #2a3650;
+    --txt: #e8eef7; --dim: #8fa3c0; --ok: #2fd07c; --no: #ff5c6c;
+    --accent: #5aa2ff; --radius: 14px;
+  }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--txt);
+    font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    max-width: 640px; margin: 0 auto; padding: 14px 10px 90px; /* v1.9.2 左右各收 4px：手机上正文列宽 +8px（少折行） */
+  }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  /* 分区模式：备考专区只显示 studyCard，背单词模式隐藏 studyCard */
+  body.mode-study .card { display: none !important; }
+  body.mode-study #studyCard { display: block !important; }
+  body.mode-study .progressRow { display: none !important; }
+  body.mode-study .tabs { display: none !important; }
+  #studyCard { display: none; }
+  h1 { font-size: 20px; }
+  #saveNote { font-size: 12px; color: var(--dim); }
+  .progressRow { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .progressRow .bar { flex: 1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .progressRow .fill { height: 100%; background: var(--ok); width: 0%; transition: width .3s ease; }
+  .progressRow .txt { font-size: 12px; color: var(--dim); min-width: 62px; text-align: right; }
+  .progressRow .stk { font-size: 12px; color: var(--dim); white-space: nowrap; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab {
+    flex: 1; text-align: center; padding: 10px 4px; border-radius: var(--radius);
+    background: var(--card); border: 1px solid var(--line); font-size: 14px; cursor: pointer;
+  }
+  .tab.active { background: var(--accent); color: #06121f; border-color: var(--accent); font-weight: 600; }
+  .tab small { display: block; font-size: 11px; opacity: .75; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  /* 备考专区：卡片内留白收紧（手机上正文列宽 +12px，长句少折行） */
+  body.mode-study #studyCard { padding: 12px 10px; border: none; background: transparent; }
+  .bigWord { font-size: 34px; font-weight: 700; text-align: center; word-break: break-all; line-height: 1.35; }
+  .trans { text-align: center; color: var(--dim); font-size: 16px; margin-top: 10px; min-height: 24px; }
+  .poolRow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: var(--dim); }
+  select, input[type=text] {
+    width: 100%; background: var(--bg); color: var(--txt); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px; font-size: 16px;
+  }
+  .btns { display: flex; gap: 10px; margin-top: 14px; }
+  .btn {
+    flex: 1; border: none; border-radius: var(--radius); padding: 16px 0;
+    font-size: 17px; font-weight: 700; cursor: pointer; color: #fff;
+  }
+  .btn.ok { background: var(--ok); }
+  .btn.no { background: var(--no); }
+  .btn.ghost { background: var(--line); color: var(--txt); }
+  .btn:disabled { opacity: .35; }
+  .btn.sel { box-shadow: 0 0 0 2px var(--txt); }
+  .btn.small { flex: none; padding: 11px 16px; font-size: 14px; min-height: 44px; } /* 移动端触控 ≥44px */
+  .chip { flex: none; font-size: 12px; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--txt); cursor: pointer; }
+  .chip.ok { background: var(--ok); color: #06121f; border-color: var(--ok); }
+  .chip.no { background: var(--no); color: #fff; border-color: var(--no); }
+  .badge { flex: none; font-size: 12px; padding: 2px 6px; border-radius: 4px; background: var(--line); color: var(--dim); }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 14px; padding: 6px 0; }
+  ul.words { list-style: none; margin-top: 6px; }
+  ul.words li {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 9px 6px; border-bottom: 1px solid var(--line); font-size: 15px;
+  }
+  ul.words li b { font-weight: 600; }
+  ul.words li .t { color: var(--dim); font-size: 13px; flex: 1; }
+  .del { background: none; border: none; color: var(--no); font-size: 18px; cursor: pointer; padding: 4px 8px; }
+  .edit { background: none; border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 4px 8px; }
+  #resetModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
+  #resetModal .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 320px; }
+  #resetModal .box button { width: 100%; margin-bottom: 8px; }
+  #exportModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
+  #exportModal .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 360px; }
+  .hint { color: var(--dim); font-size: 12px; }
+  /* 真题试卷视图 */
+  /* 大题（Part I/II/III/IV）：强区分——色块+左边条+大间距 */
+  .examH { font-size: var(--rd, 16px); font-weight: 700; margin: 32px 0 14px; padding: 12px 14px; color: var(--accent);
+            background: rgba(90,162,255,.12); border-left: 4px solid var(--accent); border-radius: 8px; letter-spacing: .5px; }
+  /* 小节（Section A/B/C）：次强区分——浅色块+中间距 */
+  .examH.sec { font-size: calc(var(--rd, 16px) - 1px); font-weight: 700; margin: 22px 0 10px; padding: 8px 12px; color: var(--txt);
+               background: rgba(90,162,255,.06); border-left: 3px solid var(--dim); border-radius: 6px; }
+  .examText { font-size: 14px; line-height: 2.0; margin: 14px 0; word-break: break-word; }
+  /* 听力原文逐行排版 */
+  .listenLine { font-size: 14px; line-height: 1.9; margin: 9px 0; word-break: break-word; }
+  .listenLine.dlg { padding: 2px 0 2px 12px; border-left: 2px solid var(--line); }
+  .listenLine.q { color: var(--accent); font-weight: 600; margin-top: 16px; }
+  .listenHead { font-size: 15px; font-weight: 700; color: var(--accent); margin: 26px 0 10px; }
+  /* 对话轮次（听力原文重排，v1.9.2）：说话人另起一块，轮次之间留白，不再一行挤满 */
+  .dlgTurn { padding: 0 0 0 12px; margin: 0 0 13px; border-left: 3px solid rgba(90,162,255,.35);
+             font-size: var(--rd, 16px); line-height: 1.95; word-break: break-word; }
+  .dlgTurn:last-child { margin-bottom: 4px; }
+  .dlgTurn .who { display: inline-block; min-width: 22px; font-weight: 700; color: var(--accent); margin-right: 6px; }
+  /* 对照译文盒子：原文 + 逐句中文 */
+  .transBox { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px;
+              background: var(--card); }
+  .transHead { font-size: 12px; color: var(--dim); margin: 0 0 10px; letter-spacing: .4px; }
+  /* 译文默认收起（<details>）：原文先看，想对照再展开，避免一屏全是中文 */
+  .transFold { padding: 10px 14px; }
+  .transFold > summary { font-size: 12px; color: var(--dim); cursor: pointer; list-style: none;
+    padding: 10px 0; min-height: 44px; display: flex; align-items: center; } /* 可点区域 ≥44px */
+  .transFold > summary::-webkit-details-marker { display: none; }
+  .transFold[open] > summary { color: var(--accent); margin-bottom: 10px; }
+  .zhSent { font-size: calc(var(--rd, 16px) - 1px); line-height: 2.05; margin: 0 0 12px; word-break: break-word; }
+  .zhSent:last-child { margin-bottom: 0; }
+  /* 每题（v1.9.2）：不再用 54px 空白分隔，改成「左色条 + 浅色块」，题干本身就是落点 */
+  .examQ { font-size: calc(var(--rd, 16px) + 1px); font-weight: 600; line-height: 1.55;
+           margin: 22px 0 8px; padding: 10px 12px; background: rgba(90,162,255,.07);
+           border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; overflow-wrap: anywhere; }
+  .examQ.first { margin-top: 10px; }
+  /* 只有选项没有题干（听力常见）：只给紧凑题号，不画色块 */
+  .examQ.numOnly { background: none; border-left: none; padding: 0; margin: 18px 0 6px;
+                   font-size: calc(var(--rd, 16px) - 1px); color: var(--dim); }
+  .examOpt { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--txt); padding: 11px 13px 11px 30px; margin: 0 0 10px; font-size: calc(var(--rd, 16px) - 1px); line-height: 1.6; cursor: pointer; overflow-wrap: anywhere; text-indent: -16px; }
+  .examOpt b { display: inline-block; width: 16px; text-indent: 0; color: var(--accent); margin-right: 0; }
+  .examOpt:active { background: #243049; }
+  /* 选词填空词表（v1.9.2）：扫描件里挤成一段流动文字、字母还乱序 → 两列网格 + 按 A–O 排序 */
+  .wBank { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 14px 0 18px;
+           padding: 12px; border: 1px dashed var(--line); border-radius: 10px;
+           font-size: calc(var(--rd, 16px) - 3px); line-height: 1.5; }
+  .wBank span { overflow-wrap: anywhere; }
+  .wBank b { color: var(--accent); margin-right: 4px; }
+  /* 「Questions 1 to 4」这类题组起点：色块 + 题号标签，避免原文只有男女对话看不出换题 */
+  .qSet { margin: 18px 0 10px; padding: 9px 12px; border-radius: 8px; line-height: 1.6;
+          background: rgba(255,190,80,.10); border-left: 3px solid #c98a1a;
+          font-size: calc(var(--rd, 16px) - 2px); color: var(--txt); }
+  .qSetTag { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 9px;
+             background: #c98a1a; color: #10151f; font-weight: 700; font-size: 12px; }
+  /* 长篇匹配陈述句：逐句一行 + 悬挂缩进，编号加粗 */
+  .matchStmt { font-size: calc(var(--rd, 16px) - 1px); line-height: 1.6; margin: 0 0 10px;
+               padding-left: 2.4em; text-indent: -2.4em; word-break: break-word; }
+  .matchStmt b { color: var(--accent); margin-right: 2px; }
+  /* 缺项提示（原卷扫描丢行） */
+  /* 整卷页「作答说明」：默认收起，首屏直接就是题目 */
+  .examNote { font-size: 12px; line-height: 1.6; margin: 0 0 8px; color: var(--dim); }
+  .examNote > summary { list-style: none; cursor: pointer; padding: 8px 0; min-height: 40px;
+    display: flex; align-items: center; }
+  .examNote > summary::-webkit-details-marker { display: none; }
+  .examNote[open] > summary { color: var(--accent); }
+  .examNote div { margin: 0 0 4px; }
+  .bankNote { font-size: 12px; line-height: 1.6; color: var(--no); margin: -2px 0 12px;
+              padding-left: 10px; border-left: 2px solid var(--no); }
+  /* 选词填空的空格：下划线 + 右上角题号，替代原来 "_34" / "26stress" 这类乱码 */
+  .blank { display: inline-block; min-width: 3em; border-bottom: 1.5px solid var(--accent);
+           text-align: center; vertical-align: baseline; }
+  .blank sup { font-size: 12px; color: var(--dim); }
+  .examOpt.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .examOpt.correct { border-color: var(--ok); background: rgba(47,208,124,.12); }
+  .examOpt.wrong { border-color: var(--no); background: rgba(255,92,108,.12); }
+  #emptyTip { text-align: center; color: var(--dim); padding: 30px 0; }
+  .feedback { text-align: center; font-size: 15px; margin-top: 12px; min-height: 22px; font-weight: 600; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.no { color: var(--no); }
+  textarea { width: 100%; background: var(--bg); color: var(--txt); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 15px; resize: vertical; }
+  .muted { color: var(--dim); font-size: 13px; margin-top: 6px; }
+  /* ================= 移动端专项（v1.7.8） ================= */
+  /* 刘海/手势条安全区：顶部与底部都留出 inset，避免内容被系统栏盖住 */
+  body { padding-top: calc(14px + env(safe-area-inset-top)); padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  /* 触屏手感：去掉双击缩放（保留双指缩放/滚动），并避免下拉刷新误触重载 */
+  body { touch-action: manipulation; -webkit-user-select: text; user-select: text; }
+  html, body { overscroll-behavior-y: contain; }
+  /* 阅读字号三档（正文/原文/题号统一走 CSS 变量，A-/A+ 实时生效并记忆） */
+  .examText, .listenLine { font-size: var(--rd, 16px); }
+  .examQ { font-size: calc(var(--rd, 16px) + 1px); }
+  .listenHead { font-size: calc(var(--rd, 16px) + 1px); }
+  /* 吸顶工具条：任何滚动位置都能一键返回/调字号，不占正文阅读宽度 */
+  .stickyBar {
+    position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; align-items: center;
+    background: rgba(15,20,32,.94); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    padding: 8px 0; margin: 0 0 8px; border-bottom: 1px solid var(--line);
+  }
+  .stickyBar .btn { flex: none; padding: 8px 12px; font-size: 13px; min-height: 44px; }
+  .stickyBar .meta { flex: 1; min-width: 0; font-size: 13px; color: var(--dim); text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rsBtn {
+    flex: none; min-width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--card); color: var(--txt); font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .rsBtn:active { background: var(--line); }
+  /* 听力播放器吸顶：读 60 行原文时随时能暂停/拖动，不用滚回顶部 */
+  .stickyAudio {
+    position: sticky; top: 62px; z-index: 15; background: rgba(15,20,32,.96); /* 吸顶条 61px，留 1px 不重叠 */
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    padding: 4px 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line);
+  }
+  /* 长卷回顶悬浮键（滚动超过一屏才出现） */
+  .fab {
+    position: fixed; right: 14px; bottom: calc(88px + env(safe-area-inset-bottom));
+    width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line);
+    background: rgba(42,54,80,.92); color: var(--txt); font-size: 18px; line-height: 1;
+    display: none; z-index: 30; box-shadow: 0 4px 14px rgba(0,0,0,.35); cursor: pointer;
+  }
+  .fab.show { display: flex; align-items: center; justify-content: center; }
+  .fab:active { background: var(--line); }
+  /* 年份筛选条：横向滑动、不换行（100 套 35 个年份，手机一屏就够滑） */
+  .yearChips { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding: 2px 0 6px; margin-bottom: 6px; scrollbar-width: none; }
+  .yearChips::-webkit-scrollbar { display: none; }
+  .yearChips .chip { flex: none; min-height: 40px; padding: 9px 13px; font-size: 13px; } /* 触控 ≥40px */
+  /* 板块筛选条：必须一屏全见（曾因横滑把听力/阅读/其它藏到屏幕外，用户以为没加） */
+  .yearChips.wrapChips { flex-wrap: wrap; overflow-x: visible; padding-bottom: 2px; }
+  .yearChips.wrapChips .chip { min-height: 40px; padding: 9px 11px; font-size: 12.5px; }
+  /* 题型分组卡片（v1.9 区域首页） */
+  .typeCards { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+  .typeCard { flex: 1 1 calc(33% - 6px); min-width: 104px; min-height: 46px; cursor: pointer;
+    background: rgba(90,162,255,.06); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--fg); text-align: left; padding: 7px 10px; font-size: 13px; }
+  .typeCard b { display: block; font-size: 13px; }
+  .typeCard span { display: block; font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .typeCard.ok { border-color: var(--accent); background: rgba(90,162,255,.18); }
+  .typeCard.ok b { color: var(--accent); }
+  .tyTag { color: var(--accent); font-weight: 700; font-size: 12px; margin-right: 4px; }
+  /* 作文区：手写提示 + 范文（默认收起） */
+  .writeHint { font-size: 12px; line-height: 1.65; color: var(--dim); margin: 0 0 10px;
+    padding: 9px 11px; border-radius: 10px; background: rgba(255,190,80,.10); border-left: 3px solid #c98a1a; }
+  .writeRefBox { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 0 0 12px;
+    background: rgba(90,162,255,.05); }
+  .writeRefHead { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+  /* 列表/选项点击目标不低于 44px（手指友好），文字仍可选中复制 */
+  .examItem, .listenItem { min-height: 46px; line-height: 1.35; }
+  .examOpt { min-height: 46px; }
+  /* 吸顶条盖住标题时，跳转后标题不被遮住 */
+  .examH, .examH.sec, .listenHead { scroll-margin-top: 64px; }
+  /* ================= 专题（按板块分开练，v1.7.9） ================= */
+  .secItem { display: block; width: 100%; margin-bottom: 6px; text-align: left; padding: 11px 13px; }
+  .secItemT { font-weight: 700; font-size: 14px; }
+  .secItemS { display: block; font-size: 12px; color: var(--dim); margin-top: 3px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .secItemM { display: block; font-size: 12px; color: var(--accent); margin-top: 4px; }
+  /* 板块详情页头部：一眼看清「哪一套 · 哪个板块 · 多少题」 */
+  .secHead { margin: 4px 0 12px; padding: 12px 14px; border-radius: 10px;
+    background: rgba(90,162,255,.10); border-left: 4px solid var(--accent); }
+  .secHead .k { font-size: 13px; color: var(--dim); }
+  .secHead .t { font-size: calc(var(--rd, 16px) + 2px); font-weight: 700; color: var(--accent); margin: 3px 0 5px; }
+  .secHead .m { font-size: 13px; color: var(--dim); }
+  /* 说明文字（Directions）压低 + 左侧竖条：一眼区分「考试要求」和「文章正文」 */
+  .secDir { font-size: calc(var(--rd, 16px) - 3px); color: var(--dim); line-height: 1.75; margin: 6px 0 18px;
+    padding-left: 10px; border-left: 2px solid var(--line); }
+  .secZh { font-size: calc(var(--rd, 16px) + 1px); line-height: 1.85; margin: 0 0 16px;
+    text-align: justify; text-justify: inter-ideograph; letter-spacing: 0; word-break: break-word; }
+  /* 「单独看 ↗」小按钮也在标题里，触控给到 40px 高（v1.9.8 移动端自检） */
+  .secOnly { float: right; margin: -4px 0 0 8px; font-size: 11px; padding: 7px 10px; border-radius: 11px; min-height: 40px; }
+  .secNav { display: flex; gap: 8px; margin: 22px 0 8px; }
+  .secNav .btn { flex: 1; min-height: 44px; padding: 10px 6px; font-size: 13px; }
+</style>
+<script>
+/* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
+(function () {
+  var APP_VERSION = "1.9.8"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  function utf8(s) {
+    var out = [], i = 0, c;
+    while (i < s.length) {
+      c = s.charCodeAt(i++);
+      if (c >= 0xD800 && c <= 0xDBFF) { var c2 = s.charCodeAt(i++); c = 0x10000 + ((c & 0x3FF) << 10) + (c2 & 0x3FF); }
+      if (c < 0x80) out.push(c); else if (c < 0x800) out.push(0xC0 | (c >> 6), 0x80 | (c & 63));
+      else if (c < 0x10000) out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+      else out.push(0xF0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    }
+    return out;
+  }
+  function md5Bytes(b) {
+    function RL(l, s) { return (l << s) | (l >>> (32 - s)); }
+    function AU(lX, lY) {
+      var lX4, lY4, lX8, lY8, lR;
+      lX8 = (lX & 0x80000000); lY8 = (lY & 0x80000000);
+      lX4 = (lX & 0x40000000); lY4 = (lY & 0x40000000);
+      lR = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
+      if (lX4 & lY4) return (lR ^ 0x80000000 ^ lX8 ^ lY8);
+      if (lX4 | lY4) {
+        if (lR & 0x40000000) return (lR ^ 0xC0000000 ^ lX8 ^ lY8);
+        else return (lR ^ 0x40000000 ^ lX8 ^ lY8);
+      } else return (lR ^ lX8 ^ lY8);
+    }
+    function F(x, y, z) { return (x & y) | ((~x) & z); }
+    function G(x, y, z) { return (x & z) | (y & (~z)); }
+    function H(x, y, z) { return (x ^ y ^ z); }
+    function I(x, y, z) { return (y ^ (x | (~z))); }
+    function FF(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(F(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function GG(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(G(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function HH(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(H(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function II(a, b, c, d, x, s, ac) { a = AU(a, AU(AU(I(b, c, d), x), ac)); return AU(RL(a, s), b); }
+    function CWA(b) {
+      var n = b.length, w1 = n + 8, w2 = ((w1 - (w1 % 64)) / 64 + 1) * 16;
+      var a = new Array(w2), bp = 0, bc = 0, wc;
+      while (bc < n) { wc = (bc - (bc % 4)) / 4; bp = (bc % 4) * 8; a[wc] = (a[wc] | (b[bc] << bp)); bc++; }
+      wc = (bc - (bc % 4)) / 4; bp = (bc % 4) * 8;
+      a[wc] = a[wc] | (0x80 << bp);
+      a[w2 - 2] = n << 3; a[w2 - 1] = n >>> 29;
+      return a;
+    }
+    function W2H(lv) {
+      var s = "", t, lb, lc;
+      for (lc = 0; lc <= 3; lc++) { lb = (lv >>> (lc * 8)) & 255; t = "0" + lb.toString(16); s += t.substr(t.length - 2, 2); }
+      return s;
+    }
+    var x = CWA(b), k, AA, BB, CC, DD, a = 0x67452301, b2 = 0xEFCDAB89, c = 0x98BADCFE, d = 0x10325476;
+    var S11 = 7, S12 = 12, S13 = 17, S14 = 22, S21 = 5, S22 = 9, S23 = 14, S24 = 20, S31 = 4, S32 = 11, S33 = 16, S34 = 23, S41 = 6, S42 = 10, S43 = 15, S44 = 21;
+    for (k = 0; k < x.length; k += 16) {
+      AA = a; BB = b2; CC = c; DD = d;
+      a = FF(a, b2, c, d, x[k + 0], S11, 0xD76AA478); d = FF(d, a, b2, c, x[k + 1], S12, 0xE8C7B756); c = FF(c, d, a, b2, x[k + 2], S13, 0x242070DB); b2 = FF(b2, c, d, a, x[k + 3], S14, 0xC1BDCEEE); a = FF(a, b2, c, d, x[k + 4], S11, 0xF57C0FAF); d = FF(d, a, b2, c, x[k + 5], S12, 0x4787C62A); c = FF(c, d, a, b2, x[k + 6], S13, 0xA8304613); b2 = FF(b2, c, d, a, x[k + 7], S14, 0xFD469501); a = FF(a, b2, c, d, x[k + 8], S11, 0x698098D8); d = FF(d, a, b2, c, x[k + 9], S12, 0x8B44F7AF); c = FF(c, d, a, b2, x[k + 10], S13, 0xFFFF5BB1); b2 = FF(b2, c, d, a, x[k + 11], S14, 0x895CD7BE); a = FF(a, b2, c, d, x[k + 12], S11, 0x6B901122); d = FF(d, a, b2, c, x[k + 13], S12, 0xFD987193); c = FF(c, d, a, b2, x[k + 14], S13, 0xA679438E); b2 = FF(b2, c, d, a, x[k + 15], S14, 0x49B40821);
+      a = GG(a, b2, c, d, x[k + 1], S21, 0xF61E2562); d = GG(d, a, b2, c, x[k + 6], S22, 0xC040B340); c = GG(c, d, a, b2, x[k + 11], S23, 0x265E5A51); b2 = GG(b2, c, d, a, x[k + 0], S24, 0xE9B6C7AA); a = GG(a, b2, c, d, x[k + 5], S21, 0xD62F105D); d = GG(d, a, b2, c, x[k + 10], S22, 0x2441453); c = GG(c, d, a, b2, x[k + 15], S23, 0xD8A1E681); b2 = GG(b2, c, d, a, x[k + 4], S24, 0xE7D3FBC8); a = GG(a, b2, c, d, x[k + 9], S21, 0x21E1CDE6); d = GG(d, a, b2, c, x[k + 14], S22, 0xC33707D6); c = GG(c, d, a, b2, x[k + 3], S23, 0xF4D50D87); b2 = GG(b2, c, d, a, x[k + 8], S24, 0x455A14ED); a = GG(a, b2, c, d, x[k + 13], S21, 0xA9E3E905); d = GG(d, a, b2, c, x[k + 2], S22, 0xFCEFA3F8); c = GG(c, d, a, b2, x[k + 7], S23, 0x676F02D9); b2 = GG(b2, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
+      a = HH(a, b2, c, d, x[k + 5], S31, 0xFFFA3942); d = HH(d, a, b2, c, x[k + 8], S32, 0x8771F681); c = HH(c, d, a, b2, x[k + 11], S33, 0x6D9D6122); b2 = HH(b2, c, d, a, x[k + 14], S34, 0xFDE5380C); a = HH(a, b2, c, d, x[k + 1], S31, 0xA4BEEA44); d = HH(d, a, b2, c, x[k + 4], S32, 0x4BDECFA9); c = HH(c, d, a, b2, x[k + 7], S33, 0xF6BB4B60); b2 = HH(b2, c, d, a, x[k + 10], S34, 0xBEBFBC70); a = HH(a, b2, c, d, x[k + 13], S31, 0x289B7EC6); d = HH(d, a, b2, c, x[k + 0], S32, 0xEAA127FA); c = HH(c, d, a, b2, x[k + 3], S33, 0xD4EF3085); b2 = HH(b2, c, d, a, x[k + 6], S34, 0x4881D05); a = HH(a, b2, c, d, x[k + 9], S31, 0xD9D4D039); d = HH(d, a, b2, c, x[k + 12], S32, 0xE6DB99E5); c = HH(c, d, a, b2, x[k + 15], S33, 0x1FA27CF8); b2 = HH(b2, c, d, a, x[k + 2], S34, 0xC4AC5665);
+      a = II(a, b2, c, d, x[k + 0], S41, 0xF4292244); d = II(d, a, b2, c, x[k + 7], S42, 0x432AFF97); c = II(c, d, a, b2, x[k + 14], S43, 0xAB9423A7); b2 = II(b2, c, d, a, x[k + 5], S44, 0xFC93A039); a = II(a, b2, c, d, x[k + 12], S41, 0x655B59C3); d = II(d, a, b2, c, x[k + 3], S42, 0x8F0CCC92); c = II(c, d, a, b2, x[k + 10], S43, 0xFFEFF47D); b2 = II(b2, c, d, a, x[k + 1], S44, 0x85845DD1); a = II(a, b2, c, d, x[k + 8], S41, 0x6FA87E4F); d = II(d, a, b2, c, x[k + 15], S42, 0xFE2CE6E0); c = II(c, d, a, b2, x[k + 6], S43, 0xA3014314); b2 = II(b2, c, d, a, x[k + 13], S44, 0x4E0811A1); a = II(a, b2, c, d, x[k + 4], S41, 0xF7537E82); d = II(d, a, b2, c, x[k + 11], S42, 0xBD3AF235); c = II(c, d, a, b2, x[k + 2], S43, 0x2AD7D2BB); b2 = II(b2, c, d, a, x[k + 9], S44, 0xEB86D391);
+      a = AU(a, AA); b2 = AU(b2, BB); c = AU(c, CC); d = AU(d, DD);
+    }
+    return (W2H(a) + W2H(b2) + W2H(c) + W2H(d)).toLowerCase();
+  }
+  window.WB_md5 = md5Bytes;
+  window.WB_utf8 = utf8;
+  function cmp(a, b) {
+    var pa = String(a).split("."), pb = String(b).split(".");
+    for (var i = 0; i < 3; i++) {
+      var x = parseInt(pa[i] || 0, 10), y = parseInt(pb[i] || 0, 10);
+      if (x !== y) return x - y;
+    }
+    return 0;
+  }
+  try {
+    var cache = JSON.parse(localStorage.getItem("wb_cache") || "null");
+    if (cache && cache.v && cache.html) {
+      if (md5Bytes(utf8(cache.html)) === cache.m) {
+        if (cmp(cache.v, APP_VERSION) > 0) {
+          /* 有更高版本缓存：跳转到 Blob URL（全新文档加载，避免 document.write 的全局变量冲突） */
+          /* ⚠️ blob: 文档里相对路径（fetch cet6-exams.json、listen/*.m4a）会解析成 blob: URL 而彻底失效 →
+             记下当前应用源（Capacitor 为 https://localhost/），并给缓存页注入 <base>，让内置资源照旧可达 */
+          var html2 = cache.html, origin = "";
+          try { if (location.protocol === "http:" || location.protocol === "https:") origin = location.origin + "/"; } catch (e) {}
+          if (origin) {
+            try { localStorage.setItem("wb_origin", origin); } catch (e) {}
+            if (/<head([^>]*)>/i.test(html2)) html2 = html2.replace(/<head([^>]*)>/i, '<head$1><base href="' + origin + '">');
+            else html2 = '<base href="' + origin + '">' + html2;
+          }
+          var blob = new Blob([html2], { type: "text/html;charset=utf-8" });
+          var url = URL.createObjectURL(blob);
+          location.replace(url);
+          return;
+        }
+        /* md5 匹配但版本不高于本地（如升级后新页面再启动）：保留缓存。
+           保留而非清除，是为了 blob 页面刷新失效后回到本页可再次自愈跳转。 */
+      } else {
+        /* md5 不匹配（缓存损坏/被篡改）：清除，回滚本地版本 */
+        try { localStorage.removeItem("wb_cache"); } catch (e) {}
+      }
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<header>
+  <h1>📚 单词复习本</h1>
+  <span id="saveNote"></span>
+</header>
+
+<div class="row" style="gap:8px;margin-bottom:10px">
+  <button class="btn small ok" id="modeMain" style="flex:1">📖 背单词</button>
+  <button class="btn small ghost" id="modeStudy" style="flex:1">📚 备考专区</button>
+</div>
+
+<div class="progressRow">
+  <div class="bar"><div class="fill" id="progressBar"></div></div>
+  <span class="txt" id="progressText">0/30</span>
+  <span class="stk" id="streakTip">🔥 0 天</span>
+</div>
+
+<div class="tabs">
+  <div class="tab" data-pool="all"><span>全部</span><small id="cAll">0</small></div>
+  <div class="tab" data-pool="un"><span>未掌握</span><small id="cUn">0</small></div>
+  <div class="tab" data-pool="ok"><span>初步掌握</span><small id="cOk">0</small></div>
+</div>
+
+<!-- 搜索已收录单词 -->
+<div class="card">
+  <div class="row">
+    <input type="text" id="searchInput" placeholder="🔍 搜索已收录单词（输入英文即可）" autocomplete="off">
+  </div>
+  <div id="searchResult" style="margin-top:10px; max-height:240px; overflow-y:auto;"></div>
+</div>
+
+<!-- 抽词 -->
+<div class="card">
+  <div class="poolRow">
+    <span>抽词范围：</span>
+    <select id="quizPool">
+      <option value="all">全部单词</option>
+      <option value="un">仅未掌握</option>
+      <option value="ok">仅初步掌握</option>
+      <option value="curve">遗忘曲线复习</option>
+      <option value="rand">完全随机</option>
+    </select>
+  </div>
+  <div id="quizArea">
+    <div id="emptyTip">词库是空的，先收录几个单词吧。</div>
+  </div>
+</div>
+
+<!-- 收录 -->
+<div class="card">
+  <div class="row">
+    <input type="text" id="addInput" placeholder="输入英文单词（多个用空格/逗号分隔）" autocomplete="off">
+  </div>
+  <div class="row" style="margin-top:8px">
+    <input type="text" id="addTrans" placeholder="译文（可选，批量时可每行列在单词后面）" autocomplete="off">
+    <button class="btn ghost small" id="addBtn">收录</button>
+  </div>
+  <details>
+    <summary>📥 批量导入单词</summary>
+    <div style="margin-top:8px">
+      <textarea id="bulkInput" rows="4" placeholder="每行一个单词，可选译文，格式：英文 译文（一行一个，例如：resilience 恢复力）"></textarea>
+      <button class="btn ghost small" id="bulkBtn" style="margin-top:8px">批量收录</button>
+      <div class="muted">适合从笔记/文档里批量复制单词导入，一次最多100个。</div>
+    </div>
+  </details>
+  <div class="muted">新词默认进入「未掌握」，答对会进「初步掌握」。</div>
+</div>
+
+<!-- 单词本列表 -->
+<div class="card">
+  <details id="allDetails">
+    <summary>📚 总单词本（<span id="nAll">0</span>）</summary>
+    <ul class="words" id="listAll"></ul>
+  </details>
+  <details>
+    <summary>📖 未掌握单词本（<span id="nUn">0</span>）</summary>
+    <ul class="words" id="listUn"></ul>
+  </details>
+  <details>
+    <summary>✅ 初步掌握单词本（<span id="nOk">0</span>）</summary>
+    <ul class="words" id="listOk"></ul>
+  </details>
+</div>
+
+<!-- 今日已学 / 学习记录 -->
+<div class="card">
+  <details id="todayDetails">
+    <summary>📅 今日已学（<span id="nToday">0</span>词）</summary>
+    <div class="row" style="margin-bottom:8px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="todayShowTrans" style="margin:0"> 显示意思</label>
+      <select id="todayFilter" style="margin-left:auto;font-size:13px">
+        <option value="all">全部</option>
+        <option value="ok">已掌握 ✓</option>
+        <option value="un">未掌握 ✗</option>
+      </select>
+    </div>
+    <div class="muted" id="todayStat" style="margin-bottom:6px"></div>
+    <ul class="words" id="listToday"></ul>
+  </details>
+  <details id="historyDetails">
+    <summary>🗓 学习记录（<span id="nDays">0</span>天）</summary>
+    <div class="row" style="margin-bottom:8px">
+      <span class="muted" style="margin:0">展开日期后按掌握状态筛选：</span>
+      <select id="histFilter" style="margin-left:auto; font-size:13px; padding:8px; width:auto;">
+        <option value="all">全部</option>
+        <option value="ok">已掌握 ✓</option>
+        <option value="un">未掌握 ✗</option>
+      </select>
+    </div>
+    <div class="muted" style="margin-bottom:6px">按日期保存每一天学过哪些单词及掌握情况，永久保留不自动清理。点日期可展开当天明细，点 ✕ 删除某天，或一键清空；单词右边的 ✓/✗ 可随时改掌握状态。</div>
+    <div id="historyList"></div>
+    <button class="btn no small" id="clearHistoryBtn" style="margin-top:8px">🗑 清空全部学习记录</button>
+  </details>
+  <details id="missDetails">
+    <summary>🔁 多次未掌握（<span id="nMiss">0</span>词）</summary>
+    <div class="muted" style="margin-bottom:6px">答 ✗（未掌握）累计 2 次及以上的单词，说明还没真正记住，重点复习；点 ✎ 可补写/修改意思。</div>
+    <ul class="words" id="listMiss"></ul>
+  </details>
+</div>
+
+<div class="card">
+  <div class="btns">
+    <button class="btn ghost small" id="exportBtn">导出备份</button>
+    <button class="btn ghost small" id="importBtn">导入备份</button>
+    <button class="btn ghost small" id="resetBtn">清空重来</button>
+  </div>
+  <div class="row" style="margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; align-items:center;">
+    <div style="font-weight:700; font-size:14px;">🔄 软件更新</div>
+    <div class="muted" style="font-size:12px; margin-left:6px;">当前版本 v<span id="appVer">1.8.2</span></div>
+    <button class="btn small ghost" id="btnCheckUpdate" style="margin-left:auto;">检查更新</button>
+    <button class="btn small ghost" id="btnCheckApk" style="display:none">更新 APK</button>
+  </div>
+  <div id="updStatus" class="muted" style="margin-top:6px; min-height:16px;">—</div>
+  <div class="row" style="margin-top:8px; align-items:center;">
+    <label style="font-size:13px; display:flex; align-items:center; gap:6px;">🔊 朗读模式
+      <select id="readModeSel" style="font-size:13px">
+        <option value="manual">手动点击读</option>
+        <option value="auto">切词自动读</option>
+      </select>
+    </label>
+  </div>
+  <div class="row" style="margin-top:8px; align-items:center;">
+    <label style="font-size:13px; display:flex; align-items:center; gap:6px;">📅 每日单词数
+      <input type="number" id="dailyGoalSel" min="1" max="999" step="1" value="30" style="width:64px; font-size:13px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg);">
+    </label>
+    <span class="muted" style="font-size:12px; margin-left:6px;">达标后顶部进度条满格</span>
+  </div>
+  <div class="row" style="margin-top:8px; align-items:center;">
+    <label style="font-size:13px; display:flex; align-items:center; gap:6px;">🧠 记忆方式
+      <select id="memModeSel" style="font-size:13px">
+        <option value="default">先回忆后出意思</option>
+        <option value="system">系统直接给意思</option>
+      </select>
+    </label>
+    <span class="muted" style="font-size:12px; margin-left:6px;">系统给意思：判完自动显示中文意思，免手写</span>
+  </div>
+  <details>
+    <summary>📱 手机使用 & 说明 <span style="color:var(--no); font-size:12px; font-weight:700;">⚠️注意内有重要内容</span></summary>
+    <div class="muted" style="line-height:1.7; margin-top:6px">
+      <div style="color:var(--no); font-weight:700; margin-bottom:6px;">⚠️ 注意：请勿随便清除浏览器缓存/数据，否则全部单词记录会被初始化清空！建议每隔一段时间点「导出备份」保存一份 .json 文件，万一清缓存后可点「导入备份」一键恢复。</div>
+      1) <b>背词</b>：看到单词先回忆，答不出再点「👁 看答案」看译文；√ = 掌握，× = 未掌握（答 × 或改判时会要求写中文意思，加深记忆）。答完可随时再点 √/× 改判，改判必须写意思才能下一题。<br>
+      2) <b>单词本</b>：「📚 总单词本」看全部单词，词右边 ✎ 写/改意思、✕ 删词。<br>
+      3) <b>今日已学</b>：看今天学了哪些词、哪些掌握/未掌握；点单词右边的 ✓/✗ 可随时改掌握状态。<br>
+      4) <b>学习记录</b>：按日期永久保存每一天学过的词，点日期看当天明细（可按 已掌握/未掌握 筛选），✕ 删某天，可一键清空；明细里同样可点 ✓/✗ 改状态。<br>
+      5) <b>朗读</b>：默认手动点「🔊 发音」；可在设置里改为切词自动读。<br>
+      6) <b>备份</b>：点「导出备份」可保存/分享 .json 文件（新版）或在面板里复制内容（过大自动压缩），换设备/清缓存后点「导入备份」恢复。<br>
+      7) <b>清空重来</b>：可选「从零开始 / 四级词库 / 六级词库」，两次确认防误触。<br>
+      8) <b>每日单词数</b>：默认每天30个，可在设置里改成自己的目标，达标后顶部进度条满格。<br>
+      9) <b>抽词范围</b>：「遗忘曲线复习」到期才抽词，答对间隔 1→2→4→7→15→30 天逐级拉长，答错回到 1 天；「完全随机」全库纯随机。<br>
+      10) <b>多次未掌握</b>：答 ✗ 累计 2 次及以上的单词单独列表（「🔁 多次未掌握」），重点复习。<br>
+      11) <b>记忆方式</b>：默认「先回忆后出意思」（判完看译文，答 × 需补写）；可切换「系统直接给意思」——判完自动显示中文意思，不用自己写/找。收录新词会自动从内置词典（3 万余常用词）匹配中文意思，找不到的词可点 ✎ 补录。<br>
+      12) <b>初始化词库</b>：首次运行会弹「选择起始词库」：从零开始 / 四级词库（约 4544 词）/ 六级词库（约 6662 词，含四级）。词自带中文释义，选六级即四级+六级新增全覆盖；之后可在「清空重来」里换库。
+    </div>
+  </details>
+</div>
+
+<input type="file" id="importFile" accept=".json,application/json" style="display:none">
+
+<!-- 初始化/清空重来：从零 或 四级词库 或 六级词库 -->
+<div id="resetModal">
+  <div class="box">
+    <div id="resetStep1">
+      <div id="resetTitle" style="font-size:15px; font-weight:700; margin-bottom:6px;">🧹 清空重来</div>
+      <div id="resetDesc" style="font-size:13px; color:var(--dim); margin-bottom:14px; line-height:1.6;">当前所有单词和学习记录都会被清掉。想恢复到哪种状态？</div>
+      <button class="btn ghost" id="resetToCet4">📗 四级词库（约 4544 词）</button>
+      <button class="btn ghost" id="resetToCet6">📘 六级词库（约 6662 词，含四级）</button>
+      <button class="btn no" id="resetToZero">清空归零（从 0 开始）</button>
+      <button class="btn ghost" id="resetCancel">取消</button>
+    </div>
+    <div id="resetStep2" style="display:none">
+      <div id="resetStep2Text" style="font-size:15px; font-weight:700; margin-bottom:6px;"></div>
+      <div style="font-size:13px; color:var(--no); margin-bottom:14px; font-weight:700;">⚠️ 此操作不可撤销！</div>
+      <button class="btn ok" id="resetConfirm">确定清空</button>
+      <button class="btn ghost" id="resetBack">再想想</button>
+    </div>
+  </div>
+</div>
+
+<!-- 导出备份面板：手机上不弹下载时，可直接长按复制备份内容 -->
+<div id="exportModal">
+  <div class="box">
+    <div style="font-size:15px; font-weight:700; margin-bottom:6px;">💾 备份内容</div>
+    <div class="muted" style="font-size:12px; margin-bottom:8px; line-height:1.6;">已尝试下载文件；若手机没有弹出下载，请点「复制全部」或长按下面内容全选复制，粘贴保存到备忘录/文件即可（内容较大时会自动压缩，导入时自动解压）。</div>
+    <textarea id="exportText" readonly style="width:100%; height:160px; font-size:13px; box-sizing:border-box; border:1px solid var(--line); border-radius:6px; padding:8px; color:var(--fg); background:var(--bg, transparent);"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn small ghost" id="exportCopy">📋 复制全部</button>
+      <button class="btn small ghost" id="exportClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="studyCard" style="display:none">
+  <div class="row" style="gap:6px;margin-bottom:10px">
+    <button class="btn small ok" id="studyExamTab" style="flex:1;padding:10px 4px">📝 整卷</button>
+    <button class="btn small ghost" id="studyTopicTab" style="flex:1;padding:10px 4px">🧩 专题</button>
+    <button class="btn small ghost" id="studyListenTab" style="flex:1;padding:10px 4px">🎧 听力</button>
+  </div>
+  <div id="studyArea"><div id="emptyTip">选择上方模块</div></div>
+</div>
+<button class="fab" id="toTop" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<script>
+"use strict";
+/* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
+const APP_VERSION = "1.9.8";
+const UPDATE_URLS_DEFAULT = [
+  "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
+  "https://zyh180518-maker.github.io/wordbook/www/latest.json",
+  "https://raw.githubusercontent.com/zyh180518-maker/wordbook/gh-pages/latest.json",
+  "https://cdn.jsdelivr.net/gh/zyh180518-maker/wordbook@gh-pages/latest.json"
+];
+/* 允许 localStorage 覆盖更新源（测试 / 换服务器用），默认使用上面三个官方源 */
+var UPDATE_URLS = UPDATE_URLS_DEFAULT.slice();
+try { var _u = JSON.parse(localStorage.getItem("wb_update_urls") || "null"); if (Array.isArray(_u) && _u.length) UPDATE_URLS = _u; } catch (e) {}
+const WB_CACHE_KEY = "wb_cache";
+
+/* ===== 内置资源根路径（v1.9.1 修复热更 blob 页读不到数据） =====
+   热更缓存页以 blob: URL 加载，相对路径会解析到 blob: → fetch("cet6-exams.json") 必失败，
+   表现为「题库加载失败（请升级 APK）」。这里在 blob/file 上下文改用应用源（Capacitor = https://localhost/），
+   正常 https 页面仍走相对路径（浏览器本地调试也照常）。 */
+const WB_ORIGIN = (function () {
+  var proto = (typeof location !== "undefined" && location.protocol) ? location.protocol : "";
+  if (proto === "blob:" || proto === "file:") {
+    try { var o = localStorage.getItem("wb_origin"); if (o) return String(o).replace(/\/+$/, "") + "/"; } catch (e) {}
+    return "https://localhost/"; /* APK 内 WebView 默认源（capacitor config androidScheme=https） */
+  }
+  return "";
+})();
+function wbUrl(p) { return WB_ORIGIN ? WB_ORIGIN + String(p).replace(/^\/+/, "") : p; }
+
+function wbCmpVer(a, b) {
+  var pa = String(a).split("."), pb = String(b).split(".");
+  for (var i = 0; i < 3; i++) {
+    var x = parseInt(pa[i] || 0, 10), y = parseInt(pb[i] || 0, 10);
+    if (x !== y) return x - y;
+  }
+  return 0;
+}
+function wbMd5(s) { return window.WB_md5(window.WB_utf8(s)); }
+
+/* 带进度的 fetch：返回 Promise<ArrayBuffer>；onProgress(loaded,total) 回调；timeoutMs 超时中止 */
+function fetchWithProgress(url, onProgress, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); reject(new Error("timeout")); }, timeoutMs || 25000) : null;
+    fetch(url, { cache: "no-store", signal: ctrl ? ctrl.signal : undefined }).then(function (r) {
+      if (!r.ok) throw new Error("bad status " + r.status);
+      var total = parseInt(r.headers.get("Content-Length") || "0", 10);
+      if (!r.body || !r.body.getReader) return r.arrayBuffer(); // 老环境：无进度回退
+      var reader = r.body.getReader(), loaded = 0, chunks = [];
+      function pump() {
+        return reader.read().then(function (res) {
+          if (res.done) {
+            var buf = new Uint8Array(loaded), off = 0;
+            chunks.forEach(function (c) { buf.set(c, off); off += c.length; });
+            return buf.buffer;
+          }
+          chunks.push(res.value); loaded += res.value.length;
+          if (onProgress) onProgress(loaded, total);
+          return pump();
+        });
+      }
+      return pump();
+    }).then(function (buf) { if (timer) clearTimeout(timer); resolve(buf); })
+      .catch(function (e) { if (timer) clearTimeout(timer); reject(e); });
+  });
+}
+
+function checkForUpdate(manual) {
+  var statusEl = document.getElementById("updStatus");
+  function say(t) { if (statusEl) statusEl.textContent = t; }
+  if (manual) say("正在检查更新…");
+  function trySource(i) {
+    if (i >= UPDATE_URLS.length) {
+      if (manual) say("❌ 未连接到更新服务器（当前网络可能无法访问 GitHub，可稍后重试或使用代理）");
+      return;
+    }
+    if (manual) say("连接更新服务器 源" + (i + 1) + "/" + UPDATE_URLS.length + "…");
+    fetchWithProgress(UPDATE_URLS[i], null).then(function (buf) {
+      var j;
+      try { j = JSON.parse(new TextDecoder("utf-8").decode(new Uint8Array(buf))); } catch (e) { throw new Error("bad json"); }
+      if (!j || !j.version) throw new Error("bad json");
+      if (wbCmpVer(j.version, APP_VERSION) <= 0) {
+        if (manual) say("已是最新版本 v" + APP_VERSION);
+        checkApkUpdate(j, manual, statusEl);
+        return;
+      }
+      checkApkUpdate(j, manual, statusEl);
+      say("发现新版本 v" + j.version + "，正在下载…");
+      // 下载：主源 htmlUrl + htmlUrlBackup 逐个尝试（任一成功即完成，CORS/网络失败自动跳下一个）
+      var dlUrls = [j.htmlUrl].concat(j.htmlUrlBackup || []);
+      (function tryDl(k) {
+        if (k >= dlUrls.length) {
+          if (manual) say("❌ 所有下载源都失败，请检查网络后重试");
+          trySource(i + 1);
+          return;
+        }
+        fetchWithProgress(dlUrls[k], function (loaded, total) {
+          var kb = Math.round(loaded / 1024);
+          say("正在下载 v" + j.version + " " + (total ? Math.round(loaded * 100 / total) + "%（" + kb + "/" + Math.round(total / 1024) + " KB）" : kb + " KB…"));
+        }).then(function (buf) {
+          var bytes = new Uint8Array(buf);
+          if (j.md5 && window.WB_md5(bytes) !== j.md5) { say("⚠️ 下载内容校验失败，尝试下一个源…"); tryDl(k + 1); return; }
+          var html = new TextDecoder("utf-8").decode(bytes);
+          try {
+            localStorage.setItem(WB_CACHE_KEY, JSON.stringify({ v: j.version, f: j.htmlFile, m: j.md5, html: html }));
+          } catch (e) { say("⚠️ 存储空间不足，更新失败"); return; }
+          say("✅ 新版本 v" + j.version + " 已下载，重启应用后生效");
+        }).catch(function (e) {
+          if (manual) say("下载源" + (k + 1) + "/" + dlUrls.length + " 失败（" + (e && e.message === "timeout" ? "连接超时" : "连接中断") + "），尝试下一个…");
+          tryDl(k + 1);
+        });
+      })(0);
+    }).catch(function (e) {
+      if (manual) say("源" + (i + 1) + " 连接失败" + (e && e.message === "timeout" ? "（连接超时）" : "（连接中断）") + "，尝试备用源…");
+      trySource(i + 1);
+    });
+  }
+  trySource(0);
+}
+
+/* APK 更新检查：仅 APK（存在原生 AndroidUpdater 桥）时有效，由 CI 注入的 Java 代码提供 */
+function checkApkUpdate(j, manual, statusEl) {
+  if (!window.AndroidUpdater || !j.apk || !j.apk.version) return;
+  var installed = "0.0.0";
+  try { installed = window.AndroidUpdater.getInstalledVersion() || "0.0.0"; } catch (e) {}
+  if (wbCmpVer(j.apk.version, installed) > 0) {
+    var btn = document.getElementById("btnCheckApk");
+    if (btn) {
+      btn.style.display = "";
+      btn.dataset.apkUrl = j.apk.url || "";
+      btn.dataset.apkMd5 = j.apk.md5 || "";
+      btn.dataset.apkVer = j.apk.version;
+      btn.dataset.apkSize = j.apk.size || "";
+      if (manual && statusEl) statusEl.textContent = "📦 检测到 APK 新版本 v" + j.apk.version + "（约 " + Math.round((j.apk.size || 0) / 1024) + " KB），点「更新 APK」自动下载安装";
+    }
+  }
+}
+
+/* 更新 APK：走原生桥下载并调起系统安装 */
+function updateApk() {
+  var btn = document.getElementById("btnCheckApk");
+  var statusEl = document.getElementById("updStatus");
+  if (!btn || !window.AndroidUpdater || !btn.dataset.apkUrl) return;
+  if (statusEl) statusEl.textContent = "⏳ 正在下载 APK（约 " + Math.round((parseInt(btn.dataset.apkSize || "0", 10) || 4500) / 1024) + " KB）…APK 较大，网络不佳可能需要几分钟，下载完成会自动调起安装";
+  try {
+    window.AndroidUpdater.downloadAndInstall(btn.dataset.apkUrl, "wordbook-v" + btn.dataset.apkVer + ".apk", btn.dataset.apkMd5 || "");
+  } catch (e) { if (statusEl) statusEl.textContent = "⚠️ 更新失败：" + e.message; }
+}
+
+(function () {
+  function onReady(fn) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  onReady(function () {
+    var vEl = document.getElementById("appVer"); if (vEl) vEl.textContent = APP_VERSION;
+    var b1 = document.getElementById("btnCheckUpdate");
+    if (b1) b1.onclick = function () { checkForUpdate(true); };
+    var b2 = document.getElementById("btnCheckApk");
+    if (b2) b2.onclick = updateApk;
+    setTimeout(function () { checkForUpdate(false); }, 1500); /* 启动静默检查 */
+    var rm = document.getElementById("readModeSel");
+    if (rm) {
+      rm.value = getReadMode();
+      rm.onchange = function () { try { localStorage.setItem("wb_read_mode", rm.value); } catch (e) {} };
+    }
+    var dg = document.getElementById("dailyGoalSel");
+    if (dg) {
+      dg.value = state.dailyGoal || 30;
+      dg.onchange = function () {
+        var v = parseInt(dg.value, 10);
+        if (!v || v < 1) v = 1;
+        if (v > 999) v = 999;
+        dg.value = v;
+        state.dailyGoal = v;
+        save();
+        renderProgress();
+      };
+    }
+    var mm = document.getElementById("memModeSel");
+    if (mm) {
+      mm.value = state.memorizeMode || "default";
+      mm.onchange = function () {
+        state.memorizeMode = mm.value;
+        save();
+        // 重绘当前答题区：记忆方式变化影响答案呈现方式
+        renderQuiz();
+      };
+    }
+  });
+})();
+
+// 朗读模式：manual=手动点击读（默认），auto=切词自动读
+function getReadMode() {
+  try { return localStorage.getItem("wb_read_mode") === "auto" ? "auto" : "manual"; }
+  catch (e) { return "manual"; }
+}
+
+const STORE_KEY = "wordbook.v1";
+// 内置词典（词→中文释义，离线资源，系统给意思模式与收录自动匹配用；加载失败降级为无词典）
+var DICT = null;
+fetch(wbUrl("dict.json"), { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (d) { DICT = d; }).catch(function () { DICT = null; });
+// 四六级初始词库（词→中文释义，随 APK 内置；首次运行/重置时可选择从零或导入某一级）
+var BANKS = {}; // {cet4: {...words}, cet6: {...words}}
+const BANK_FILES = { cet4: "cet4.json", cet6: "cet6.json" };
+function loadBank(name) {
+  return fetch(wbUrl(BANK_FILES[name]), { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { return (d && d.words) || null; })
+    .catch(function () { return null; });
+}
+// 六级真题库（结构化试卷，懒加载；套数/题数由数据自身提供，勿写死）
+var EXAM_BANK = null;
+function loadExamBank() {
+  if (EXAM_BANK) return Promise.resolve(EXAM_BANK);
+  return fetch(wbUrl("cet6-exams.json"), { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { EXAM_BANK = d; return d; })
+    .catch(function () { return null; });
+}
+// 种子词库（来自用户手机记录 docx，2026-10-22 清洗，共1292个有效单词）
+const SEED_WORDS = ["abreast","abrupt","abundance","abundant","academic","academy","accent","access","accessible","accessory","accidental","acclaim","accompany","accuse","acknowledge","acquaintance","acting","acute","adjust","administer","admire","admit","admittedly","adolescent","adore","advanced","advent","adversary","adverse","advocate","affection","affiliate","affirm","affix","agency","agent","aggressive","alert","algorithm","all","allege","ally","along","alter","alternative","amaze","ambassador","ambiguous","ambition","ambulance","amend","ample","amplify","amuse","ancestor","and","anniversary","annual","anticipate","antivirus","appeal","appease","applaud","appoint","appraise","approve","april","aptitude","architect","architecture","arise","arouse","arrange","arrest","articulate","artificial","ascend","ascertain","ascribe","ask","aspect","assemble","assert","asset","assimilate","assist","assume","assure","atmosphere","attain","attempt","attitude","attorney","attribute","audio","august","auxiliary","avail","availability","avert","aviation","award","awesome","awkward","bachelor","backward","bakery","bald","bankrupt","bare","bargain","bark","barren","barrier","beforehand","beginner","belly","below","benign","bid","big","bilingual","bill","bin","biodiversity","bit","blackmail","blackout","blame","blanket","blast","bleak","blench","blink","bloc","block","blonde","blow","bold","border","borderline","borrow","bot","bother","bottleneck","bottom","brand","breach","break","breakdown","breast","bribe","bride","brilliant","broke","browse","brutal","build-out","bureau","burst","business","bust","campaign","campus","capital","carbo","carbohydrate","cardinal","carton","carve","cash","cast","casual","catastrophe","category","caution","ceiling","celebrate","celebrity","cell","ceremony","certificate","certify","changer","chaos","charity","chart","chill","chip","choir","chop","chore","chronic","circuit","circulate","circumstance","civic","civilian","claim","clarify","classic","classified","classify","client","climate","climax","clinic","coalition","coast","coffin","coherent","cohesion","coincide","coincidence","colleague","comic","commend","comment","commission","commit","companion","company","compensate","compete","compile","compliment","component","compose","composite","compound","comprehension","comprise","compromise","concede","conceive","conception","concise","concrete","condemn","conducive","conduct","confer","confession","confine","conform","congress","conquer","consecutive","consensus","consequence","considerate","consist","consistent","console","consonant","conspicuous","constitute","constrain","consume","contact","contemporary","contest","context","continue","contribute","controversy","conversation","converse","convert","convict","coordinate","copper","corner","cornerstone","corporate","corporation","correlate","correspond","correspondent","corrupt","cosy","count","court","courtesy","cousin","crab","creep","creepy","crept","cricket","crime","crucial","curb","curve","cycle","damp","date","deadly","deal","debt","decay","deceive","december","deceptive","declare","decline","deduce","deduct","deem","deep","default","defect","defend","deficiency","deficient","deficit","define","definite","definition","degenerate","delegate","deliberate","deliver","demographic","demonstrate","denote","dentist","depart","depict","deport","deposit","depress","deregulate","descend","descendant","descent","describe","description","desk","despise","destroy","details","detain","detect","deter","deteriorate","devastate","deviate","device","devise","diagnose","dialogue","dictate","difficult","dig","diploma","diplomat","dirt","discrimination","dismiss","dismissal","disorder","dispose","disregard","disrupt","disruption","disruptive","distill","distort","distribute","disturb","disturbance","dive","diverse","divert","division","documentary","domain","donate","doom","down","downstairs","draft","drain","drawback","driveway","drought","dumping","dust","dusted","ecological","ecology","economy","ecosystem","edit","effect","efficient","eject","elastic","element","elevate","elicit","eligible","eliminate","embarrass","embed","embody","emerge","emergency","eminent","emission","emit","emperor","endanger","endorse","endow","ensure","enterprise","entertain","entrepreneur","entrust","envisage","epidemic","episode","eradicate","erode","errant","erupt","escalation","especially","essence","essential","ethical","ethnic","evidence","evoke","evolve","exceed","exceedingly","exception","exceptional","excess","excessive","exclaim","execute","executive","exemplary","exist","expect","expenditure","experience","expert","expertise","explicit","exponent","export","expose","exposition","extend","extension","extensive","extent","extinct","extinction","extrovert","fabulous","facility","factor","faculty","fade","fake","famine","fault","february","federal","feminine","fertile","fierce","fight","file","fill","finance","finite","firm","flat","flaw","flexible","flight","floor","flow","fluctuate","fluctuation","fool","force","foreign","foremost","foresee","foresight","formal","formula","formulate","forth","forthcoming","fortune","forum","foundation","fragile","frame","freeway","freight","friday","frighten","froze","fundamental","furniture","gamble","gamechanger","gap","garbage","gas","generate","genre","genuine","geography","geology","giant","gist","gossip","grab","grad","grade","grand","grape","graph","grasp","grid","grip","grocery","guarantee","guard","guilt","hack","handicap","handicapped","hang","hangout","hard","harness","harsh","haste","haunt","hazard","head","headcount","hear","heavy","heck","heir","helmet","hemisphere","highway","hijack","hit","hitter","hoist","homogeneous","horizon","hotel","housewarming","hub","humane","humble","humid","humiliate","hunt","hurricane","hurry","hybrid","hypothesis","iconic","idle","illegal","illustrate","image","immaculate","immediate","immune","imperative","imperial","implicit","imply","import","impose","imprison","incur","indefinite","indicate","indicative","indicator","indict","indispensable","individual","induce","inevitable","infect","infected","infer","inferior","infinite","inflate","inform","infrastructure","infringe","ingredient","inherent","inherit","inject","innovation","insert","insight","insist","inspect","instance","institute","institution","insulate","insure","interact","interfere","intermediate","intermittent","interrogate","interrupt","intervene","interview","into","introduce","introvert","intrude","intuitive","invade","invalid","invert","involve","irregular","irrigate","irritable","irritate","irritating","irritation","issue","january","jeopardy","jet","job","joint","journalist","jubilee","judge","judicial","judiciary","july","june","jurisdiction","jury","justice","justify","keep","kidnap","knight","knock","landmark","landscape","latitude","lawsuit","layoff","lead","leak","ledger","legacy","legal","legend","legislate","lengthy","let","lever","levy","line","linguistic","literally","loan","lobster","log","longevity","look","low","loyal","loyalty","lure","magnify","magnitude","mainstream","maintain","malicious","malignant","mall","mandate","manifest","manual","manufacture","manufacturer","manuscript","march","master","material","materialism","matter","mature","may","medication","medium","melt","mend","mentality","mess","microscope","middle","milestone","mimic","mind","minister","misfortune","mislead","misread","mission","mockumentary","modify","moist","mollify","monday","monitor","mood","mop","moral","mortal","mortgage","mud","muddy","multiple","multiply","multitude","munchies","mute","mutter","necessary","negative","noted","november","now","object","obscure","observation","observe","obtain","occupation","occupy","occur","ocean","oceans","october","off","offend","official","offspring","old-fashioned","omit","opponent","opportunity","oppose","opposite","optimistic","organ","organic","organism","orient","other","outdated","outlaw","outrage","outstanding","over","oversight","overwhelm","pack","packed","pall","panic","parliament","passive","pastime","patronise","paycheck","peak","perceive","perform","peril","perish","permanent","permit","perpetual","perpetuate","persist","personality","personnel","perspective","persuade","pesticide","phrase","physician","pile","pilot","pinch","pit","place","plastic","platform","platinum","pledge","podcast","pole","polite","poll","pollute","pomegranate","pop","porch","portable","porter","portfolio","portion","portray","position","positive","post","postpartum","posture","potential","pottery","praise","precaution","precede","precedent","precise","predecessor","pregnant","premature","premise","premium","preoccupy","presume","pretext","prevail","prevalence","prevalent","preview","previous","pride","primary","prime","primitive","principle","prior","priority","prison","private","prize","problem","procedure","proceed","procession","proclaim","profession","professor","proficient","profile","profit","profound","project","prolong","prominent","promise","promising","promotion","prompt","pronunciation","proof","propaganda","propagate","proportion","propose","prospect","prospective","prosper","prosperity","protein","protest","prototype","proud","provoke","pull","punch","purity","qualify","quality","quantify","quantity","quarters","question","quiet","quiz","rack","rag","rage","raise","rate","ratify","rating","ratio","raw","reassure","recede","recession","recommend","recreation","recruit","rectangular","rectify","recur","recyclable","recycle","refer","reference","refine","refinery","reflect","reform","refrain","refresh","refusal","regard","regardless","register","regular","regulate","reign","reject","relate","relative","religion","remain","remark","remedy","remnant","renaissance","render","renew","renovate","repair","reporter","rescue","resemble","reserve","reserved","resist","resort","resource","respect","respective","restore","restrain","resume","retain","retort","retrospect","reunion","revenue","reverse","revise","revive","revolution","revolve","reward","right","rigor","rigorous","rip","rise","ritual","rival","rob","robust","roof","rot","rotate","row","royal","rubbish","rug","rush","sacrifice","safeguard","sales","salute","salvation","sample","sanctuary","saturate","saturday","savage","scandal","scandalous","scar","scarce","scarcity","scare","scared","scenario","scene","scholar","scope","scorn","scramble","script","scrub","sculpture","second","secondary","secretary","section","sector","secure","seduce","seminar","senior","september","sequence","set","setback","setting","severe","shadow","sheet","shell","shellfish","shield","shift","shoulder","shred","shrimp","shrink","side","sight","sightseeing","silence","similar","similarity","simmer","simplify","sink","skip","slang","slash","slightly","smuggle","snatch","soar","sole","solemn","solitary","solo","something","sort","special","speciality","species","specific","specify","specimen","spectacular","spectator","speculate","spend","sphere","split","spot","spotlight","stable","staff","stagger","stake","stale","stalk","stance","standpoint","statement","static","stationary","statistic","statute","steel","steer","stem","stereotype","stew","stifle","stock","stone","stop","strain","stride","struggle","stuff","stutter","subject","submarine","submerge","submissive","submit","subscribe","subsequent","subsistence","substance","substitute","subtle","succeed","succession","such","sufficient","suicide","suitcase","summit","sunday","superb","superior","supervise","support","surf","surface","surge","surgeon","surgery","surpass","surplus","surrender","surround","survive","susceptible","suspect","suspense","suspicion","suspicious","sustain","swamp","swear","switch","system","tablet","take","taking","tank","tease","telescope","temper","temperament","temperature","temporary","tempt","temptation","tenant","terminal","terrible","terrify","terror","that","the","therapy","there","thermal","thesis","thing","threshold","thrill","through","thursday","tidy","tie","timber","time","tongue","tool","torrential","torture","trail","transcend","transcript","transmit","transport","trauma","tremendous","trench","trial","tribe","tribute","triple","trophy","truck","trunk","try","tuesday","tuition","tumble","turn","turns","tutor","twist","types","underdressed","undergraduate","understaffed","uniform","unify","unite","universe","unlock","unprecedented","update","upgrade","uphold","uprising","upstairs","urgent","vaccine","vacuum","vague","valid","valued","variation","vary","vegetate","vegetation","vent","venture","verbal","verdict","verify","versatile","verse","versus","very","veto","village","virtue","virus","visible","vision","visual","vivid","vocal","void","vote","vow","vowel","vulnerability","vulnerable","wage","wages","ward","warrant","warranty","wednesday","weed","weird","wheel","whisper","wholesome","widespread","wipe","with","witness","worksheet","workshop","zoology"];
+
+let state = load();
+renderAll();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      // 兼容旧数据：补全统计与每日目标字段
+      if (!s.stats) s.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
+      if (!s.stats.dailyDetail) s.stats.dailyDetail = {}; // 旧备份无学习明细：补空对象
+      if (!s.dailyGoal) s.dailyGoal = 30;
+      if (!s.memorizeMode) s.memorizeMode = "default"; // 记忆方式：default=先回忆后出意思 / system=系统直接给意思
+      return s;
+    }
+  } catch (e) {}
+  // 首次运行：不再自动装种子词库，弹「选择起始词库」（从零/四级/六级）
+  return { words: {}, quizPool: "un", dailyGoal: 30, memorizeMode: "default", initPending: true, stats: { dailyRecords: {}, lastStudyDate: "", streak: 0, dailyDetail: {} } };
+}
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  const n = document.getElementById("saveNote");
+  const t = new Date().toTimeString().slice(0, 8);
+  n.textContent = "已保存 " + t;
+}
+function renderAll(keepQuiz) {
+  const c = (p) => Object.values(state.words).filter(w => w.b === p).length;
+  document.getElementById("cAll").textContent = Object.keys(state.words).length;
+  document.getElementById("nAll").textContent = Object.keys(state.words).length;
+  document.getElementById("cUn").textContent = c("un");
+  document.getElementById("cOk").textContent = c("ok");
+  document.getElementById("nUn").textContent = c("un");
+  document.getElementById("nOk").textContent = c("ok");
+  // 同步 tab 与下拉的激活状态
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.dataset.pool === state.quizPool));
+  document.getElementById("quizPool").value = state.quizPool;
+  // 同步每日单词数输入框（导入/重置等改 state.dailyGoal 的路径也要刷新；用户正在编辑时不打扰）
+  const dgEl = document.getElementById("dailyGoalSel");
+  if (dgEl && document.activeElement !== dgEl) dgEl.value = state.dailyGoal || 30;
+  // 同步记忆方式下拉（导入/重置后也要刷新）
+  const mmEl = document.getElementById("memModeSel");
+  if (mmEl && document.activeElement !== mmEl) mmEl.value = state.memorizeMode || "default";
+  renderProgress();
+  renderLists();
+  // keepQuiz=true：收录单词等场景不重抽题（当前题目保持不动）；题库原本为空时仍抽一题显示
+  if (keepQuiz) { if (!document.querySelector("#quizArea .bigWord")) renderQuiz(); }
+  else renderQuiz();
+  renderToday();
+  renderHistory();
+  renderMiss();
+}
+function renderProgress() {
+  const today = new Date().toISOString().slice(0, 10);
+  const s = state.stats || { dailyRecords: {}, lastStudyDate: "", streak: 0 };
+  const todayCount = s.dailyRecords[today] || 0;
+  const goal = state.dailyGoal || 30;
+  const pct = Math.min(100, Math.round(todayCount / goal * 100));
+  document.getElementById("progressBar").style.width = pct + "%";
+  document.getElementById("progressText").textContent = todayCount + "/" + goal;
+  document.getElementById("streakTip").textContent = "🔥 连续 " + (s.streak || 0) + " 天";
+}
+function renderLists() {
+  const li = (w) => {
+    const t = w.t ? `<span class="t">${esc(w.t)}</span>` : "";
+    return `<li><b>${esc(w.w)}</b>${t}<button class="edit" data-edit="${esc(w.w)}">✎</button><button class="del" data-del="${esc(w.w)}">✕</button></li>`;
+  };
+  const render = (id, items) => {
+    document.getElementById(id).innerHTML = items.map(li).join("") || `<li class="hint">（空）</li>`;
+  };
+  // 总单词本只在展开时渲染，避免每次答题都重建1292行
+  const allD = document.getElementById("allDetails");
+  if (allD.open) render("listAll", Object.values(state.words).sort((a,b)=>a.w.localeCompare(b.w)));
+  for (const [p, id] of [["un","listUn"],["ok","listOk"]]) {
+    render(id, Object.values(state.words).filter(w => w.b === p).sort((a,b)=>a.w.localeCompare(b.w)));
+  }
+}
+/* ===== 今日已学 / 学习记录 ===== */
+function todayKey() { return new Date().toISOString().slice(0, 10); } // 与答题统计同用 UTC 日期，保持一致
+function ensureDailyDetail() {
+  if (!state.stats) state.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
+  if (!state.stats.dailyDetail) state.stats.dailyDetail = {};
+  return state.stats.dailyDetail;
+}
+function wordRow(w, b, show, date) {
+  // 记忆方式=系统直接给意思：每日记录优先显示内置词典意思（个人手写可能有偏差），无词典词条才退回个人写的
+  const word = state.words[w] || {};
+  const sys = (state.memorizeMode || "default") === "system";
+  const t = (sys && DICT && DICT[w] ? DICT[w] : "") || word.t || "";
+  const trans = show && t ? `<span class="t">${esc(t)}</span>` : "";
+  const cls = b === "ok" ? "chip ok" : "chip no";
+  const mark = b === "ok" ? "✓" : "✗";
+  return `<li><b>${esc(w)}</b>${trans}<button class="edit" data-edit="${esc(w)}" title="写/改意思">✎</button><button class="${cls}" data-flip="${esc(w)}" data-day="${esc(date)}" title="点击切换掌握/未掌握">${mark}</button></li>`;
+}
+function renderToday() {
+  const dd = ensureDailyDetail();
+  const map = dd[todayKey()] || {};
+  const ws = Object.keys(map);
+  const nOk = ws.filter(w => map[w] === "ok").length;
+  document.getElementById("nToday").textContent = ws.length;
+  document.getElementById("todayStat").textContent = ws.length
+    ? `今日共学 ${ws.length} 词：掌握 ${nOk}，未掌握 ${ws.length - nOk}`
+    : "今天还没学习，去复习/学习几个单词吧。";
+  const filter = document.getElementById("todayFilter").value;
+  const show = document.getElementById("todayShowTrans").checked;
+  const items = ws.filter(w => filter === "all" || map[w] === filter).sort((a,b)=>a.localeCompare(b));
+  document.getElementById("listToday").innerHTML = items.map(w => wordRow(w, map[w], show, todayKey())).join("")
+    || `<li class="hint">（空）</li>`;
+}
+function renderHistory() {
+  const dd = ensureDailyDetail();
+  const days = Object.keys(dd).sort().reverse();
+  document.getElementById("nDays").textContent = days.length;
+  const el = document.getElementById("historyList");
+  if (!days.length) { el.innerHTML = `<div class="muted">还没有学习记录，答过题后会自动生成。</div>`; return; }
+  el.innerHTML = days.map(d => {
+    const map = dd[d];
+    const ws = Object.keys(map);
+    const nOk = ws.filter(w => map[w] === "ok").length;
+    const tag = d === todayKey() ? "📅" : "🗓";
+    return `<div class="histDay" data-day="${d}" data-exp="${d}" style="display:flex;align-items:center;gap:10px;margin-bottom:4px;padding:10px 4px;cursor:pointer;border-bottom:1px dashed var(--line)">
+      <span style="font-size:13px;flex:1">${tag} ${d}（${ws.length}词 / 掌握${nOk}）</span>
+      <button class="del" data-deld="${d}" style="padding:8px 12px;flex-shrink:0" title="删除这一天">✕</button>
+      <div class="histBody" id="histBody-${d}" style="display:none;width:100%;order:3"></div>
+    </div>`;
+  }).join("");
+}
+function openHistDay(d, show) {
+  const body = document.getElementById("histBody-" + d);
+  if (!body) return;
+  const open = body.style.display !== "none";
+  body.style.display = open ? "none" : "block";
+  if (!open) renderHistBody(d, show);
+}
+// 某一天明细：自带「显示意思」开关，只影响当天展开内容，不跟随全局；受 histFilter 掌握状态筛选
+function renderHistBody(d, show) {
+  const body = document.getElementById("histBody-" + d);
+  if (!body) return;
+  const map = ensureDailyDetail()[d] || {};
+  const filterEl = document.getElementById("histFilter");
+  const filter = filterEl ? filterEl.value : "all";
+  const label = filter === "ok" ? "仅已掌握" : filter === "un" ? "仅未掌握" : "全部";
+  const rows = Object.keys(map).filter(w => filter === "all" || map[w] === filter)
+    .sort((a, b) => a.localeCompare(b)).map(w => wordRow(w, map[w], show, d)).join("")
+    || `<li class="hint">（空）</li>`;
+  body.innerHTML =
+    `<div style="display:flex;align-items:center;font-size:12px;margin:0 0 6px;color:var(--dim)">` +
+    `<span style="margin-right:auto">当前筛选：${label}（${Object.keys(map).filter(w => filter === "all" || map[w] === filter).length}词）</span>` +
+    `<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" class="histShowTrans" style="margin:0" ${show ? "checked" : ""}> 显示意思</label></div>` +
+    `<ul class="words">${rows}</ul>`;
+  const cb = body.querySelector(".histShowTrans");
+  if (cb) cb.onchange = () => renderHistBody(d, cb.checked);
+}
+document.getElementById("todayShowTrans").onchange = () => { renderToday(); renderHistory(); };
+document.getElementById("todayFilter").onchange = renderToday;
+document.getElementById("histFilter").onchange = () => {
+  // 重新渲染所有已展开的日期明细，应用新的掌握状态筛选
+  document.querySelectorAll(".histBody").forEach(body => {
+    if (body.style.display !== "none") renderHistBody(body.id.replace("histBody-", ""), document.getElementById("todayShowTrans").checked);
+  });
+};
+document.getElementById("clearHistoryBtn").onclick = () => {
+  if (!confirm("确定清空全部学习记录？此操作不可撤销。")) return;
+  if (!confirm("再次确认：将删除所有日期的学习记录，继续？")) return;
+  ensureDailyDetail();
+  state.stats.dailyDetail = {};
+  save(); renderToday(); renderHistory();
+};
+document.getElementById("historyList").onclick = (e) => {
+  if (e.target.closest("[data-edit], #editInput, #editSave")) return; // 点 ✎/编辑输入/保存：不触发展开/删除
+  if (e.target.closest(".histBody")) return; // 明细内容（显示意思开关/单词行）：不触发展开收起
+  const del = e.target.closest("[data-deld]");
+  if (del) {
+    const d = del.dataset.deld;
+    if (!confirm(`删除 ${d} 的学习记录？`)) return;
+    delete ensureDailyDetail()[d];
+    save(); renderToday(); renderHistory();
+    return;
+  }
+  const exp = e.target.closest("[data-exp]");
+  if (exp) openHistDay(exp.dataset.exp, document.getElementById("todayShowTrans").checked);
+};
+// 多次未掌握（≥2次）单词表：答 ✗ 累计次数来自每次答题最终判定 + 记录里改判的同步调整
+function renderMiss() {
+  const el = document.getElementById("listMiss");
+  const cnt = document.getElementById("nMiss");
+  if (!el || !cnt) return;
+  const list = Object.values(state.words).filter(w => (w.miss || 0) >= 2)
+    .sort((a, b) => ((b.miss || 0) - (a.miss || 0)) || a.w.localeCompare(b.w));
+  cnt.textContent = list.length;
+  if (!document.getElementById("missDetails").open) return; // 收起时不构建列表，展开时才渲染（大词库省开销）
+  el.innerHTML = list.map(w => {
+    const t = w.t ? `<span class="t">${esc(w.t)}</span>` : "";
+    const hot = (w.miss || 0) >= 3;
+    return `<li><b>${esc(w.w)}</b>${t}<button class="edit" data-edit="${esc(w.w)}" title="写/改意思">✎</button><span class="badge" style="${hot ? "background:var(--no);color:#fff;" : ""}">未掌握 ×${w.miss}</span></li>`;
+  }).join("") || `<li class="hint">（没有 2 次及以上未掌握的单词，继续保持）</li>`;
+}
+document.getElementById("missDetails").addEventListener("toggle", () => { if (document.getElementById("missDetails").open) renderMiss(); });
+// 今日已学 / 学习记录明细里点 ✓/✗：切换该天该词的掌握状态；若该天是这个词最近一次记录，同步单词本当前状态
+document.addEventListener("click", e => {
+  const fl = e.target.closest("[data-flip]");
+  if (!fl) return;
+  const w = fl.dataset.flip;
+  const day = fl.dataset.day;
+  if (!w || !day || !state.words[w]) return;
+  const dd = ensureDailyDetail();
+  const map = dd[day];
+  if (!map || !(w in map)) return;
+  const nb = map[w] === "ok" ? "un" : "ok";
+  map[w] = nb;
+  const word = state.words[w];
+  if (nb === "un") word.miss = (word.miss || 0) + 1; else word.miss = Math.max(0, (word.miss || 0) - 1);
+  let latest = null;
+  for (const d in dd) if (w in dd[d]) latest = (latest === null || d > latest) ? d : latest;
+  if (day === latest) state.words[w].b = nb;
+  save();
+  // 记录翻转前所在的历史明细与当天开关，改完重开该天并保持状态（与写意思编辑一致）
+  const body = fl.closest('[id^="histBody-"]');
+  let dayShow = null;
+  if (body) { const cb = body.querySelector(".histShowTrans"); dayShow = cb ? cb.checked : null; }
+  renderAll();
+  if (body) {
+    const d = body.id.replace("histBody-", "");
+    const nb2 = document.getElementById("histBody-" + d);
+    if (nb2) {
+      nb2.style.display = "block";
+      renderHistBody(d, dayShow === null ? document.getElementById("todayShowTrans").checked : dayShow);
+    }
+  }
+});
+function renderQuiz() {
+  const pool = document.getElementById("quizPool").value;
+  const area = document.getElementById("quizArea");
+  window._curAns = null; // 新一轮：重置本词答题状态（✓/× 可自由切换）
+  if (window._advTimer) { clearTimeout(window._advTimer); window._advTimer = null; }
+  let poolWords;
+  if (pool === "curve") {
+    // 遗忘曲线：到期（next<=now）或从未学过（无 next）的词才进入复习池，到期时间由答题结果推进
+    const now = Date.now();
+    poolWords = Object.values(state.words).filter(w => !w.next || w.next <= now);
+  } else if (pool === "rand") {
+    // 完全随机：全库纯随机，不偏重掌握状态
+    poolWords = Object.values(state.words);
+  } else {
+    poolWords = Object.values(state.words).filter(w => pool === "all" ? true : w.b === pool);
+  }
+  if (poolWords.length === 0) {
+    area.innerHTML = pool === "curve"
+      ? '<div id="emptyTip">今日没有到期复习的单词，明天再来，或换个范围。</div>'
+      : '<div id="emptyTip">该范围没有单词，先收录或换个范围。</div>';
+    return;
+  }
+  // 加权随机：总范围下未掌握70%概率，初步掌握30%概率，不会总抽到会的词
+  let pick;
+  const last = window._lastWord;
+  if (pool === "all" && poolWords.some(w => w.b === "un") && poolWords.some(w => w.b === "ok")) {
+    const un = poolWords.filter(w => w.b === "un" && (!last || w.w !== last));
+    const ok = poolWords.filter(w => w.b === "ok" && (!last || w.w !== last));
+    pick = Math.random() < 0.7 && un.length ? un[Math.floor(Math.random() * un.length)] : (ok.length ? ok[Math.floor(Math.random() * ok.length)] : poolWords[Math.floor(Math.random() * poolWords.length)]);
+  } else {
+    // 单范围纯随机，避免连续重复
+    pick = poolWords[Math.floor(Math.random() * poolWords.length)];
+    if (poolWords.length > 1 && last && pick.w === last) {
+      const others = poolWords.filter(w => w.w !== last);
+      pick = others[Math.floor(Math.random() * others.length)];
+    }
+  }
+  window._lastWord = pick.w;
+  area.innerHTML = `
+    <div class="bigWord">${esc(pick.w)}</div>
+    <div class="trans" id="qTrans"></div>
+    <div style="display:flex; gap:8px; margin-top:8px; justify-content:center;">
+      <button class="btn ghost small" id="qSpeak">🔊 发音</button>
+      <button class="btn ghost small" id="qReveal">👁 看答案</button>
+    </div>
+    <div class="feedback" id="qFb"></div>
+    <div class="btns">
+      <button class="btn no" id="qNo">×</button>
+      <button class="btn ok" id="qOk">√</button>
+    </div>
+    <div style="display:flex; justify-content:center; margin-top:10px;">
+      <button class="btn ghost small" id="qNext" style="display:none">下一个 ➤</button>
+    </div>`;
+  document.getElementById("qOk").onclick = () => answer(pick.w, "ok");
+  document.getElementById("qNo").onclick = () => answer(pick.w, "un");
+  // 看答案：自己选择何时看译文（先回忆，答不出再看）；已作答后忽略，避免覆盖补录区
+  document.getElementById("qReveal").onclick = () => {
+    if (window._curAns) return;
+    const tr = document.getElementById("qTrans");
+    if ((state.memorizeMode || "default") === "system") {
+      const st = sysMeaning(pick.w);
+      tr.textContent = st ? "译文：" + st : "（该词暂无内置释义，可点 ✎ 补录）";
+      return;
+    }
+    const t = state.words[pick.w].t;
+    tr.textContent = t ? "译文：" + t : "（该词还没有译文，答 × 后可补录）";
+  };
+  // 发音功能：APK 里优先走原生 TTS（window.AndroidTTS，由 Java 注入，离线可用，
+  // 不依赖 Google TTS 引擎）；浏览器里退回 Web Speech API。
+  const speak = () => {
+    let ttsCalled = false;
+    if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
+      try {
+        // 原生引擎就绪才走原生 TTS；未就绪（App 刚启动引擎绑定中）由 Web Speech 兜底，
+        // 避免“点了没声音”。isReady 为同步方法，新老 APK 桥均有，缺失时按就绪处理。
+        const ready = typeof window.AndroidTTS.isReady === 'function' ? window.AndroidTTS.isReady() : true;
+        if (ready) { window.AndroidTTS.speak(pick.w); ttsCalled = true; return; }
+      } catch (e) { /* 回退到 Web Speech */ }
+    }
+    if (window.speechSynthesis) {
+      try {
+        const u = new SpeechSynthesisUtterance(pick.w);
+        // 音色优先级：自然/神经音色 > 知名自然女声 > 任意 en-US > 任意 en（更接近真人）
+        const voices = window.speechSynthesis.getVoices();
+        const enVoice = voices.find(v => v.lang === 'en-US' && /neural|natural|online|enhanced|premium/i.test(v.name))
+          || voices.find(v => v.lang === 'en-US' && /female|女性|samantha|aria|jenny|michelle|zira/i.test(v.name))
+          || voices.find(v => v.lang === 'en-US')
+          || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en'))
+          || null;
+        if (enVoice) u.voice = enVoice;
+        u.lang = 'en-US';
+        u.rate = 0.85; // 语速稍慢适合背词
+        u.pitch = 1.1; // 音调稍高更自然不生硬
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+        ttsCalled = true;
+      } catch (e) { /* 引擎异常（如无合法语音对象）：落入下方提示分支 */ }
+    }
+    // 两种TTS都不可用时提示用户
+    if (!ttsCalled) {
+      const fb = document.getElementById("qFb");
+      if (fb) fb.textContent = "⚠️ 无法发音，请在系统「设置-语言和输入法-语音」中下载英文离线语音包";
+    }
+  };
+  document.getElementById("qSpeak").onclick = speak;
+  if (getReadMode() === "auto") {
+    // 朗读模式=自动时才切词发音（默认手动，点了才读）；启动首次等页面加载稳了再读（2.5s），换题 250ms
+    const first = !window._quizAutoSaid;
+    window._quizAutoSaid = true;
+    setTimeout(speak, first ? 2500 : 250);
+  }
+}
+// 遗忘曲线：答对逐级拉长复习间隔（1→2→4→7→15→30 天），答错回到第1天并累计一次未掌握
+const CURVE_DAYS = [1, 2, 4, 7, 15, 30];
+function applyCurve(w, b) {
+  const word = state.words[w];
+  if (!word) return;
+  if (b === "ok") {
+    word.lv = Math.min((word.lv || 0) + 1, CURVE_DAYS.length - 1);
+  } else {
+    word.lv = 0;
+    word.miss = (word.miss || 0) + 1;
+  }
+  word.next = Date.now() + CURVE_DAYS[word.lv] * 86400000;
+}
+// 系统给意思：词典优先（个人手写可能有偏差，系统直接给意思=给词典意思；词典无词条才退回个人写的）。
+// 个人没写过释义时自动补录词典释义进词库（只填空缺，不覆盖已有），供以后复用
+function sysMeaning(w) {
+  const word = state.words[w];
+  if (!word) return "";
+  const sys = (DICT && DICT[w]) || "";
+  if (!word.t && sys) { word.t = sys; save(); }
+  return sys || word.t || "";
+}
+// system 模式：判完后显示「下一题」按钮，自己点才进下一题（不自动跳）
+function showNext(w, b) {
+  const nx = document.getElementById("qNext");
+  if (!nx) return;
+  nx.style.display = "block";
+  nx.onclick = () => { nx.style.display = "none"; nextWord(w, b); };
+}
+function nextWord(w, b) {
+  applyCurve(w, b); // 曲线数据（lv/miss/next）先更新
+  save();           // 再落盘，否则改判/自动跳题路径的 save() 在 applyCurve 之前执行会丢失曲线数据
+  renderAll();
+}
+function answer(w, b) {
+  if (!state.words[w]) return;
+  const isToggle = window._curAns && window._curAns !== b;
+  window._curAns = b;
+  state.words[w].b = b;
+  // 更新学习统计：今日打卡数（每天每个词只计一次，改判不重复计数）+ 连续天数
+  if (!state.stats) state.stats = { dailyRecords: {}, lastStudyDate: "", streak: 0 };
+  const today = new Date().toISOString().slice(0, 10);
+  // 学习明细：当天该词最后一次答题状态（ok=掌握 / un=未掌握），永久保存供「今日已学/学习记录」查看
+  const dd = ensureDailyDetail();
+  if (!dd[today]) dd[today] = {};
+  const firstToday = !(w in dd[today]);
+  dd[today][w] = b;
+  if (firstToday) state.stats.dailyRecords[today] = (state.stats.dailyRecords[today] || 0) + 1;
+  const last = state.stats.lastStudyDate;
+  if (last !== today) {
+    const y = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (last === y) state.stats.streak += 1;
+    else state.stats.streak = 1;
+    state.stats.lastStudyDate = today;
+  }
+  save();
+  renderProgress();
+  renderToday();
+  renderHistory();
+  const fb = document.getElementById("qFb");
+  const tr = document.getElementById("qTrans");
+  fb.textContent = b === "ok" ? "✓ 已记入「初步掌握」" : "✗ 已记入「未掌握」";
+  fb.className = "feedback " + b;
+
+  const btnOk = document.getElementById("qOk");
+  const btnNo = document.getElementById("qNo");
+  if (btnOk) btnOk.classList.toggle("sel", b === "ok");
+  if (btnNo) btnNo.classList.toggle("sel", b === "un");
+  // 已作答：隐藏「看答案」，防止其 textContent 覆盖补录区导致卡死
+  const rv = document.getElementById("qReveal");
+  if (rv) rv.style.display = "none";
+
+  // 改判（对错发生变化）：必须先写意思，不写不能下一题
+  if (isToggle) {
+    if (window._advTimer) { clearTimeout(window._advTimer); window._advTimer = null; }
+    // 系统给意思模式：改判也免写，直接显示系统意思，自己点「下一题」（不自动跳）
+    if ((state.memorizeMode || "default") === "system") {
+      const st = sysMeaning(w);
+      tr.textContent = st ? "译文：" + st : "（该词暂无内置释义，可点 ✎ 补录）";
+      showNext(w, b);
+      return;
+    }
+    const t0 = state.words[w].t || "";
+    // 整体替换译文区内容（避免与首次作答的补录/强制写 UI 叠加造成重复 id，导致确认按钮绑定失效）
+    tr.innerHTML = (t0 ? "译文：" + esc(t0) + "<br>" : "") + `
+      <div style="margin-top: 8px;">
+        <input type="text" id="transInput" placeholder="已改判，请输入该单词的中文意思，确认后才能下一题" style="margin-bottom: 8px;">
+        <button class="btn ghost small" id="confirmTrans">确认改判</button>
+      </div>
+    `;
+    const input = document.getElementById("transInput");
+    input.focus();
+    const confirmTrans = () => {
+      const t = input.value.trim();
+      if (!t) { alert("请输入单词意思后再继续"); return; }
+      if (t && !state.words[w].t) state.words[w].t = t;
+      save();
+      nextWord(w, b);
+    };
+    document.getElementById("confirmTrans").onclick = confirmTrans;
+    input.addEventListener("keydown", e => { if (e.key === "Enter") confirmTrans(); });
+    return;
+  }
+
+  // 系统给意思模式：判完免写免回忆，直接显示系统意思，自己点「下一题」（不自动跳）
+  if ((state.memorizeMode || "default") === "system") {
+    const st = sysMeaning(w);
+    tr.textContent = st ? "译文：" + st : "（该词暂无内置释义，可点 ✎ 补录）";
+    showNext(w, b);
+    return;
+  }
+
+  // 首次作答：有译文直接显示，900ms后自动跳下一题（期间可点另一个按钮改判，改判会取消自动跳题）
+  if (state.words[w].t) {
+    tr.textContent = "译文：" + state.words[w].t;
+    window._advTimer = setTimeout(() => { window._advTimer = null; nextWord(w, b); }, 900);
+    return;
+  }
+  if (b === "ok") {
+    // 知道的单词：想写就写，不想写点「下一个」直接跳过
+    tr.innerHTML = `
+      <div style="margin-top: 8px;">
+        <input type="text" id="transInput" placeholder="想补个译文就写（可选），不写直接点「下一个」" style="margin-bottom: 8px;">
+        <div style="display:flex; gap:8px;">
+          <button class="btn ghost small" id="confirmTrans" style="flex:1">补录</button>
+          <button class="btn ghost small" id="skipTrans" style="flex:1">下一个</button>
+        </div>
+      </div>
+    `;
+    const input = document.getElementById("transInput");
+    input.focus();
+    const finish = (withTrans) => {
+      if (withTrans) {
+        const t = input.value.trim();
+        if (t) { state.words[w].t = t; save(); }
+      }
+      nextWord(w, b);
+    };
+    document.getElementById("confirmTrans").onclick = () => finish(true);
+    document.getElementById("skipTrans").onclick = () => finish(false);
+    input.addEventListener("keydown", e => { if (e.key === "Enter") finish(true); });
+  } else {
+    // 不知道的单词：强制补写译文再继续，加深记忆
+    tr.innerHTML = `
+      <div style="margin-top: 8px;">
+        <input type="text" id="transInput" placeholder="请输入该单词的中文意思，回车确认" style="margin-bottom: 8px;">
+        <button class="btn ghost small" id="confirmTrans">确认</button>
+      </div>
+    `;
+    const input = document.getElementById("transInput");
+    input.focus();
+    const confirmTrans = () => {
+      const t = input.value.trim();
+      if (!t) {
+        alert("请输入单词意思后再继续");
+        return;
+      }
+      state.words[w].t = t;
+      save();
+      nextWord(w, b);
+    };
+    document.getElementById("confirmTrans").onclick = confirmTrans;
+    input.addEventListener("keydown", e => { if (e.key === "Enter") confirmTrans(); });
+  }
+}
+
+// 收录
+document.getElementById("addBtn").onclick = addWords;
+document.getElementById("modeMain").onclick = () => switchMode("main");
+document.getElementById("modeStudy").onclick = () => switchMode("study");
+document.getElementById("studyExamTab").onclick = openExams;
+document.getElementById("studyTopicTab").onclick = openTopics;
+document.getElementById("studyListenTab").onclick = openListening;
+document.getElementById("addInput").addEventListener("keydown", e => { if (e.key === "Enter") addWords(); });
+function addWords() {
+  const inp = document.getElementById("addInput");
+  const tr = document.getElementById("addTrans");
+  const raw = inp.value.trim();
+  const t = tr.value.trim();
+  if (!raw) return;
+  const ws = raw.toLowerCase().split(/[\s,，、;；]+/).filter(x => /^[a-z][a-z'\-]*$/.test(x));
+  if (!ws.length) { alert("没识别到英文单词"); return; }
+  for (const w of ws) {
+    if (!state.words[w]) state.words[w] = { w, t: t || (DICT && DICT[w] ? DICT[w] : ""), b: "un", ts: Date.now(), lv: 0, miss: 0, next: 0 };
+    else if (t && !state.words[w].t) state.words[w].t = t;
+    else if (!state.words[w].t && DICT && DICT[w]) state.words[w].t = DICT[w]; // 词典自动匹配（只填空缺，不覆盖已有）
+  }
+  inp.value = ""; tr.value = "";
+  save(); renderAll(true); // 收录后不重抽题，当前题目保持不动
+}
+
+// 批量导入
+document.getElementById("bulkBtn").onclick = () => {
+  const ta = document.getElementById("bulkInput");
+  const raw = ta.value.trim();
+  if (!raw) return;
+  const lines = raw.split(/\r?\n/).filter(x => x.trim());
+  let cnt = 0;
+  for (const line of lines) {
+    const parts = line.trim().split(/\s+/, 2);
+    const w = parts[0].toLowerCase();
+    if (!/^[a-z][a-z'\-]*$/.test(w)) continue;
+    const t = parts.length > 1 ? parts[1] : "";
+    if (!state.words[w]) {
+      state.words[w] = { w, t: t || (DICT && DICT[w] ? DICT[w] : ""), b: "un", ts: Date.now(), lv: 0, miss: 0, next: 0 };
+      cnt++;
+    } else if (!state.words[w].t && DICT && DICT[w]) {
+      state.words[w].t = DICT[w]; // 词典自动匹配（只填空缺，不覆盖已有）
+    }
+  }
+  ta.value = "";
+  alert(`成功导入 ${cnt} 个新单词`);
+  save(); renderAll(true); // 批量收录后也不重抽题，当前题目保持不动
+}
+
+// 写/改单词意思（总单词本、未掌握/已掌握列表、学习记录/今日已学里点 ✎，数据同一处同步）
+document.addEventListener("click", e => {
+  const ed = e.target.closest(".edit");
+  if (!ed) return;
+  const w = ed.dataset.edit;
+  if (!state.words[w]) return;
+  const li = ed.closest("li");
+  const cur = state.words[w].t || "";
+  li.innerHTML = `<input type="text" id="editInput" value="${esc(cur)}" placeholder="输入中文意思，回车保存" autocomplete="off" style="flex:1; min-width:0;">
+    <button class="btn ghost small" id="editSave" style="margin-left:6px">保存</button>`;
+  const inp = document.getElementById("editInput");
+  inp.focus();
+  const saveEdit = () => {
+    const t = inp.value.trim();
+    if (t) state.words[w].t = t; else delete state.words[w].t;
+    // 记录改词前所在的历史明细与当天开关，改完重开该天并保持状态
+    const body = li.closest('[id^="histBody-"]');
+    let dayShow = null;
+    if (body) { const cb = body.querySelector(".histShowTrans"); dayShow = cb ? cb.checked : null; }
+    save();
+    renderLists();
+    renderToday();
+    renderHistory();
+    if (body) {
+      const d = body.id.replace("histBody-", "");
+      const nb = document.getElementById("histBody-" + d);
+      if (nb) {
+        nb.style.display = "block";
+        renderHistBody(d, dayShow === null ? document.getElementById("todayShowTrans").checked : dayShow);
+      }
+    }
+  };
+  document.getElementById("editSave").onclick = saveEdit;
+  inp.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); saveEdit(); } });
+});
+
+// 删除单词
+document.addEventListener("click", e => {
+  const d = e.target.closest(".del");
+  if (!d) return;
+  const w = d.dataset.del;
+  if (confirm(`删除单词「${w}」？`)) {
+    delete state.words[w];
+    save(); renderAll();
+  }
+});
+
+// 展开总单词本时再渲染列表
+document.getElementById("allDetails").addEventListener("toggle", () => {
+  if (document.getElementById("allDetails").open) renderLists();
+});
+
+// 搜索已收录单词：输入英文实时过滤，有译文一并显示
+document.getElementById("searchInput").addEventListener("input", e => {
+  const kw = e.target.value.trim().toLowerCase();
+  const box = document.getElementById("searchResult");
+  if (!kw) { box.innerHTML = ""; return; }
+  const matches = Object.values(state.words).filter(w => w.w.toLowerCase().includes(kw));
+  if (matches.length === 0) {
+    box.innerHTML = '<div class="hint" style="text-align:center; padding:10px 0;">未找到匹配的单词</div>';
+    return;
+  }
+  box.innerHTML = matches.map(w => `
+    <div style="padding:8px 4px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:8px;">
+      <div style="flex:1; overflow:hidden;">
+        <b>${esc(w.w)}</b>
+        ${w.t ? `<span style="color:var(--dim); font-size:13px; margin-left:8px;">${esc(w.t)}</span>` : ""}
+      </div>
+      <span style="flex:none; font-size:12px; padding:2px 6px; border-radius:4px; ${w.b === 'ok' ? 'background:var(--ok); color:#000;' : 'background:var(--no); color:#fff;'}">${w.b === 'ok' ? '已掌握' : '未掌握'}</span>
+    </div>
+  `).join("");
+});
+
+// 范围联动：底部 tab 与抽词下拉（选择写回 state.quizPool，防止答题后 renderAll 重置回旧范围）
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.onclick = () => {
+    state.quizPool = tab.dataset.pool;
+    save();
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("quizPool").value = tab.dataset.pool;
+    renderQuiz();
+  };
+});
+document.getElementById("quizPool").onchange = function () {
+  state.quizPool = this.value;
+  save();
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.dataset.pool === this.value));
+  renderQuiz();
+};
+
+// ===== 备份压缩辅助（复制兜底：内容过大时剪贴板会截断，先 gzip+base64 压缩再复制，导入自动解压） =====
+function gzipB64(str) {
+  if (!window.CompressionStream) return Promise.resolve(null);
+  return new Promise((resolve, reject) => {
+    const reader = new Blob([str]).stream().pipeThrough(new CompressionStream("gzip")).getReader();
+    const chunks = [];
+    (function pump() {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          const bytes = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+          let off = 0;
+          for (const c of chunks) { bytes.set(c, off); off += c.length; }
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+          resolve(btoa(bin));
+        } else { chunks.push(new Uint8Array(value)); pump(); }
+      }).catch(reject);
+    })();
+  });
+}
+function gunzipB64(b64) {
+  if (!window.DecompressionStream) return Promise.reject(new Error("no-gunzip"));
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Promise((resolve, reject) => {
+    const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")).getReader();
+    const chunks = [];
+    (function pump() {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          const all = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+          let off = 0;
+          for (const c of chunks) { all.set(c, off); off += c.length; }
+          resolve(new TextDecoder().decode(all));
+        } else { chunks.push(value); pump(); }
+      }).catch(reject);
+    })();
+  });
+}
+
+// 导出 / 导入备份
+document.getElementById("exportBtn").onclick = async () => {
+  const json = JSON.stringify(state);
+  const date = new Date().toISOString().slice(0, 10);
+  // 1) APK 内优先：Capacitor Filesystem 写真 .json 到手机存储 + 系统分享面板（根治复制截断）
+  const CP = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins : null;
+  const CFS = CP && CP.Filesystem ? CP.Filesystem : null;
+  if (CFS) {
+    try {
+      const fname = "wordbook-backup-" + date + ".json";
+      const res = await CFS.writeFile({ path: fname, data: json, directory: "DOCUMENTS", encoding: "utf8", recursive: true });
+      const uri = (res && res.uri) || (await CFS.getUri({ path: fname, directory: "DOCUMENTS" })).uri;
+      if (CP.Share) {
+        await CP.Share.share({ title: "单词备份", files: [uri], dialogTitle: "保存 / 发送单词备份" });
+        return; // 已走系统分享，不再弹面板
+      }
+      alert("备份已保存到手机 Documents/" + fname);
+      return;
+    } catch (e) { /* 插件异常：降级到下载/复制 */ }
+  }
+  // 2) 尝试直接下载文件（浏览器/部分 WebView 会弹下载）
+  try {
+    const blob = new Blob([json], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "单词备份-" + date + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  } catch (e) { /* 继续弹面板 */ }
+  // 3) 弹出备份面板：内容较大时自动压缩再复制（导入时自动解压）
+  const modal = document.getElementById("exportModal");
+  const ta = document.getElementById("exportText");
+  if (!modal || !ta) return;
+  const gz = await gzipB64(json);
+  const payload = gz ? "WBGZ:" + gz : json;
+  ta.value = payload;
+  modal.style.display = "flex";
+  document.getElementById("exportCopy").onclick = async () => {
+    ta.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(payload);
+        alert(gz ? "备份内容已压缩复制！粘贴保存到备忘录/文件即可，导入时会自动解压。" : "备份内容已复制！粘贴保存到备忘录/文件即可。");
+      } catch (e2) { alert("已全选，请长按复制。"); }
+    } else { alert("已全选，请长按复制。"); }
+  };
+  document.getElementById("exportClose").onclick = () => { modal.style.display = "none"; };
+};
+document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
+document.getElementById("importFile").onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = async () => {
+    try {
+      const text = String(r.result);
+      let s;
+      if (text.startsWith("WBGZ:")) s = JSON.parse(await gunzipB64(text.slice(5)));
+      else s = JSON.parse(text);
+      if (!s || typeof s.words !== "object") throw new Error("bad");
+      const n = Object.keys(s.words).length;
+      if (!confirm(`导入备份将覆盖当前单词本（当前 ${Object.keys(state.words).length} 词，导入后 ${n} 词）。继续？`)) return;
+      state = { words: s.words, quizPool: s.quizPool || state.quizPool, dailyGoal: s.dailyGoal || state.dailyGoal, memorizeMode: s.memorizeMode || state.memorizeMode || "default", exams: s.exams || {}, stats: s.stats || state.stats };
+      save(); renderAll();
+    } catch (err) { alert("备份文件格式不对"); }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+};
+
+// 初始化/清空重来：从零 / 四级词库 / 六级词库
+// 重置走两步确认防误触；首次运行（无数据）直接选库生效
+let _resetMode = null;      // "none" | "cet4" | "cet6"
+let _initFirstRun = false;  // true=首次运行选择（不二次确认）
+const resetModal = document.getElementById("resetModal");
+const BANK_LABEL = { none: "从零开始（空词库）", cet4: "四级词库（约 4544 词）", cet6: "六级词库（约 6662 词，含四级）" };
+function resetShow(step) {
+  document.getElementById("resetStep1").style.display = step === 1 ? "block" : "none";
+  document.getElementById("resetStep2").style.display = step === 2 ? "block" : "none";
+}
+function openInitModal(firstRun) {
+  _initFirstRun = firstRun;
+  document.getElementById("resetTitle").textContent = firstRun ? "👋 选择起始词库" : "🧹 清空重来";
+  document.getElementById("resetDesc").textContent = firstRun
+    ? "选一个起始词库开始背单词（词自带中文释义）。之后可在设置里「清空重来」换库。"
+    : "当前所有单词和学习记录都会被清掉。想恢复到哪种状态？";
+  document.getElementById("resetCancel").style.display = firstRun ? "none" : "block";
+  resetShow(1);
+  resetModal.style.display = "flex";
+}
+// 应用词库：name="none" 空词库 / "cet4" / "cet6"（词库文件缺失时降级到内置种子词库）
+async function applyBank(name) {
+  resetModal.style.display = "none";
+  let words = {};
+  const now = Date.now();
+  if (name !== "none") {
+    if (!BANKS[name]) BANKS[name] = await loadBank(name);
+    if (BANKS[name]) {
+      for (const w in BANKS[name]) words[w] = { w, t: BANKS[name][w], b: "un", ts: now, lv: 0, miss: 0, next: 0 };
+    } else {
+      // 词库文件加载失败（旧包无 cet4/cet6.json 或网络异常）→ 退回内置种子词库，不丢功能
+      for (const w of SEED_WORDS) words[w] = { w, t: "", b: "un", ts: now, lv: 0, miss: 0, next: 0 };
+      alert("词库文件加载失败，已退回内置种子词库（" + SEED_WORDS.length + " 词）");
+    }
+  }
+  state = { words, quizPool: state.quizPool || "un", dailyGoal: state.dailyGoal || 30, memorizeMode: state.memorizeMode || "default", stats: { dailyRecords: {}, lastStudyDate: "", streak: 0, dailyDetail: {} } };
+  save(); renderAll();
+}
+function chooseBank(mode) {
+  if (_initFirstRun) { _initFirstRun = false; applyBank(mode); return; }
+  _resetMode = mode;
+  document.getElementById("resetStep2Text").textContent = "清空全部单词和学习记录，并初始化为「" + BANK_LABEL[mode] + "」？";
+  resetShow(2);
+}
+document.getElementById("resetBtn").onclick = () => openInitModal(false);
+document.getElementById("resetCancel").onclick = () => { resetModal.style.display = "none"; };
+document.getElementById("resetBack").onclick = () => resetShow(1);
+document.getElementById("resetToCet4").onclick = () => chooseBank("cet4");
+document.getElementById("resetToCet6").onclick = () => chooseBank("cet6");
+document.getElementById("resetToZero").onclick = () => chooseBank("none");
+document.getElementById("resetConfirm").onclick = () => applyBank(_resetMode || "none");
+
+// 空格键 = √，X 键 = ×（电脑键盘）
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.code === "Space") { const b = document.getElementById("qOk"); if (b && !b.disabled) b.click(); e.preventDefault(); }
+  if (e.code === "KeyX") { const b = document.getElementById("qNo"); if (b && !b.disabled) b.click(); }
+});
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+/* ===== 备考专区（独立分区：背单词 / 备考专区） ===== */
+function switchMode(mode) {
+  const isStudy = mode === "study";
+  document.body.classList.toggle("mode-study", isStudy);
+  document.getElementById("modeMain").className = "btn small " + (isStudy ? "ghost" : "ok");
+  document.getElementById("modeStudy").className = "btn small " + (isStudy ? "ok" : "ghost");
+  document.getElementById("studyCard").style.display = isStudy ? "block" : "none";
+}
+function studyArea() { return document.getElementById("studyArea"); }
+// 移动端导航：进入新页面（列表/试卷/听力）时立即回到顶部，避免还停在上一页的滚动位置
+function scrollTopInstant() {
+  // CSS 里有 scroll-behavior:smooth，临时切成 auto 才是「瞬间」回到顶部
+  try {
+    const de = document.documentElement, prev = de.style.scrollBehavior;
+    de.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
+    de.style.scrollBehavior = prev;
+  } catch (e) { }
+}
+
+/* ===== 六级真题（整卷试卷式展示） ===== */
+window._exam = { key: null, answers: {} };
+function examMetaLabel(meta) {
+  return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" +
+    (meta.set > 1 ? " 第" + meta.set + "套" : "");
+}
+function examRecord(key, correct) {
+  if (!state.exams) state.exams = {};
+  const p = state.exams[key] || (state.exams[key] = { done: 0, ok: 0 });
+  p.done += 1;
+  if (correct) p.ok += 1;
+  return p;
+}
+async function openExams() {
+  switchMode("study");
+  document.getElementById("studyExamTab").className = "btn small ok";
+  document.getElementById("studyTopicTab").className = "btn small ghost";
+  document.getElementById("studyListenTab").className = "btn small ghost";
+  const d = await loadExamBank();
+  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">真题库加载失败（请升级 APK）</div>'; return; }
+  renderExamList();
+}
+function renderExamList() {
+  scrollTopInstant();
+  const d = EXAM_BANK, prog = state.exams || {};
+  const keys = Object.keys(d.exams).sort().reverse();
+  const years = Array.from(new Set(keys.map(k => d.exams[k].meta.year))).sort((a, b) => b - a);
+  const cur = (window._exam && window._exam.year) || "all";
+  const shown = cur === "all" ? keys : keys.filter(k => String(d.exams[k].meta.year) === String(cur));
+  const groups = {};
+  shown.forEach(k => { const y = d.exams[k].meta.year; (groups[y] = groups[y] || []).push(k); });
+
+  let html = '<div class="muted" style="margin:2px 0 6px;line-height:1.55">六级真题 <b>' + d.count + '</b> 套 · <b>' + d.totalQuestions + '</b> 题 · 点套次打开整卷</div>';
+  // 年份筛选 chips（横向滑动，手机一屏可快速定位某年）
+  html += '<div class="yearChips">';
+  html += '<button class="chip' + (cur === "all" ? " ok" : "") + '" data-year="all">全部 ' + keys.length + '</button>';
+  for (const y of years) {
+    const n = keys.filter(k => String(d.exams[k].meta.year) === String(y)).length;
+    html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
+  }
+  html += '</div>';
+  if (years.length > 8) html += '<div class="muted" style="font-size:12px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份）</div>';
+  for (const y of Object.keys(groups).sort().reverse()) {
+    html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + y + ' 年</b></div>';
+    for (const k of groups[y]) {
+      const ex = d.exams[k], p = prog[k];
+      const qs = ex.blocks.filter(b => b.t === "q");
+      const hasListen = qs.some(q => q.n <= 25);
+      const tag = (hasListen ? "" : ' <span style="color:var(--no);font-size:12px">仅阅读</span>') +
+        (qs.length < 20 ? ' <span style="color:var(--no);font-size:12px">残缺扫描</span>' : '') +
+        (p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '');
+      html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + qs.length + ' 题）' + tag + '</button>';
+    }
+  }
+  studyArea().innerHTML = html;
+  studyArea().querySelectorAll(".examItem").forEach(b => b.onclick = () => {
+    window._exam.key = b.dataset.key;
+    window._exam.answers = {};
+    renderExamPaper();
+  });
+  studyArea().querySelectorAll(".chip[data-year]").forEach(c => c.onclick = () => {
+    window._exam.year = c.dataset.year;
+    renderExamList();
+  });
+}
+function renderExamPaper() {
+  scrollTopInstant();
+  const ex = EXAM_BANK.exams[window._exam.key];
+  const qs = ex.blocks.filter(b => b.t === "q");
+  const pblocks = preScanBanks(ex.blocks, 0);   // 选词填空词表成块渲染（原索引保留在 __bi）
+  if (!window._exam.answers) window._exam.answers = {};
+  const answeredN = () => Object.keys(window._exam.answers || {}).length;
+  let html = '<div class="stickyBar"><button class="btn ghost small" id="examBack">← 列表</button>' +
+    '<span class="meta" id="examProg">' + examMetaLabel(ex.meta) + ' · 已答 0/' + qs.length + '</span>' +
+    '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
+    '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
+  // 通用作答提示默认收起（手机上首屏被提示行吃掉，题干反而要往下滚才能看到）
+  html += '<details class="examNote"><summary>作答说明 ▾</summary>' +
+    '<div>点选项作答：蓝色=已选；有标准答案的套次答完即时标对错。</div></details>';
+  if (ex.meta && ex.meta.note) {
+    const notePre = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
+    html += '<div class="muted" style="font-size:12px;color:var(--no);margin-bottom:8px;line-height:1.6">' + notePre + esc(ex.meta.note) + '</div>';
+  }
+  // 段落速跳：长卷（70~90 题）手机上滑很久，给一排 Part/Section 跳转 chips
+  const heads = [];
+  ex.blocks.forEach((b, bi) => { if (b.t === "h") heads.push({ i: bi, v: b.v }); });
+  if (heads.length > 2) {
+    let lastPart = "";
+    html += '<div class="yearChips" style="margin:0 0 6px">';
+    heads.forEach((h, n) => {
+      if (/^Part/i.test(h.v)) lastPart = h.v.replace(/Part\s*/i, "").trim().split(/\s+/)[0];
+      const short = /^Part/i.test(h.v) ? h.v.replace(/\s*\(.*$/, "") : (lastPart ? lastPart + "·" : "") + h.v.replace(/\s*\(.*/, "");
+      html += '<button class="chip" data-jump="eh' + h.i + '" title="' + esc(h.v) + '">' + (n + 1) + '. ' + esc(short) + '</button>';
+    });
+    html += '</div>';
+  }
+  let afterH = true, lastDir = false;
+  // 题号速跳（55 题的长卷按 10 题一组，想回第 30 题不用从头滚）
+  if (qs.length > 20) {
+    const qBi = {};
+    ex.blocks.forEach((b, bi) => { if (b.t === "q") qBi[b.n] = bi; });
+    html += '<div class="yearChips" style="margin:0 0 6px">';
+    for (let i = 0; i < qs.length; i += 10) {
+      const last = Math.min(i + 9, qs.length - 1);
+      const a1 = qs[i].n, b1 = qs[last].n;
+      const label = (b1 - a1 > 15) ? a1 + '+' : a1 + '-' + b1;
+      html += '<button class="chip" data-qjump="qq' + qBi[qs[i].n] + '">' + label + '</button>';
+    }
+    html += '</div>';
+  }
+  // 每个板块（Part）标题右上角给「单独看」入口：只想练某一段时不用通读整卷
+  const partStarts = {};
+  if (secPartsOf(window._exam.key).length > 1) {
+    secPartsOf(window._exam.key).forEach((p, pi) => { partStarts[p.start] = pi; });
+  }
+  pblocks.forEach((b) => {
+    const bi = (b.__bi != null ? b.__bi : 0);
+    if (b.t === "bank") {
+      html += bankHtml(b.items);
+      afterH = false;
+      lastDir = false;
+      return;
+    }
+    if (b.t === "h") {
+      const sec = /^Section/i.test(b.v);
+      html += '<div class="examH' + (sec ? ' sec' : '') + '" id="eh' + bi + '">' + esc(b.v) +
+        (!sec && partStarts[bi] !== undefined ? '<button class="chip secOnly" data-part="' + partStarts[bi] + '">单独看 ↗</button>' : '') +
+        '</div>';
+      afterH = true;
+      lastDir = false;
+    } else if (b.t === "text") {
+      // 正文按内容分类渲染：Directions（含续行）压成说明体、中文原文放大、词表成网格（v1.9.2）
+      var t = secNorm(b.v);
+      html += examBlockHtml(b.v, lastDir);
+      lastDir = !parseWordBank(t) && (secLineClass(t) === "secDir" || (lastDir && /^[a-z(]/.test(t)));
+      afterH = false;
+    } else {
+      const sel = window._exam.answers[b.n];
+      const ans = b.answer;
+      html += (b.stem
+        ? '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + esc(b.stem) + '</div>'
+        : '<div class="examQ numOnly" id="qq' + bi + '">' + b.n + '.</div>');
+      afterH = false;
+      lastDir = false;
+      for (const k of "ABCD") {
+        if (!b.opts || !b.opts[k]) continue;
+        let cls = "examOpt";
+        // 有标准答案时只有作答后才揭示对错（未作答一律不标 correct，避免直接泄露答案）
+        if (ans && sel) { if (k === ans) cls += " correct"; else if (sel === k) cls += " wrong"; }
+        else if (sel === k) cls += " sel";
+        html += '<button class="' + cls + '" data-n="' + b.n + '" data-k="' + k + '"><b>' + k + '</b> ' + esc(b.opts[k]) + '</button>';
+      }
+    }
+  });
+  studyArea().innerHTML = html;
+  document.getElementById("examBack").onclick = () => renderExamList();
+  bindRsButtons();
+  studyArea().querySelectorAll(".chip[data-jump]").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.jump);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  studyArea().querySelectorAll(".chip[data-qjump]").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.qjump);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  studyArea().querySelectorAll(".secOnly").forEach(b => b.onclick = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const pi = Number(b.dataset.part);
+    const ps = secPartsOf(window._exam.key);
+    if (!ps[pi]) return;
+    window._topic.cat = secGroupOf(ps[pi].cat);
+    window._topic.year = "all";
+    switchMode("study");
+    document.getElementById("studyExamTab").className = "btn small ghost";
+    document.getElementById("studyTopicTab").className = "btn small ok";
+    document.getElementById("studyListenTab").className = "btn small ghost";
+    openTopicPart(window._exam.key, pi);
+  });
+  studyArea().querySelectorAll(".examOpt").forEach(btn => btn.onclick = () => {
+    const n = Number(btn.dataset.n), k = btn.dataset.k;
+    window._exam.answers[n] = k;
+    const q = qs.find(x => x.n === n);
+    const ans = q && q.answer;
+    studyArea().querySelectorAll('.examOpt[data-n="' + n + '"]').forEach(x => {
+      x.classList.remove("sel", "correct", "wrong");
+      const xk = x.dataset.k;
+      if (ans) { if (xk === ans) x.classList.add("correct"); else if (xk === k) x.classList.add("wrong"); }
+      else if (xk === k) x.classList.add("sel");
+    });
+    if (ans) { examRecord(window._exam.key, k === ans); save(); }
+    const pr = document.getElementById("examProg");
+    if (pr) pr.textContent = examMetaLabel(ex.meta) + ' · 已答 ' + answeredN() + '/' + qs.length;
+  });
+}
+
+/* ===== 听力播放倍速（0.75/1/1.25/1.5/2，记忆选择）===== */
+var AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+function spdGet() {
+  try {
+    const v = Number(localStorage.getItem("wb_audio_speed"));
+    return AUDIO_SPEEDS.indexOf(v) >= 0 ? v : 1;
+  } catch (e) { return 1; }
+}
+function spdHtml() {
+  return '<button class="rsBtn" id="spdBtn" aria-label="播放速度" style="width:50px;flex:none;font-size:12px">' + spdGet() + 'x</button>';
+}
+function bindSpd(audioId) {
+  const a = document.getElementById(audioId), b = document.getElementById("spdBtn");
+  if (!a || !b) return;
+  a.playbackRate = spdGet();
+  b.textContent = spdGet() + 'x';
+  b.onclick = () => {
+    const cur = spdGet();
+    const v = AUDIO_SPEEDS[(AUDIO_SPEEDS.indexOf(cur) + 1) % AUDIO_SPEEDS.length];
+    try { localStorage.setItem("wb_audio_speed", v); } catch (e) { }
+    a.playbackRate = v;
+    b.textContent = v + 'x';
+  };
+}
+
+/* ===== 听力原文阅读（纯文本，无音频） ===== */
+var LISTEN_BANK = null;
+function loadListenBank() {
+  if (LISTEN_BANK) return Promise.resolve(LISTEN_BANK);
+  return fetch(wbUrl("listening.json"), { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { LISTEN_BANK = d; return d; })
+    .catch(function () { return null; });
+}
+window._listen = { level: "cet6", key: null, showTrans: false };
+function listenMetaLabel(meta) {
+  return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" + (meta.set > 1 ? " 第" + meta.set + "套" : "");
+}
+
+/* ===== 听力原文排版（v1.9.2）=====
+   扫描件抽出来的原文是「每行一个 PDF 行」，句子被硬换行切断、说话人挤在一起，
+   直接逐行显示就是一团密密麻麻。这里重排成「说话人轮次」：
+   M/W/Q 一律另起一块（轮次内部断行并回同一段），题号+问题单独成块。 */
+const LISTEN_WHO_RE = /^(W|M|Q|Woman|Man|Narrator|Speaker|Interviewer|Audio)\s*[:：]/i;
+const LISTEN_HEAD_RE = /^(Section|Part|Conversation|News Report|News report|Passage|Questions?|Directions|Listening|Recording|Lecture|Talk|Interview|Story|Report|Speech|Broadcast)/i;
+function listenTurns(text) {
+  const turns = [];
+  const raw = (text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)
+    .map(x => x.replace(/\[\d{1,3}\]/g, "").replace(/\s{2,}/g, " ").trim()).filter(Boolean);
+  const pushLine = (l) => {
+    // 「Questions 1 to 4 are based on …」= 一组小题的起点，单独成一块并标出题号区间，
+    // 否则整篇原文只有男女交替说话，看不出哪里换了一组题（v1.9.6）
+    if (/^Questions?\s+\d+/i.test(l)) { turns.push({ t: "q", v: l }); return; }
+    if (LISTEN_HEAD_RE.test(l)) { turns.push({ t: "h", v: l }); return; }
+    const m = l.match(LISTEN_WHO_RE);
+    if (m) {
+      const tag = m[1].length <= 2 ? m[1].toUpperCase() : m[1].slice(0, 1).toUpperCase();
+      turns.push({ t: "d", who: tag, v: l.slice(m[0].length).trim() });
+      return;
+    }
+    // 续行：并回上一轮（扫描硬换行），中英文之间按需补一个空格
+    if (turns.length && turns[turns.length - 1].t === "d") {
+      const prev = turns[turns.length - 1];
+      const needSpace = /[A-Za-z0-9,;:]$/.test(prev.v) && /^[A-Za-z0-9("(]/.test(l);
+      prev.v += (needSpace ? " " : "") + l;
+      return;
+    }
+    turns.push({ t: "p", v: l });
+  };
+  raw.forEach(l => {
+    // 少量行把「题号 + 问题」粘在对话末尾（如 "… tomorrow 11. Q: What should the man do?"）→ 拆出来
+    l.split(/(?=\s\d{1,3}\.\s*[WMQ]\s*[:：])/).map(s => s.trim()).filter(Boolean).forEach(pushLine);
+  });
+  return turns.map(function (x) { x.v = tidyText(x.v); return x; });
+}
+/* 从整卷题型块里取「Questions 1 to 4 …」这组题号区间，用来在原文里标出题组边界 */
+function listenGroupTags(key) {
+  var ex = (EXAM_BANK && EXAM_BANK.exams) ? EXAM_BANK.exams[key] : null;
+  if (!ex) return [];
+  var out = [];
+  ex.blocks.forEach(function (b) {
+    if (b.t !== "text") return;
+    var t = secNorm(b.v);
+    var m = t.match(/^Questions?\s*(\d+)\s*(?:to|-|and)\s*(\d+)/i);
+    if (m) out.push({ a: Number(m[1]), b: Number(m[2]) });
+  });
+  return out;
+}
+var LISTEN_GROUP_HEAD_RE = /^(Conversation|News Report|News report|Passage|Recording|Lecture|Talk|Interview|Story|Report|Speech|Broadcast)/;
+function listenTurnsHtml(text, withId, groups) {
+  var gi = 0;
+  return listenTurns(text).map((x, i) => {
+    if (x.t === "h" && LISTEN_GROUP_HEAD_RE.test(x.v)) {
+      // 每个「Conversation One / Passage Two / Recording One…」前标出它对应哪几题
+      var g = (groups && groups[gi]) ? groups[gi] : null;
+      var kind = /^Conversation/i.test(x.v) ? "conversation" : /News/i.test(x.v) ? "news report"
+        : /Passage/i.test(x.v) ? "passage" : /Lecture/i.test(x.v) ? "lecture" : "recording";
+      var label = g ? ("题 " + g.a + "–" + g.b) : ("题组 " + (gi + 1));
+      gi++;
+      return '<div class="qSet"><span class="qSetTag">' + esc(label) + '</span>' +
+        esc(g ? ("Questions " + g.a + " to " + g.b + " are based on the " + kind + " you have just heard.") : x.v) +
+        '</div><div class="listenHead">' + esc(x.v) + '</div>';
+    }
+    const id = (withId && (x.t === "h" || x.t === "q")) ? ' id="' + (x.t === "h" ? "lh" : "lq") + i + '"' : '';
+    if (x.t === "h") return '<div class="listenHead"' + id + '>' + esc(x.v) + '</div>';
+    if (x.t === "q") {
+      // 数据里若已有 "Questions 1 to 4 …" 行，直接用它
+      const m = x.v.match(/Questions?\s+(\d+)\s*(?:to|-|and)\s*(\d+)/i);
+      const tag = m ? ('题 ' + m[1] + '–' + m[2]) : (x.v.match(/Questions?\s+(\d+)/i) ? ('题 ' + x.v.match(/Questions?\s+(\d+)/i)[1]) : '题组');
+      return '<div class="qSet"' + id + '><span class="qSetTag">' + esc(tag) + '</span>' + esc(x.v) + '</div>';
+    }
+    if (x.t === "d") return '<div class="dlgTurn"><span class="who">' + esc(x.who) + ':</span><span class="say">' + esc(x.v) + '</span></div>';
+    return '<div class="listenLine">' + esc(x.v) + '</div>';
+  }).join("");
+}
+/* 参考译文：默认收起（原文先看），展开才显示逐句中文 */
+function listenTransBox(trans) {
+  if (!trans) return '<div class="transBox"><div class="transHead">参考译文</div><div class="muted" style="font-size:12px">该套暂无参考译文，只有原文</div></div>';
+  const blocks = listenSentenceBlocks(trans);
+  const n = (trans.split(/(?<=[。！？.!?])\s+/).filter(Boolean) || []).length;
+  return '<details class="transBox transFold"><summary>参考译文 · ' + n + ' 句（点开对照）</summary>' + blocks + '</details>';
+}
+/* 译文按句断开，手机上每句一行，方便和原文逐句对照 */
+function listenSentenceBlocks(text) {
+  return (text || "").replace(/\*\*/g, "").replace(/^#{1,6}\s*/gm, "").replace(/^>\s*/gm, "").trim()
+    .split(/(?<=[。！？.!?])\s+/).map(x => x.trim()).filter(Boolean)
+    .map(s => '<div class="zhSent">' + esc(s) + '</div>').join("");
+}
+async function openListening() {
+  switchMode("study");
+  document.getElementById("studyExamTab").className = "btn small ghost";
+  document.getElementById("studyTopicTab").className = "btn small ghost";
+  document.getElementById("studyListenTab").className = "btn small ok";
+  const d = await loadListenBank();
+  if (!d) { studyArea().innerHTML = '<div id="emptyTip">听力原文库加载失败（请升级 APK）</div>'; return; }
+  await loadExamBank();   // 原文里要标「题 1–4」这类题组边界，需要整卷题型块里的 Questions 行
+  renderListenList();
+}
+function renderListenList() {
+  scrollTopInstant();
+  const d = LISTEN_BANK, lv = window._listen.level, list = d[lv];
+  let html = '<div class="row" style="gap:8px;margin-bottom:10px">';
+  html += '<button class="btn small ' + (lv === "cet4" ? "ok" : "ghost") + '" id="lvCet4" style="flex:1">四级听力</button>';
+  html += '<button class="btn small ' + (lv === "cet6" ? "ok" : "ghost") + '" id="lvCet6" style="flex:1">六级听力</button>';
+  html += '</div>';
+  html += '<div class="muted" style="margin:4px 0 8px;line-height:1.6">' + (lv === "cet4" ? "四级" : "六级") + '听力原文 ' + Object.keys(list).length + ' 套（带「译」的有对照译文）。音频已内置，<b>不联网也能听</b>，点上方播放器。</div>';
+  for (const k of Object.keys(list).sort().reverse()) {
+    const rec = list[k];
+    const tag = rec.trans ? ' <span style="color:var(--accent);font-size:12px">译</span>' : '';
+    html += '<button class="btn ghost small listenItem" data-key="' + esc(k) + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + listenMetaLabel(rec.meta) + '（' + (rec.text ? '原文' : '无原文') + '）' + tag + '</button>';
+  }
+  studyArea().innerHTML = html;
+  document.getElementById("lvCet4").onclick = () => { window._listen.level = "cet4"; renderListenList(); };
+  document.getElementById("lvCet6").onclick = () => { window._listen.level = "cet6"; renderListenList(); };
+  studyArea().querySelectorAll(".listenItem").forEach(b => b.onclick = () => {
+    window._listen.key = b.dataset.key;
+    window._listen.showTrans = false;
+    renderListenRead();
+  });
+}
+function renderListenRead() {
+  scrollTopInstant();
+  const d = LISTEN_BANK, lv = window._listen.level, rec = d[lv][window._listen.key];
+  let html = '<div class="stickyBar"><button class="btn ghost small" id="listenQuit">← 列表</button>' +
+    '<span class="meta">' + listenMetaLabel(rec.meta) + ' · 听力原文</span>' +
+    '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
+    '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
+  if (rec.note) {
+    html += '<div class="muted" style="font-size:12px;margin:6px 0;color:var(--no)">' + esc(rec.note) + '</div>';
+  }
+  if (rec.audio) {
+    // 内置音频：直接播 APK assets 里的 m4a（WebView 原生支持 AAC）；播放器吸顶，滚多远都能暂停
+    html += '<div class="stickyAudio"><audio id="listenAudio" controls preload="metadata" src="' + esc(wbUrl(rec.audio)) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
+  } else {
+    html += '<div class="muted" style="font-size:12px;margin:6px 0">（该套暂无内置音频，可用电脑播放）</div>';
+  }
+  if (rec.trans || rec.audio) {
+    html += '<div class="row" style="gap:8px;margin-bottom:10px">';
+    if (rec.trans) {
+      html += '<button class="btn small ' + (window._listen.showTrans ? "ghost" : "ok") + '" id="showOrig" style="flex:1">原文</button>';
+      html += '<button class="btn small ' + (window._listen.showTrans ? "ok" : "ghost") + '" id="showTrans" style="flex:1">对照译文</button>';
+    }
+    if (rec.audio) html += spdHtml();
+    html += '</div>';
+  }
+  if (window._listen.showTrans && rec.trans) {
+    // 对照译文：上=原文（按说话人轮次分行），下=中文逐句（可收起；窄屏左右并排会挤成一团）
+    html += '<div class="transBox"><div class="transHead">原文 · 说话人轮次' + (rec.audio ? ' · 本套全部' : '') + '</div>' + listenTurnsHtml(rec.text || "（无原文）", false, listenGroupTags(window._listen.key)) + '</div>';
+    html += listenTransBox(rec.trans);
+  } else {
+    const turns = listenTurns(rec.text || "");
+    const heads2 = [];   // 段落速跳（Section/Conversation 等标题）
+    turns.forEach((x, i) => { if (x.t === "h") heads2.push({ i: i, v: x.v }); });
+    if (heads2.length >= 2) {
+      html += '<div class="yearChips" style="margin:0 0 4px">';
+      heads2.forEach((h, n) => {
+        html += '<button class="chip" data-ljump="lh' + h.i + '" title="' + esc(h.v) + '">' + (n + 1) + '. ' + esc(h.v.replace(/\s*\(.*/, "")) + '</button>';
+      });
+      html += '</div>';
+    }
+    html += '<div style="margin-top:8px">' + listenTurnsHtml(rec.text || "（无原文）", true, listenGroupTags(window._listen.key)) + '</div>';
+  }
+  studyArea().innerHTML = html;
+  document.getElementById("listenQuit").onclick = () => renderListenList();
+  bindRsButtons();
+  bindSpd("listenAudio");
+  studyArea().querySelectorAll(".chip[data-ljump]").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.ljump);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  const so = document.getElementById("showOrig"), st = document.getElementById("showTrans");
+  if (so) so.onclick = () => { window._listen.showTrans = false; renderListenRead(); };
+  if (st) st.onclick = () => { window._listen.showTrans = true; renderListenRead(); };
+}
+
+/* ================= 专题：把整卷按板块拆开（作文/翻译/听力/阅读/其它） ================= */
+var SEC_CACHE = {}, SEC_LIST_CACHE = {}, SEC_ANS = {};
+var SEC_CATS = [
+  { id: "writing", name: "作文", icon: "✍️", hint: "作文题干单独看，不用滚整卷" },
+  { id: "translation", name: "翻译", icon: "🈶", hint: "汉译英段落，先自己译再看原文" },
+  { id: "listening", name: "听力", icon: "🎧", hint: "听力题；有内置音频的直接带播放器" },
+  { id: "reading", name: "阅读", icon: "📖", hint: "选词填空 / 长篇匹配 / 仔细阅读" },
+  { id: "other", name: "完形·改错·其它", icon: "🧩", hint: "旧题型：完形填空 / 改错 / 简答 / 词汇" }
+];
+var SEC_PART_RE = /^\s*Part(?![A-Za-z])\s*([IVX]{1,4}|Ⅰ{1,3}|Ⅱ|Ⅲ|Ⅳ|Ⅴ|Ⅵ|[A-H])/i;
+var SEC_SEC_RE = /^\s*Section\s*([A-D])(?![A-Za-z])/i;
+// 有的套次「Part Ⅱ」整行丢失，只剩标题行（Writing / Listening Comprehension…）→ 也当板块起点
+var SEC_TITLE_RE = /^\s*(Writing|Listening\s*Comprehension|Reading\s*Comprehension|Translation|Cloze|Error\s*Correction|Short\s*Answer\s*Questions|Vocabulary(?:\s*and\s*Structure)?|Compound\s*Dictation|Reading\s*in\s*Depth)\s*(\(.*\))?\s*$/i;
+var SEC_STOP_RE = /(参考答案|答案与解析|参考范文|写作范文|听力原文|听力文本|试题答案|答案速查|考试答案|试题解析)/;
+
+function secNorm(s) { return (s || "").replace(/\u00a0/g, " "); }
+function secCatName(id) { for (var i = 0; i < SEC_CATS.length; i++) if (SEC_CATS[i].id === id) return SEC_CATS[i].name; return id; }
+function secGroupOf(cat) {
+  return (cat === "writing" || cat === "translation" || cat === "listening" || cat === "reading") ? cat : "other";
+}
+function secCatOfTitle(title) {
+  var t = secNorm(title).toLowerCase();
+  if (/writing|composition|essay/.test(t)) return "writing";
+  if (/listening/.test(t)) return "listening";
+  if (/translation/.test(t)) return "translation";
+  if (/cloze/.test(t)) return "cloze";
+  if (/error\s*correction/.test(t)) return "errorcorr";
+  if (/short\s*answer/.test(t)) return "shortanswer";
+  if (/vocabulary/.test(t)) return "vocab";
+  if (/dictation/.test(t)) return "dictation";
+  if (/reading|comprehension|in\s*depth|skimming|scanning|banked|matching/.test(t)) return "reading";
+  return "other";
+}
+// 试卷尾部「参考答案/范文」不是试卷内容：从这里往后切掉
+function secStopIndex(blocks) {
+  for (var i = 0; i < blocks.length; i++) {
+    if (blocks[i].t === "q") continue;
+    var c = secNorm(blocks[i].v).replace(/\s+/g, "");
+    if (c.length <= 18 && SEC_STOP_RE.test(c)) return i;
+  }
+  return blocks.length;
+}
+// 把一套卷切成板块（Part I/II/III…），并标注大题下的 Section
+function secPartsOf(key) {
+  if (SEC_CACHE[key]) return SEC_CACHE[key];
+  var ex = EXAM_BANK && EXAM_BANK.exams[key];
+  if (!ex) return [];
+  var blocks = ex.blocks, cut = secStopIndex(blocks), parts = [], i, b, hdrUntil = -1;
+  for (i = 0; i < cut; i++) {
+    b = blocks[i];
+    if (b.t === "q" || i < hdrUntil) continue;
+    var txt = secNorm(b.v);
+    if (!SEC_PART_RE.test(txt) && !SEC_TITLE_RE.test(txt.replace(/\s+/g, " ").trim())) continue;
+    var title = txt.replace(/\s+/g, " ").trim(), j = i + 1;
+    while (j < cut && j <= i + 3 && blocks[j].t === "text") {
+      var s = secNorm(blocks[j].v).trim();
+      if (!s || s.length > 70) break;
+      if (SEC_SEC_RE.test(s) || /^(Directions|Questions|Section)/i.test(s)) break;
+      // 紧跟在 Part 标题后的那行就是本板块标题（Writing / Listening Comprehension…），要并进来；
+      // 只有出现在更后面的「标题行」才视为新板块起点（有的套次 Part 标记整行丢失）
+      if (j > i + 1 && SEC_TITLE_RE.test(s)) break;
+      if (/^[\d（(]/.test(s) && !/[A-Za-z]{3,}/.test(s)) break;
+      title += " " + s; j++;
+    }
+    hdrUntil = j;
+    parts.push({ start: i, hdrEnd: j, title: title.replace(/\s+/g, " "), cat: secCatOfTitle(title), secs: [], nq: 0, chars: 0, cjk: 0 });
+  }
+  for (i = 0; i < cut; i++) {
+    b = blocks[i];
+    if (b.t !== "h") continue;
+    var sn = secNorm(b.v).trim();
+    if (!SEC_SEC_RE.test(sn)) continue;
+    var owner = null;
+    for (var p = 0; p < parts.length; p++) if (parts[p].start < i) owner = parts[p];
+    if (!owner) continue;
+    var sub = sn.replace(SEC_SEC_RE, "").trim();
+    if (!sub && i + 1 < blocks.length && blocks[i + 1].t === "text") {
+      var cand = secNorm(blocks[i + 1].v).trim();
+      if (cand && cand.length <= 60 && !/^directions/i.test(cand)) sub = cand;
+    }
+    owner.secs.push({ start: i, title: sn + (sub ? " " + sub : "") });
+  }
+  var out = [], seen = {};
+  for (var n = 0; n < parts.length; n++) {
+    var q = parts[n];
+    q.end = n + 1 < parts.length ? parts[n + 1].start : cut;
+    var body = blocks.slice(q.start, q.end), m, bb;
+    for (m = 0; m < body.length; m++) {
+      bb = body[m];
+      if (bb.t === "q") { q.nq++; continue; }
+      if (bb.t === "text") {
+        q.chars += (bb.v || "").length;
+        q.cjk += ((bb.v || "").match(/[\u4e00-\u9fa5]/g) || []).length;
+      }
+    }
+    // 标题行丢失、只剩 Directions 的板块：按正文关键词补判类型（否则会被归到「其它」）
+    if (q.cat === "other") {
+      var t2 = body.filter(function (x) { return x.t === "text"; }).map(function (x) { return x.v || ""; }).join(" ").slice(0, 600).toLowerCase();
+      if (/writing|write an essay|composition/.test(t2)) q.cat = "writing";
+      else if (/translat/.test(t2)) q.cat = "translation";
+      else if (/listening/.test(t2)) q.cat = "listening";
+      else if (/reading|comprehension/.test(t2)) q.cat = "reading";
+    }
+    var sig = q.cat + "|" + q.title.slice(0, 40);
+    if (seen[sig]) continue;
+    seen[sig] = 1;
+    if (!secUsable(q)) continue;
+    out.push(q);
+  }
+  SEC_CACHE[key] = out;
+  return out;
+}
+function secUsable(p) {
+  if (p.cat === "writing") return p.chars >= 30;       // 老卷写作只有中文提纲（问题/解决方案），正文很短
+  if (p.cat === "translation") return p.cjk >= 40;     // 中文原文残缺/乱码的不单列
+  if (p.cat === "listening") return p.nq >= 5 || p.chars >= 600;
+  if (p.cat === "reading") return p.chars >= 250 || p.nq >= 5;
+  return p.chars >= 100 || p.nq >= 5;
+}
+// 某一板块的全部条目（按套次倒序）
+function secList(cat) {
+  if (SEC_LIST_CACHE[cat]) return SEC_LIST_CACHE[cat];
+  var arr = [], bank = EXAM_BANK;
+  if (!bank) return arr;
+  Object.keys(bank.exams).sort().reverse().forEach(function (key) {
+    secPartsOf(key).forEach(function (p, pi) {
+      if (secGroupOf(p.cat) !== cat) return;
+      arr.push({ key: key, pi: pi, meta: bank.exams[key].meta, part: p });
+    });
+  });
+  SEC_LIST_CACHE[cat] = arr;
+  return arr;
+}
+/* ---------- 题型二级分组（v1.9）：板块内部再拆成「题型块」 ---------- */
+var SEC_TYPE_LABEL = {
+  writing: "作文", translation: "翻译",
+  banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读理解（合卷）",
+  listen_a: "听力 A 对话", listen_b: "听力 B 短文", listen_c: "听力 C 讲座", listening: "听力（未细分）",
+  cloze: "完形填空", vocab: "词汇与结构", errorcorr: "改错", shortanswer: "简答", dictation: "听写", other: "其他"
+};
+var SEC_TYPE_SHORT = {
+  banked: "选词填空", match: "长篇匹配", careful: "仔细阅读", fastread: "快速阅读", reading: "阅读",
+  listen_a: "A 对话", listen_b: "B 短文", listen_c: "C 讲座", listening: "听力未分",
+  cloze: "完形", vocab: "词汇", errorcorr: "改错", shortanswer: "简答", dictation: "听写", other: "其他"
+};
+var SEC_TYPE_ORDER = {
+  listening: ["listen_a", "listen_b", "listen_c", "listening"],
+  reading: ["banked", "match", "careful", "fastread", "reading"],
+  other: ["cloze", "vocab", "errorcorr", "shortanswer", "dictation", "other"],
+  writing: ["writing"], translation: ["translation"]
+};
+var SEC_UNIT_CACHE = {}, SEC_UNITLIST_CACHE = {};
+function secTypeLabel(tid, short) { var m = short ? SEC_TYPE_SHORT : SEC_TYPE_LABEL; return m[tid] || SEC_TYPE_LABEL[tid] || tid; }
+function secUnitId(key, pi, si) { return key + "#" + pi + "#" + si; }
+// 题型块内题号区间 → 阅读三题型（选词填空 26-35 / 长篇匹配 36-45 / 仔细阅读 46-55）
+function secReadTypeByQ(nums) {
+  var a = 0, b = 0, c = 0;
+  nums.forEach(function (n) { if (n >= 26 && n <= 35) a++; else if (n >= 36 && n <= 45) b++; else if (n >= 46 && n <= 55) c++; });
+  if (c >= a && c >= b && c) return "careful";
+  if (b >= a && b) return "match";
+  if (a) return "banked";
+  return null;
+}
+function secReadTypeByText(t) {
+  var s = (t || "").toLowerCase(), c = s.replace(/\s+/g, "");   // OCR 常把词粘连，空格无关匹配
+  if (/passagewithtenblanks|tenblanks|选词填空/.test(c)) return "banked";
+  if (/tenstatements|identifytheparagraph|长篇阅读|matching/.test(c)) return "match";
+  if (/twopassages|passageone|indepth|仔细阅读/.test(c)) return "careful";
+  if (/skimmingandscanning|skimming|快速阅读/.test(c)) return "fastread";
+  return null;
+}
+function secSecLetter(title) {
+  var m = /Section\s*([A-D])/i.exec(title || "");
+  return m ? m[1].toUpperCase() : null;
+}
+function secUnitsOf(key, pi) {
+  var cid = key + "#" + pi;
+  if (SEC_UNIT_CACHE[cid]) return SEC_UNIT_CACHE[cid];
+  var parts = secPartsOf(key), p = parts[pi], ex = EXAM_BANK && EXAM_BANK.exams[key];
+  if (!p || !ex) return [];
+  var segs = [];
+  if (p.secs && p.secs.length) {
+    for (var i = 0; i < p.secs.length; i++) {
+      segs.push({ start: p.secs[i].start, end: (i + 1 < p.secs.length ? p.secs[i + 1].start : p.end), title: p.secs[i].title });
+    }
+    if (segs[0].start > p.hdrEnd) segs[0].start = p.hdrEnd;   // 首个 Section 前的导语并进第一块
+  } else {
+    segs.push({ start: p.hdrEnd, end: p.end, title: p.title });
+  }
+  var cat = secGroupOf(p.cat), out = [];
+  segs.forEach(function (seg, si) {
+    var nums = [], txtLen = 0, tbuf = "";
+    for (var i = seg.start; i < seg.end; i++) {
+      var b = ex.blocks[i];
+      if (b.t === "q") nums.push(b.n);
+      else if (b.t === "text") { txtLen += (b.v || "").length; if (tbuf.length < 900) tbuf += " " + (b.v || ""); }
+    }
+    var tid;
+    if (cat === "writing") tid = "writing";
+    else if (cat === "translation") tid = "translation";
+    else if (cat === "listening") {
+      var L = secSecLetter(seg.title);
+      tid = L === "A" ? "listen_a" : L === "B" ? "listen_b" : L === "C" ? "listen_c" : "listening";
+    } else if (cat === "reading") {
+      var typed = secReadTypeByQ(nums) || secReadTypeByText(seg.title + " " + tbuf) || "reading";
+      tid = typed;
+    } else tid = p.cat;
+    out.push({ si: si, start: seg.start, end: seg.end, tid: tid, title: seg.title, nq: nums.length, chars: txtLen });
+  });
+  SEC_UNIT_CACHE[cid] = out;
+  return out;
+}
+// 某一板块的「题型块」全量列表（按套次倒序）
+function secUnitList(cat) {
+  if (SEC_UNITLIST_CACHE[cat]) return SEC_UNITLIST_CACHE[cat];
+  var bank = EXAM_BANK, arr = [];
+  if (!bank) return arr;
+  Object.keys(bank.exams).sort().reverse().forEach(function (key) {
+    secPartsOf(key).forEach(function (p, pi) {
+      if (secGroupOf(p.cat) !== cat) return;
+      secUnitsOf(key, pi).forEach(function (u) {
+        arr.push({ key: key, pi: pi, si: u.si, meta: bank.exams[key].meta, part: p, unit: u, tid: u.tid, id: secUnitId(key, pi, u.si) });
+      });
+    });
+  });
+  SEC_UNITLIST_CACHE[cat] = arr;
+  return arr;
+}
+function secPartUnits(key, pi) { return secUnitsOf(key, pi); }
+function secSizeLabel(p) {
+  var bits = [];
+  if (p.nq) bits.push(p.nq + " 题");
+  if (p.cat === "translation") bits.push(p.cjk + " 字中文");
+  else if (p.chars >= 1000) bits.push((p.chars / 1000).toFixed(1) + "k 字符");
+  else if (p.chars >= 100) bits.push(p.chars + " 字符");
+  return bits.join(" · ");
+}
+function secShortTitle(title) {
+  return title.replace(/\s*[（(][^（()）]*min[^（()）]*[)）]/ig, "")
+    .replace(/\s*\(.*$/i, "")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")   // ListeningComprehension → Listening Comprehension
+    .replace(/^Part(\S)/i, "Part $1")      // PartⅣ → Part Ⅳ
+    .replace(/\s+/g, " ").trim();
+}
+// 专题列表里一律标出「第N套」，跨年翻找时不会把第 1 套误认成没标
+function secExamLabel(meta) {
+  return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月 第" + meta.set + "套";
+}
+function secItemSub(p) {
+  if (p.cat === "writing") return "作文题干";
+  if (p.cat === "translation") return "汉译英段落";
+  return secShortTitle(p.title) || secCatName(secGroupOf(p.cat));
+}
+
+// 板块正文前 400 字符（搜索用：译文/原文内容里的词也能搜到）
+var SEC_TEXT_CACHE = {};
+function secBodyText(key, pi) {
+  const cid = key + "#" + pi;
+  if (SEC_TEXT_CACHE[cid] !== undefined) return SEC_TEXT_CACHE[cid];
+  const p = secPartsOf(key)[pi], ex = EXAM_BANK.exams[key];
+  let t = '';
+  if (p && ex) {
+    for (let i = p.start; i < p.end && t.length < 400; i++) {
+      const b = ex.blocks[i];
+      if (b.t === "text") t += ' ' + (b.v || '');
+    }
+  }
+  SEC_TEXT_CACHE[cid] = t;
+  return t;
+}
+window._topic = { cat: "writing", year: "all", q: "" };
+/* 学习记忆：上次看到哪段 + 哪些点开过（localStorage，随备份一起走） */
+var TOPIC_LAST_KEY = "wb_topic_last", TOPIC_SEEN_KEY = "wb_topic_seen";
+function topicSeenMap() {
+  try { return JSON.parse(localStorage.getItem(TOPIC_SEEN_KEY) || "{}"); } catch (e) { return {}; }
+}
+function topicMarkSeen(id) {
+  const m = topicSeenMap();
+  m[id] = Date.now();
+  const ks = Object.keys(m);
+  if (ks.length > 400) {
+    ks.sort((a, b) => m[a] - m[b]);
+    ks.slice(0, ks.length - 400).forEach(k => { delete m[k]; });
+  }
+  try { localStorage.setItem(TOPIC_SEEN_KEY, JSON.stringify(m)); } catch (e) { }
+}
+function topicLast() {
+  try { return JSON.parse(localStorage.getItem(TOPIC_LAST_KEY) || "null"); } catch (e) { return null; }
+}
+function topicSaveLast(cat, key, pi, si, unitTid) {
+  try {
+    localStorage.setItem(TOPIC_LAST_KEY, JSON.stringify({
+      cat: cat, key: key, pi: pi, si: (si == null ? -1 : si), ts: Date.now(),
+      label: secExamLabel(EXAM_BANK.exams[key].meta) + ' · ' + secCatName(cat) +
+        (unitTid ? ' · ' + secTypeLabel(unitTid) : '')
+    }));
+  } catch (e) { }
+}
+async function openTopics() {
+  switchMode("study");
+  document.getElementById("studyExamTab").className = "btn small ghost";
+  document.getElementById("studyTopicTab").className = "btn small ok";
+  document.getElementById("studyListenTab").className = "btn small ghost";
+  if (window._topic.cat === "listening") await loadListenBank();  // 听力板块要标「有内置音频」
+  const d = await loadExamBank();
+  if (!d || !d.exams) { studyArea().innerHTML = '<div id="emptyTip">题库加载失败（请升级 APK）</div>'; return; }
+  renderTopicList();
+}
+// 该套听力有没有内置音频（LISTEN_BANK 覆盖 2019 年以后）
+function secHasAudio(key) {
+  if (!LISTEN_BANK) return false;
+  return !!(((LISTEN_BANK.cet6 || {})[key]) || ((LISTEN_BANK.cet4 || {})[key]));
+}
+function renderTopicList() {
+  scrollTopInstant();
+  const cat = window._topic.cat;
+  const catInfo = SEC_CATS.filter(c => c.id === cat)[0] || {};
+  const units = secUnitList(cat);
+  const seenMap = topicSeenMap();
+
+  // ① 板块 chips（一屏全见）
+  let html = '<div class="yearChips wrapChips">';
+  SEC_CATS.forEach(c => {
+    const n = secUnitList(c.id).length;
+    html += '<button class="chip' + (c.id === cat ? " ok" : "") + '" data-cat="' + c.id + '">' + c.icon + ' ' + c.name + ' ' + n + '</button>';
+  });
+  html += '</div>';
+
+  // ② 题型分组卡片（v1.9 区域首页）：这一块里有哪几种题型、各多少份、练过多少
+  const byType = {};
+  units.forEach(u => { (byType[u.tid] = byType[u.tid] || []).push(u); });
+  const order = (SEC_TYPE_ORDER[cat] || []).filter(t => byType[t]);
+  Object.keys(byType).forEach(t => { if (order.indexOf(t) < 0) order.push(t); });
+  let tid = window._topic.tid || "all";
+  if (tid !== "all" && !byType[tid]) tid = "all";
+  window._topic.tid = tid;
+  if (order.length > 1) {
+    const seenOf = arr => arr.filter(u => seenMap[u.id]).length;
+    html += '<div class="typeCards">' +
+      '<button class="typeCard' + (tid === "all" ? " ok" : "") + '" data-tid="all"><b>全部</b>' +
+      '<span>' + units.length + ' 份' + (seenOf(units) ? ' · ✓ ' + seenOf(units) : '') + '</span></button>';
+    order.forEach(t => {
+      const g = byType[t];
+      html += '<button class="typeCard' + (tid === t ? " ok" : "") + '" data-tid="' + t + '"><b>' + esc(secTypeLabel(t)) + '</b>' +
+        '<span>' + g.length + ' 份' + (seenOf(g) ? ' · ✓ ' + seenOf(g) : '') + '</span></button>';
+    });
+    html += '</div>';
+  }
+
+  // ③ 年份 chips（只列当前题型里存在的年份）
+  const scope = tid === "all" ? units : units.filter(u => u.tid === tid);
+  const years = Array.from(new Set(scope.map(x => x.meta.year))).sort((a, b) => b - a);
+  let cur = window._topic.year;
+  if (cur !== "all" && !years.some(y => String(y) === String(cur))) cur = "all";
+  window._topic.year = cur;
+  const shown = cur === "all" ? scope : scope.filter(x => String(x.meta.year) === String(cur));
+  html += '<div class="yearChips">';
+  html += '<button class="chip' + (cur === "all" ? " ok" : "") + '" data-year="all">全部 ' + scope.length + '</button>';
+  years.forEach(y => {
+    const n = scope.filter(x => x.meta.year === y).length;
+    html += '<button class="chip' + (String(cur) === String(y) ? " ok" : "") + '" data-year="' + y + '">' + y + '·' + n + '</button>';
+  });
+  html += '</div>';
+  if (years.length > 8) html += '<div class="muted" style="font-size:12px;margin:-2px 0 8px">年份条可左右滑动（共 ' + years.length + ' 个年份，' + scope.length + ' 份）</div>';
+
+  // ④ 上次看到哪一段
+  const lt = topicLast();
+  if (lt && lt.key && !(window._topic.q || "").trim()) {
+    html += '<button class="btn small ok" id="topicResume" style="width:100%;text-align:left;margin:0 0 8px">▶ 上次看到：' +
+      esc(lt.label || secExamLabel(EXAM_BANK.exams[lt.key].meta)) + '　<b>继续 →</b></button>';
+  }
+
+  // ⑤ 搜索（跨全部板块 + 跨年份）
+  html += '<div class="row" style="gap:6px;margin:0 0 8px">' +
+    '<input id="topicSearch" placeholder="搜年份/套次/题型/内容（如 2021、梅花、选词填空、Cloze）" value="' + esc(window._topic.q || "") +
+    '" style="flex:1;font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)">' +
+    '<button class="btn ghost small" id="topicClear" style="flex:none;padding:9px 12px">清空</button></div>';
+
+  const qstr = (window._topic.q || "").trim().toLowerCase();
+  let shown2 = shown;
+  if (qstr) {
+    const allCat = SEC_CATS.reduce((acc, c) => acc.concat(secUnitList(c.id)), []);
+    shown2 = allCat
+      .filter(x => (secExamLabel(x.meta) + ' ' + secTypeLabel(x.tid) + ' ' + secTypeLabel(x.tid, true) + ' ' +
+        (x.unit.title || '') + ' ' + (x.part.title || '') + ' ' + secCatName(secGroupOf(x.part.cat)) + ' ' +
+        secUnitBody(x.key, x.unit.start, x.unit.end))
+        .toLowerCase().indexOf(qstr) >= 0)
+      .sort((a, b) => (a.key < b.key ? 1 : -1));
+  }
+  let extra = "";
+  if (cat === "listening" && LISTEN_BANK) {
+    const onlyAudio = Object.keys(LISTEN_BANK.cet6 || {}).filter(k => (EXAM_BANK.exams || {})[k] === undefined).length;
+    if (onlyAudio && !qstr) extra = '；另有 <b>' + onlyAudio + '</b> 套只有音频+原文（试卷未收录），列在下方';
+  }
+  html += '<div class="muted" style="margin:2px 0 10px;line-height:1.6">' +
+    (qstr ? '全板块搜索「' + esc(window._topic.q) + '」· 命中 <b>' + shown2.length + '</b> 处'
+      : (catInfo.hint || '') + ' · 共 <b>' + shown2.length + '</b> 份，点开即只看这一段' + extra) + '</div>';
+
+  if (!shown2.length) {
+    html += '<div id="emptyTip">' + (qstr ? '没搜到「' + esc(window._topic.q) + '」，换个词试试' : '该板块暂无可用内容') + '</div>';
+  } else {
+    let lastY = null;
+    shown2.forEach(x => {
+      if (x.meta.year !== lastY) {
+        lastY = x.meta.year;
+        html += '<div style="font-size:13px;color:var(--dim);margin:12px 0 6px"><b>' + lastY + ' 年</b></div>';
+      }
+      html += '<button class="btn ghost small secItem" data-sec="' + x.key + '#' + x.pi + '#' + x.si + '">' +
+        '<span class="secItemT">' + secExamLabel(x.meta) + (seenMap[x.id] ? ' <span style="color:var(--ok);font-size:12px">✓ 看过</span>' : '') + '</span>' +
+        '<span class="secItemS">' + (qstr ? '<b style="color:var(--accent)">[' + secCatName(secGroupOf(x.part.cat)) + ']</b> ' : '') +
+        '<b class="tyTag">' + esc(secTypeLabel(x.tid, true)) + '</b> ' + esc(secUnitSub(x)) + '</span>' +
+        '<span class="secItemM">' + secUnitMeta(x) + '</span></button>';
+    });
+  }
+
+  // 听力：只有音频+原文的套次（试卷未收录）也列出来，点开直接听
+  if (cat === "listening" && LISTEN_BANK && !qstr) {
+    const onlyAudio = Object.keys(LISTEN_BANK.cet6 || {})
+      .filter(k => (EXAM_BANK.exams || {})[k] === undefined).sort().reverse();
+    if (onlyAudio.length) {
+      html += '<div style="font-size:13px;color:var(--dim);margin:16px 0 6px"><b>只有音频 + 原文 ' + onlyAudio.length + ' 套（试卷未收录）</b></div>';
+      onlyAudio.forEach(k => {
+        const rec = LISTEN_BANK.cet6[k];
+        html += '<button class="btn ghost small listenOnly" data-lkey="' + esc(k) + '">' +
+          '<span class="secItemT">' + secExamLabel(rec.meta) + '</span>' +
+          '<span class="secItemS">听力原文 + 内置音频</span>' +
+          '<span class="secItemM">点开直接听</span></button>';
+      });
+    }
+  }
+  studyArea().innerHTML = html;
+
+  studyArea().querySelectorAll(".chip[data-cat]").forEach(c => c.onclick = () => {
+    window._topic.cat = c.dataset.cat; window._topic.year = "all"; window._topic.tid = "all"; openTopics();
+  });
+  studyArea().querySelectorAll(".typeCard").forEach(c => c.onclick = () => {
+    window._topic.tid = c.dataset.tid; window._topic.year = "all"; renderTopicList();
+  });
+  studyArea().querySelectorAll(".chip[data-year]").forEach(c => c.onclick = () => {
+    window._topic.year = c.dataset.year; renderTopicList();
+  });
+  studyArea().querySelectorAll(".secItem").forEach(b => b.onclick = () => {
+    const a = b.dataset.sec.split("#");
+    openTopicUnit(a[0], Number(a[1]), Number(a[2]));
+  });
+  const rsm = document.getElementById("topicResume");
+  if (rsm) rsm.onclick = () => {
+    const lt2 = topicLast();
+    if (!lt2 || !lt2.key) return;
+    window._topic.cat = lt2.cat || window._topic.cat;
+    window._topic.tid = "all"; window._topic.year = "all";
+    openTopicUnit(lt2.key, lt2.pi, lt2.si == null ? -1 : lt2.si);
+  };
+  const sIn = document.getElementById("topicSearch");
+  if (sIn) sIn.oninput = () => {
+    window._topic.q = sIn.value;
+    const pos = sIn.selectionStart;
+    renderTopicList();
+    const n2 = document.getElementById("topicSearch");
+    if (n2) { n2.focus(); try { n2.setSelectionRange(pos, pos); } catch (e) { } }
+  };
+  const sClr = document.getElementById("topicClear");
+  if (sClr) sClr.onclick = () => { window._topic.q = ""; renderTopicList(); };
+  studyArea().querySelectorAll(".listenOnly").forEach(b => b.onclick = () => {
+    document.getElementById("studyExamTab").className = "btn small ghost";
+    document.getElementById("studyTopicTab").className = "btn small ghost";
+    document.getElementById("studyListenTab").className = "btn small ok";
+    window._listen.level = "cet6";
+    window._listen.key = b.dataset.lkey;
+    window._listen.showTrans = false;
+    renderListenRead();
+  });
+}
+// 题型块正文前 400 字符（搜索用）
+var SEC_UNIT_TEXT = {};
+function secUnitBody(key, start, end) {
+  const cid = key + "|" + start + "|" + end;
+  if (SEC_UNIT_TEXT[cid] !== undefined) return SEC_UNIT_TEXT[cid];
+  const ex = EXAM_BANK && EXAM_BANK.exams[key];
+  let t = "";
+  if (ex) {
+    for (let i = start; i < end && t.length < 400; i++) {
+      const b = ex.blocks[i];
+      if (b && b.t === "text") t += " " + (b.v || "");
+    }
+  }
+  SEC_UNIT_TEXT[cid] = t;
+  return t;
+}
+function secUnitSub(x) {
+  const cat = secGroupOf(x.part.cat);
+  if (cat === "writing") return "题干" + (x.meta.writeRef && x.meta.writeRef.length ? " · 有范文" : "");
+  if (cat === "translation") return "汉译英段落" + (x.meta.transRef ? " · 有参考译文" : "");
+  let t = (x.unit.title || "").replace(/\s*Section\s*[A-D]\s*/i, "").trim();
+  // 标题被并进半句正文（OCR 折行 / 小写开头 / 过长）→ 不当子标题用
+  if (/^[a-z]/.test(t) || t.split(/\s+/).length > 7) t = "";
+  const base = secShortTitle(x.part.title).replace(/^Part\s+[IVXⅠⅡⅢⅣⅤⅥ0-9]+\s*/i, "").replace(/[（(].*$/, "").trim();
+  if (t) return secShortTitle(t).slice(0, 40);
+  if (/^(Reading|Listening)\s*Comprehension/i.test(base)) return "";   // 题型标签已经说明，不重复
+  // 板块标题被并进了半句正文（OCR 折行）→ 不要把正文当子标题显示
+  if (base && base.length <= 26 && /^[A-Z]/.test(base)) return base;
+  return "";
+}
+function secUnitMeta(x) {
+  const bits = [];
+  if (x.unit.nq) bits.push(x.unit.nq + " 题");
+  const cat = secGroupOf(x.part.cat);
+  if (cat === "translation" && x.part.cjk) bits.push(x.part.cjk + " 字中文");
+  if (x.unit.chars >= 1000) bits.push((x.unit.chars / 1000).toFixed(1) + "k 字符");
+  else if (x.unit.chars >= 100) bits.push(x.unit.chars + " 字符");
+  if (cat === "listening" && secHasAudio(x.key)) bits.push("🎵 内置音频");
+  return bits.join(" · ");
+}
+/* ---------- 板块详情页 ---------- */
+function secDropLine(s) {
+  var t = s.trim();
+  if (!t) return true;
+  if (/^[\d\s.,:;()（）\-–—·%'’"]+$/.test(t)) return true;          // 页码 / 纯数字 / 纯符号
+  if (!/[A-Za-z\u4e00-\u9fa5]/.test(t)) return true;                // 没字没词，扔掉
+  if (t.length < 18 && /\d+\s*(min|minute)/i.test(t)) return true;  // (30 minutes)
+  if (/[~¥#]/.test(t)) return true;                                 // 字体映射损坏的乱码行
+  // 扫描件水印/推广行（OCR 会把书页边的广告字认进来）
+  if (/扫码|淘宝|店铺|微信公众|公众号|用.{0,6}App/i.test(t) && t.length <= 24) return true;
+  if (t.length > 6 && (t.match(/_/g) || []).length > t.length * 0.6) return true;  // 大半是下划线的答题格
+  if (/^(姓\s*名|准考证|考号|座位号|答题卡)/.test(t)) return true;      // 答题卡抬头
+  return false;
+}
+// 把 PDF 拆断的行接回句子：中文直接相连，英文之间补空格
+function secFlow(lines, keepRe) {
+  var out = [], buf = "";
+  function flush() { if (buf) { out.push(buf); buf = ""; } }
+  lines.forEach(function (l) {
+    if (keepRe && keepRe.test(l)) { flush(); out.push(l); return; }
+    // 带编号的行（"36. …" 长篇匹配陈述句 / 阅读题干）必须各自独立，不能和下一句并成一段
+    if (/^\d{1,3}\.\s/.test(l)) { flush(); out.push(l); return; }
+    if (!buf) {
+      // 扫描件常把陈述句的尾巴拆成下一块（"… is appropriate." / "conditions."）→ 接回上一句
+      var prevOut = out[out.length - 1];
+      if (prevOut && /^\d{1,3}\.\s/.test(prevOut) && /^[a-z(]/.test(l) && l.length < 60) {
+        out[out.length - 1] = prevOut + " " + l;
+        return;
+      }
+      buf = l; return;
+    }
+    // 补空格：扫描件按行断开，句号/逗号结尾的行直接接下一行会粘成 "once.After"；
+    // 中文/全角标点结尾的行之间不补空格
+    var last = buf.slice(-1);
+    var sp = !/\s$/.test(last) && !/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]$/.test(last) && /^[A-Za-z0-9"'“”([]/.test(l);
+    buf += (sp ? " " : "") + l;
+    if (/[。！？.!?][”’)）]?$/.test(buf) && buf.length >= 26) flush();
+  });
+  flush();
+  return out;
+}
+function secLineClass(l) {
+  if (/^Directions/i.test(l)) return "secDir";
+  var cjk = (l.match(/[\u4e00-\u9fa5]/g) || []).length;
+  if (cjk >= 8 && cjk >= l.length * 0.35) return "secZh";
+  return "examText";
+}
+/* 选词填空词表：扫描件里是「A) word B) word …」挤成一段，字母顺序还乱（A,B,C,K,D,L…）
+   → 识别出来单独成块，按 A–O 排序、两列网格，找词不用逐行扫 */
+function parseWordBank(t) {
+  if (!t || t.length < 60) return null;
+  var re = /(?:^|\s)([A-O]|[01])\s*[）)]\s*([A-Za-z][A-Za-z'\u2019\-]*)/g, m, items = [], covered = 0;
+  while ((m = re.exec(t))) { items.push({ k: bankLetter(m[1]), v: m[2] }); covered += m[0].length; }
+  if (items.length < 6 || covered / t.length < 0.75) return null;
+  var uniq = {};
+  items.forEach(function (x) { if (!uniq[x.k]) uniq[x.k] = x.v; });
+  var ks = Object.keys(uniq).sort();
+  if (ks.length < 6) return null;
+  return '<div class="wBank">' + ks.map(function (k) {
+    return '<span><b>' + k + '</b> ' + esc(uniq[k]) + '</span>';
+  }).join('') + '</div>';
+}
+/* 文本收尾清理：扫描件残留的「标点/括号紧贴下一个词」（如 "D).Then" "A) ,B)"）补一个空格 */
+function tidyText(t) {
+  return String(t || "")
+    .replace(/\s+([,.;:!?])/g, "$1")          // 标点前多余空格："With time , nature" → "With time, nature"
+    .replace(/\)([.,;:])(?=[A-Za-z])/g, ")$1 ")
+    .replace(/([A-Za-z]{2,})([.,;:])(?=[A-Za-z])/g, "$1$2 ")
+    .replace(/\s{2,}/g, " ");
+}
+/* 选词填空的空格标记在扫描件里有四种写法（"_34"、"_ 33"、"n32that"、"26stress"），
+   直接显示就是乱码数字 → 统一成带编号的空格下划线 */
+function blankify(escaped) {
+  var NUM = "(?:2[6-9]|3[0-5])";
+  var BLANK = function (num) { return '\u2007<span class="blank"><sup>' + num + '</sup></span>'; };
+  var out = escaped
+    // 下划线形式（含两侧多余下划线）：_26thought / _ 29 , / _30__ / _ 31_ / _ 33 _
+    .replace(new RegExp("_+\\s?(" + NUM + ")\\s?_+(?![0-9])", "g"), function (m, num) { return BLANK(num) + " "; })
+    .replace(new RegExp("_+\\s?(" + NUM + ")(?![0-9])", "g"), function (m, num) { return BLANK(num); })
+    // 数字紧贴单词：26stress / n32that / 33in
+    .replace(new RegExp("(^|[^0-9A-Za-z])n?(" + NUM + ")(?=[A-Za-z])", "g"),
+      function (m, pre, num) { return pre + BLANK(num) + " "; });
+  // 选词填空整段里，独立出现的 26–35 就是空格位置（"letting 27 pleasure-inducing" → 空27）
+  if (window._bankPassage) {
+    out = out.replace(new RegExp("(^|[\\s(\\u201c\"])(" + NUM + ")(?=[\\s,.;:)\\u201d\"]|$)", "g"),
+      function (m, pre, num) { return pre + BLANK(num); });
+  }
+  // 收尾：清掉残留的下划线标记，避免出现 "__" " _ "
+  out = out.replace(/_+/g, " ").replace(/\u2007\s+/g, "\u2007").replace(/\s{2,}/g, " ");
+  return out;
+}
+/* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文）
+   cont=true 表示上一块是 Directions 且本块是它的续行 → 仍按说明体渲染 */
+function examBlockHtml(v, cont) {
+  var t = tidyText(secNorm(v));
+  var bank = parseWordBank(t);
+  if (bank) return bank;
+  var nm = t.match(/^(\d{1,3})\.\s(.*)$/);
+  if (nm) return '<div class="matchStmt"><b>' + nm[1] + '.</b> ' + esc(tidyText(nm[2])) + '</div>';
+  var cls = secLineClass(t);
+  if (cont && cls === "examText" && /^[a-z(]/.test(t)) cls = "secDir";
+  return '<div class="' + cls + '">' + blankify(esc(t)) + '</div>';
+}
+/* 选词填空词表在数据里是「一个选项一个块」（A）anywhere / exemption / B） asserts …），
+   顺序还按两列排版乱序 → 先扫成一串条目，够 8 条才当成词表，按 A–O 排成网格。
+   OCR 常把字母 I 认成数字 1、字母 O 认成 0（"1）maneuver" / "0) threshold"）→ 这里归一化 */
+var BANK_LET_RE = /^([A-O]|[01])\s*[）)]\s*(.*)$/;
+var BANK_LET_FIX = { "0": "O", "1": "I" };
+function bankLetter(ch) { return BANK_LET_FIX[ch] || ch; }
+function preScanBanks(blocks, base) {
+  var out = [], i = 0, off = (base || 0);
+  // 先把「陈述句被拆成两块」的尾巴并回上一句（整卷逐块渲染时同样需要）
+  var arr = [];
+  blocks.forEach(function (b) {
+    var prev = arr[arr.length - 1];
+    var t = (b && b.t === "text") ? secNorm(b.v).trim() : "";
+    if (prev && prev.t === "text" && /^\d{1,3}\.\s/.test(secNorm(prev.v)) &&
+        b.t === "text" && /^[a-z(]/.test(t) && t.length < 60) {
+      var merged = Object.assign({}, prev);
+      merged.v = secNorm(prev.v).replace(/\s+$/, "") + " " + t;
+      arr[arr.length - 1] = merged;
+      return;
+    }
+    arr.push(b);
+  });
+  blocks = arr;
+  while (i < blocks.length) {
+    var b = blocks[i];
+    if (b.t === "text" && BANK_LET_RE.test(secNorm(b.v))) {
+      var items = [], j = i;
+      while (j < blocks.length) {
+        var c = blocks[j];
+        if (c.t !== "text") break;
+        var t = secNorm(c.v).replace(/\s+/g, " ").trim();
+        var m = t.match(BANK_LET_RE);
+        if (m) { items.push({ k: bankLetter(m[1]), v: m[2].trim() }); j++; continue; }
+        if (!items.length) break;
+        if (t.length > 40 || /[.!?。]$/.test(t) || /^(Section|Part|Directions|Questions?)/i.test(t)) break;
+        items[items.length - 1].v = (items[items.length - 1].v ? items[items.length - 1].v + " " : "") + t;
+        j++;
+      }
+      // 词表判据：≥12 项且绝大多数是「单个小写单词」——
+      // 否则会把整卷里连续的选择题选项块（"A) Less concern with money"）误当成选词填空词表
+      if (items.length >= 10) {
+        var wordish = 0;
+        items.forEach(function (x) {
+          // 词表里的词可能被 OCR 成首字母大写（"B) Embarking"），也可能是小写单词/双词短语；
+          // 选择题选项（"A) Less concern with money"）词数多，会被下面两条规则挡掉
+          if (/^[a-z][a-z'\u2019\-]*(?:\s+[a-z][a-z'\u2019\-]*)?$/.test(x.v) ||
+              /^[A-Z][a-z'\u2019\-]{2,}$/.test(x.v)) wordish++;
+        });
+        if (wordish >= 10) { out.push({ t: "bank", items: items, __bi: off + i }); i = j; continue; }
+      }
+    }
+    b.__bi = off + i;
+    out.push(b); i++;
+  }
+  return out;
+}
+function bankHtml(items) {
+  var uniq = {}, ks = [];
+  items.forEach(function (x) { if (!uniq[x.k]) { uniq[x.k] = x.v; ks.push(x.k); } });
+  ks.sort();
+  var miss = [];
+  "ABCDEFGHIJKLMNO".split("").forEach(function (c) { if (!uniq[c]) miss.push(c); });
+  return '<div class="wBank">' + ks.map(function (k) {
+    return '<span><b>' + k + '</b> ' + esc(uniq[k]) + '</span>';
+  }).join('') + '</div>' +
+    (miss.length ? '<div class="bankNote">原卷词表共 15 项（A–O），此处缺 ' + esc(miss.join('、')) + '（扫描件丢行，正在补）</div>' : '');
+}
+function secQHtml(b, first, ans, sel) {
+  // 题干缺失（听力等只有选项）→ 只留一个紧凑题号，不占一块色条空白
+  var html = (b.stem
+    ? '<div class="examQ' + (first ? ' first' : '') + '">' + b.n + '. ' + esc(b.stem) + '</div>'
+    : '<div class="examQ numOnly">' + b.n + '.</div>');
+  for (var i = 0; i < 4; i++) {
+    var k = "ABCD".charAt(i);
+    if (!b.opts || !b.opts[k]) continue;
+    var cls = "examOpt";
+    if (ans && sel) { if (k === ans) cls += " correct"; else if (sel === k) cls += " wrong"; }
+    else if (sel === k) cls += " sel";
+    html += '<button class="' + cls + '" data-n="' + b.n + '" data-k="' + k + '"><b>' + k + '</b> ' + esc(b.opts[k]) + '</button>';
+  }
+  return html;
+}
+function secBindOpts(scope, qs, ansObj, onProgress) {
+  scope.querySelectorAll(".examOpt").forEach(btn => btn.onclick = () => {
+    const n = Number(btn.dataset.n), k = btn.dataset.k;
+    ansObj[n] = k;
+    const q = qs.filter(x => x.n === n)[0];
+    const ans = q && q.answer;
+    scope.querySelectorAll('.examOpt[data-n="' + n + '"]').forEach(x => {
+      x.classList.remove("sel", "correct", "wrong");
+      const xk = x.dataset.k;
+      if (ans) { if (xk === ans) x.classList.add("correct"); else if (xk === k) x.classList.add("wrong"); }
+      else if (xk === k) x.classList.add("sel");
+    });
+    if (onProgress) onProgress(n, k, ans);
+  });
+}
+async function openTopicUnit(key, pi, si) {
+  const part = secPartsOf(key)[pi];
+  const cat = part ? secGroupOf(part.cat) : window._topic.cat;
+  if (cat === "listening") await loadListenBank();
+  window._topic.cat = cat;   // 从搜索/整卷跳进来时同步板块
+  const units = (part && si >= 0) ? secUnitsOf(key, pi) : [];
+  const focus = (si >= 0 && units[si]) ? units[si] : null;
+  window._secPart = {
+    key: key, pi: pi, si: focus ? si : -1, tid: focus ? focus.tid : null,
+    ans: SEC_ANS[key + "#" + pi] || {}
+  };
+  SEC_ANS[key + "#" + pi] = window._secPart.ans;
+  topicSaveLast(cat, key, pi, window._secPart.si, window._secPart.tid);
+  topicMarkSeen(focus ? secUnitId(key, pi, si) : key + "#" + pi);
+  renderTopicPart();
+}
+async function openTopicPart(key, pi) { return openTopicUnit(key, pi, -1); }
+function renderTopicPart() {
+  scrollTopInstant();
+  const key = window._secPart.key, pi = window._secPart.pi;
+  const parts = secPartsOf(key), p = parts[pi], ex = EXAM_BANK.exams[key];
+  if (!p) { renderTopicList(); return; }
+  const cat = secGroupOf(p.cat);
+  const catMeta = SEC_CATS.filter(c => c.id === cat)[0] || {};
+  const sp = window._secPart;
+  // 题型块（v1.9）：sp.si>=0 时只渲染这一段（Section A/B/C 等），否则渲染整个板块
+  const unitsOfPart = (sp.si >= 0) ? secUnitsOf(key, pi) : [];
+  const focus = unitsOfPart[sp.si] || null;
+  const bStart = (focus ? focus.start : p.hdrEnd);
+  const blocks = preScanBanks(ex.blocks.slice(bStart, focus ? focus.end : p.end), bStart);
+  // 选词填空页：段内独立出现的 26–35 数字就是空格编号（见 blankify）；有词表块即可判定
+  window._bankPassage = (sp.tid === "banked") || ((focus && focus.tid === "banked") || blocks.some(function (x) { return x.t === "bank"; }));
+  // 扫描件的词表常被拆成两列、右列（I–O）跑到该 Section 之外 → 从整套块里补回缺失字母
+  if (window._bankPassage) {
+    var bankBlock = blocks.filter(function (x) { return x.t === "bank"; })[0];
+    var have = bankBlock ? bankBlock.items.map(function (x) { return x.k; }) : [];
+    var missing = "ABCDEFGHIJKLMNO".split("").filter(function (c) { return have.indexOf(c) < 0; });
+    if (missing.length) {
+      var extras = [];
+      ex.blocks.forEach(function (b) {
+        if (b.t !== "text") return;
+        var t = secNorm(b.v).trim();
+        var m = t.match(/^([A-O01])\s*[）)]\s*([a-z][a-z'\u2019\-]*)$/);
+        if (m && t.length < 30) extras.push({ k: bankLetter(m[1]), v: m[2] });
+      });
+      var merged = [];
+      missing.forEach(function (c) {
+        var hit = extras.filter(function (x) { return x.k === c; })[0];
+        if (hit) merged.push(hit);
+      });
+      if (merged.length) {
+        if (bankBlock) bankBlock.items = bankBlock.items.concat(merged);
+        else blocks.unshift({ t: "bank", items: merged, __bi: 0 });
+      }
+    }
+  }
+  const qs = blocks.filter(b => b.t === "q");
+  const ansObj = window._secPart.ans;
+  // 上一份/下一份：只在同一题型里跨年份连续（P3）
+  const list = secUnitList(cat).filter(x => !sp.tid || x.tid === sp.tid);
+  const idx = list.findIndex(x => x.key === key && x.pi === pi && (sp.si == null || sp.si < 0 || x.si === sp.si));
+  const typeName = sp.tid ? secTypeLabel(sp.tid) : (catMeta.name || cat);
+  const focusSub = (focus && focus.title && focus.title !== p.title) ? secShortTitle(focus.title) : null;
+  const focusSize = (focus && (focus.nq || focus.chars)) ? ((focus.nq ? focus.nq + " 题 · " : "") + (focus.chars >= 1000 ? (focus.chars / 1000).toFixed(1) + "k 字符" : focus.chars + " 字符")) : null;
+  let html = '<div class="stickyBar"><button class="btn ghost small" id="topicBack">← 专题</button>' +
+    '<span class="meta" id="secProg">' + typeName +
+    (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') + (qs.length ? ' · 已答 0/' + qs.length : '') + '</span>' +
+    '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
+    '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
+  const bankMissing = window._bankPassage && !blocks.some(function (x) { return x.t === "bank"; });
+  const headMeta = esc(focusSize || secSizeLabel(p)) +
+    (qs.length && !qs.some(q => q.answer) ? ' · 暂无标准答案，可当练习' : '') +
+    (bankMissing ? ' · 词表扫描缺失（正在补）' : '');
+  html += '<div class="secHead"><div class="k">' + esc((catMeta.icon || '') + ' ' + secExamLabel(ex.meta)) + '</div>' +
+    '<div class="t">' + esc(focusSub || secItemSub(p)) + '</div>' +
+    (headMeta ? '<div class="m">' + headMeta + '</div>' : '') + '</div>';
+  // 原卷残缺的说明（OCR 补录的套次会带 note）
+  if (ex.meta && ex.meta.note) {
+    const notePre2 = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
+    html += '<div class="muted" style="margin:-4px 0 10px;color:var(--no);font-size:13px;line-height:1.6">' + notePre2 + esc(ex.meta.note) + '</div>';
+  }
+  // 作文：先给题目 → 提示手写 → 范文默认收起（写完再点「参考答案」）
+  let writeExtra = "";
+  if (cat === "writing") {
+    writeExtra += '<div class="writeHint">✍️ <b>请在纸上手写</b>：30 分钟，150–200 词（考试要求）。这里只给题目、不提供输入框——写完再点下面的「参考答案」对照，上来就看范文几乎没收益。</div>';
+    const refs = (ex.meta && ex.meta.writeRef) || [];
+    if (refs.length) {
+      const curRef = (window._secPart.showRef ? (window._secPart.refIdx || 0) : -1);
+      writeExtra += '<div class="row" style="gap:8px;margin:0 0 10px">';
+      refs.forEach((r, i) => {
+        writeExtra += '<button class="btn small ' + (curRef === i ? "ghost" : "ok") + ' writeRefBtn" data-ref="' + i + '" style="flex:1">' +
+          (curRef === i ? '收起范文' : '参考答案 ▾' + (refs.length > 1 ? ' ' + (i + 1) : '')) + '</button>';
+      });
+      writeExtra += '</div>';
+      if (curRef >= 0 && refs[curRef]) {
+        writeExtra += '<div class="writeRefBox"><div class="writeRefHead">参考范文 ' + (curRef + 1) + '/' + refs.length + '</div>' +
+          refs[curRef].split(/(?<=[.!?])\s+/).filter(Boolean)
+            .map(s => '<div class="examText">' + esc(s) + '</div>').join('') + '</div>';
+      }
+    } else {
+      writeExtra += '<div class="muted" style="font-size:13px;margin:-2px 0 10px">这套暂无范文，写完后可对照原卷参考答案自己批改</div>';
+    }
+  }
+  // 翻译：有英文参考译文就能「先自己译 → 点开对照」
+  if (cat === "translation" && ex.meta && ex.meta.transRef) {
+    html += '<div class="row" style="gap:8px;margin-bottom:10px">' +
+      '<button class="btn small ' + (window._secPart.showRef ? "ghost" : "ok") + '" id="refOrig" style="flex:1">中文原文</button>' +
+      '<button class="btn small ' + (window._secPart.showRef ? "ok" : "ghost") + '" id="refShow" style="flex:1">参考译文</button></div>';
+  }
+  // 小节速跳（阅读/听力动辄 3 个 Section + 十几屏，先给一排跳转）
+  const secHeads = [];
+  blocks.forEach((b, bi) => { if (b.t === "h") secHeads.push({ bi: bi, v: secNorm(b.v) }); });
+  if (secHeads.length >= 2) {
+    html += '<div class="yearChips" style="margin:0 0 6px">';
+    secHeads.forEach(h => {
+      const short = /^Section/i.test(h.v) ? h.v.replace(/Section\s*/i, "").trim().slice(0, 14)
+        : h.v.replace(/\s*\(.*$/, "").slice(0, 16);
+      html += '<button class="chip" data-sjump="sp' + h.bi + '">' + esc(short) + '</button>';
+    });
+    html += '</div>';
+  }
+  // 听力板块：有内置音频就带播放器，配上这套的题目一起练
+  let audioRec = null;
+  if (cat === "listening" && LISTEN_BANK) {
+    const lv = (((LISTEN_BANK.cet6 || {})[key]) ? "cet6" : ((LISTEN_BANK.cet4 || {})[key] ? "cet4" : null));
+    if (lv) audioRec = LISTEN_BANK[lv][key];
+  }
+  if (audioRec && audioRec.audio) {
+    // 听力：默认只给「选项 + 播放器」，像考试一样先听；原文/译文收进「对照译文」，点了才看
+    html += '<div class="stickyAudio"><audio id="secAudio" controls preload="metadata" src="' + esc(wbUrl(audioRec.audio)) + '" style="width:100%;height:44px;border-radius:10px;outline:none"></audio></div>';
+    const showTxt = !!window._secPart.showText;
+    html += '<div class="row" style="gap:8px;margin-bottom:10px">';
+    if (audioRec.text) {
+      html += '<button class="btn small ' + (showTxt ? "ghost" : "ok") + '" id="secText" style="flex:1">' +
+        (showTxt ? '← 回到题目' : '对照译文 ▾') + '</button>';
+    }
+    html += spdHtml() + '</div>';
+  }
+  if (window._secPart.showRef && cat === "translation" && ex.meta && ex.meta.transRef) {
+    // 参考译文按句断开，手机上每句一段，方便逐句对照
+    const sents = ex.meta.transRef.split(/(?<=[.!?])\s+/).filter(Boolean);
+    html += sents.map(s => '<div class="examText">' + esc(s) + '</div>').join('');
+  } else if (window._secPart.showText && audioRec && audioRec.text) {
+    // 对照视图：上=原文（按说话人轮次分行），下=参考译文（逐句、默认收起）
+    html += '<div class="transBox"><div class="transHead">听力原文 · 说话人轮次 · 本套全部</div>' + listenTurnsHtml(audioRec.text, false, listenGroupTags(key)) + '</div>';
+    html += listenTransBox(audioRec.trans);
+  } else {
+    // 正文：文字先收集，遇到题目/小节标题再冲刷成段落
+    let lines = [], afterH = true, lastDir = false;
+    const seenStmt = [];   // 本页出现过的陈述句编号，用于整体缺号提示
+    const keep = cat === "writing" ? /^(Directions|You should|Write)/i
+      : cat === "translation" ? /^Directions/i
+        : /^(Directions|Questions|Passage|[A-O]\))/;
+    const flush = () => {
+      if (!lines.length) return "";
+      const clean = lines.filter(l => !secDropLine(l));
+      const flow = secFlow(clean, keep);
+      lines = [];
+      const outArr = [];
+      for (let fi = 0; fi < flow.length; fi++) {
+        const l = flow[fi];
+        // 连续编号陈述句（长篇匹配 36–45 / 46–55）：按编号排序、逐句一行，缺号的显式提示
+        if (/^\d{1,3}\.\s/.test(l)) {
+          const grp = [];
+          while (fi < flow.length) {
+            const mm = flow[fi].match(/^(\d{1,3})\.\s([\s\S]+)$/);
+            if (!mm) break;
+            grp.push({ n: Number(mm[1]), v: mm[2] });
+            fi++;
+          }
+          fi--;
+          grp.sort((a, b) => a.n - b.n);
+          grp.forEach(x => seenStmt.push(x.n));
+          outArr.push(grp.map(x => '<div class="matchStmt"><b>' + x.n + '.</b> ' + esc(tidyText(x.v)) + '</div>').join(''));
+          lastDir = false;
+          continue;
+        }
+        if (/^[A-O]\)/.test(l) && l.length < 40) { lastDir = false; outArr.push('<div class="examText">' + esc(l) + '</div>'); continue; }
+        const wasDir = lastDir;
+        const html0 = examBlockHtml(l, wasDir);
+        lastDir = (secLineClass(secNorm(l)) === "secDir") || (wasDir && /^[a-z(]/.test(l));
+        outArr.push(html0);
+      }
+      return outArr.join("");
+    };
+    let buf = "";
+    blocks.forEach((b) => {
+      const bi = (b.__bi != null ? b.__bi : 0);
+      if (b.t === "bank") { buf += flush(); buf += bankHtml(b.items); afterH = false; lastDir = false; return; }
+      if (b.t === "h") { buf += flush(); afterH = true; lastDir = false; buf += '<div class="examH sec" id="sp' + bi + '">' + esc(secNorm(b.v)) + '</div>'; return; }
+      if (b.t === "text") { lines.push(secNorm(b.v)); return; }
+      buf += flush();
+      const sel = ansObj[b.n];
+      buf += secQHtml(b, afterH, b.answer, sel);
+      afterH = false;
+    });
+    buf += flush();
+    html += buf;
+    // 长篇匹配（36–45 / 46–55）：整页汇总一次缺号提示，比逐段提示准确
+    [36, 46].forEach(function (base) {
+      const have = seenStmt.filter(function (n) { return n >= base && n < base + 10; });
+      if (have.length >= 4) {
+        const miss = [];
+        for (let k = 0; k < 10; k++) if (seenStmt.indexOf(base + k) < 0) miss.push(base + k);
+        if (miss.length) html += '<div class="bankNote">本段陈述句缺第 ' + miss.join('、') + ' 句（原卷扫描丢行，正在补）</div>';
+      }
+    });
+  }
+  if (writeExtra) html += writeExtra;
+  html += '<div class="secNav">' +
+    '<button class="btn small ghost" id="secPrev"' + (idx <= 0 ? ' disabled' : '') + '>← 上一份</button>' +
+    '<button class="btn small ok" id="secWhole">看整卷</button>' +
+    '<button class="btn small ghost" id="secNext"' + (idx < 0 || idx >= list.length - 1 ? ' disabled' : '') + '>下一份 →</button></div>';
+  studyArea().innerHTML = html;
+  document.getElementById("topicBack").onclick = () => renderTopicList();
+  document.getElementById("secWhole").onclick = () => {
+    window._exam.key = key; window._exam.answers = {}; renderExamPaper();
+  };
+  const prev = document.getElementById("secPrev"), next = document.getElementById("secNext");
+  if (prev) prev.onclick = () => { if (idx > 0) openTopicUnit(list[idx - 1].key, list[idx - 1].pi, list[idx - 1].si); };
+  if (next) next.onclick = () => { if (idx >= 0 && idx < list.length - 1) openTopicUnit(list[idx + 1].key, list[idx + 1].pi, list[idx + 1].si); };
+  studyArea().querySelectorAll(".writeRefBtn").forEach(b => b.onclick = () => {
+    const i = Number(b.dataset.ref);
+    if (window._secPart.showRef && (window._secPart.refIdx || 0) === i) { window._secPart.showRef = false; }
+    else { window._secPart.showRef = true; window._secPart.refIdx = i; }
+    renderTopicPart();
+  });
+  // 从题型分组点进来：直接滚到该题型块的标题行
+  if (sp.si != null && sp.si >= 0) {
+    const u = secUnitsOf(key, pi)[sp.si];
+    if (u) {
+      const el = document.getElementById("sp" + u.start);
+      if (el) setTimeout(() => { try { el.scrollIntoView({ block: "start" }); } catch (e) { } }, 0);
+    }
+  }
+  const stx = document.getElementById("secText");
+  if (stx) stx.onclick = () => { window._secPart.showText = !window._secPart.showText; renderTopicPart(); };
+  const ro = document.getElementById("refOrig"), rs = document.getElementById("refShow");
+  if (ro) ro.onclick = () => { window._secPart.showRef = false; renderTopicPart(); };
+  if (rs) rs.onclick = () => { window._secPart.showRef = true; renderTopicPart(); };
+  studyArea().querySelectorAll(".chip[data-sjump]").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.sjump);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  bindRsButtons();
+  bindSpd("secAudio");
+  secBindOpts(studyArea(), qs, ansObj, (n, k, ans) => {
+    if (ans) examRecord(key, k === ans);
+    save();
+  });
+  // 已答计数
+  const upd = () => {
+    const el = document.getElementById("secProg");
+    if (el) el.textContent = typeName +
+      (idx >= 0 ? ' · ' + (idx + 1) + '/' + list.length : '') +
+      (qs.length ? ' · 已答 ' + Object.keys(ansObj).length + '/' + qs.length : '');
+  };
+  studyArea().querySelectorAll(".examOpt").forEach(btn => {
+    const f = btn.onclick;
+    btn.onclick = () => { f(); upd(); };
+  });
+  upd();
+}
+
+// 首次运行（无任何数据）：弹「选择起始词库」（从零/四级/六级），选完才进入正常使用
+if (state.initPending) { delete state.initPending; openInitModal(true); }
+
+/* ================= 移动端体验：阅读字号 + 回顶悬浮键 ================= */
+const RD_SIZES = [14, 16, 18];      // 小 / 中 / 大（正文与原文共用）
+const RD_KEY = "wb_read_size";
+function rdIndex() {
+  let raw = null;
+  try { raw = localStorage.getItem(RD_KEY); } catch (e) { }
+  if (raw === null) return 1;                 // 首次使用默认「中」（16px），手机阅读最舒服
+  const v = Number(raw);
+  return (v === 0 || v === 1 || v === 2) ? v : 1;
+}
+function applyRdSize() {
+  document.body.style.setProperty("--rd", RD_SIZES[rdIndex()] + "px");
+  const lb = document.getElementById("rdLabel");
+  if (lb) lb.textContent = ["小", "中", "大"][rdIndex()];
+}
+function changeRd(delta) {
+  let i = rdIndex() + delta;
+  i = Math.max(0, Math.min(RD_SIZES.length - 1, i));
+  try { localStorage.setItem(RD_KEY, i); } catch (e) { }
+  applyRdSize();
+}
+function bindRsButtons() {
+  const down = document.getElementById("rdMinus"), up = document.getElementById("rdPlus");
+  if (down) down.onclick = () => changeRd(-1);
+  if (up) up.onclick = () => changeRd(+1);
+  applyRdSize();
+}
+applyRdSize();
+(function initToTop() {
+  const fab = document.getElementById("toTop");
+  if (!fab) return;
+  const up = () => fab.classList.toggle("show", window.scrollY > 500);
+  window.addEventListener("scroll", up, { passive: true });
+  fab.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+})();
+</script>
+
+<div style="text-align:center; color:var(--dim); font-size:13px; margin-top:16px;">仅个人使用，请勿商用</div>
+</body>
+</html>
