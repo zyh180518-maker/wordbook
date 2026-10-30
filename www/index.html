@@ -2366,11 +2366,15 @@ function secUnitSub(x) {
   const cat = secGroupOf(x.part.cat);
   if (cat === "writing") return "作文题干" + (x.meta.writeRef && x.meta.writeRef.length ? " · 有范文" : "");
   if (cat === "translation") return "汉译英段落" + (x.meta.transRef ? " · 有参考译文" : "");
-  const t = (x.unit.title || "").replace(/\s*Section\s*[A-D]\s*/i, "").trim();
+  let t = (x.unit.title || "").replace(/\s*Section\s*[A-D]\s*/i, "").trim();
+  // 标题被并进半句正文（OCR 折行 / 小写开头 / 过长）→ 不当子标题用
+  if (/^[a-z]/.test(t) || t.split(/\s+/).length > 7) t = "";
   const base = secShortTitle(x.part.title).replace(/^Part\s+[IVXⅠⅡⅢⅣⅤⅥ0-9]+\s*/i, "").replace(/[（(].*$/, "").trim();
   if (t) return secShortTitle(t).slice(0, 40);
   if (/^(Reading|Listening)\s*Comprehension/i.test(base)) return "";   // 题型标签已经说明，不重复
-  return base || "";
+  // 板块标题被并进了半句正文（OCR 折行）→ 不要把正文当子标题显示
+  if (base && base.length <= 26 && /^[A-Z]/.test(base)) return base;
+  return "";
 }
 function secUnitMeta(x) {
   const bits = [];
@@ -2489,7 +2493,7 @@ function renderTopicPart() {
   }
   // 作文：先自己写（建议手写），范文默认收起，点「参考答案」才展开
   if (cat === "writing") {
-    html += '<div class="writeHint">✍️ 建议手写：30 分钟，150–200 词。写完再点下面的「参考答案」对照，先看范文收益很低。</div>';
+    html += '<div class="writeHint">✍️ <b>请在纸上手写</b>：30 分钟，150–200 词（考试要求）。这里只给题目、不提供输入框——写完再点下面的「参考答案」对照，上来就看范文几乎没收益。</div>';
     const refs = (ex.meta && ex.meta.writeRef) || [];
     if (refs.length) {
       const curRef = (window._secPart.showRef ? (window._secPart.refIdx || 0) : -1);
