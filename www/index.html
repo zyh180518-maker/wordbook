@@ -2501,7 +2501,7 @@ function renderTopicPart() {
       html += '</div>';
       if (curRef >= 0 && refs[curRef]) {
         html += '<div class="writeRefBox"><div class="writeRefHead">参考范文 ' + (curRef + 1) + '/' + refs.length + '</div>' +
-          esc(refs[curRef]).split(/(?<=[.!?])\s+/).filter(Boolean)
+          refs[curRef].split(/(?<=[.!?])\s+/).filter(Boolean)
             .map(s => '<div class="examText">' + esc(s) + '</div>').join('') + '</div>';
       }
     } else {
