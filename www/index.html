@@ -2007,8 +2007,18 @@ function examGapOf(blocks) {
   var matchQ = qn.filter(function (n) { return n >= rg.match[0] && n <= rg.match[1]; });
   var matchHave = match.found.length ? match.found : matchQ;
   var readHave = qn.filter(function (n) { return n >= rg.read[0] && n <= rg.read[1]; });
+  // 板块是否存在（专题视图只喂一部分 blocks 时靠这个判断要不要提示）
+  var matchStart = match.start;
+  var readDirs = false, secC = false;
+  (blocks || []).forEach(function (b) {
+    if (b.t !== "text") return;
+    var v = b.v || "";
+    if (new RegExp("Questions?\s+" + rg.read[0] + "\s*to\s*" + rg.read[1]).test(v)) readDirs = true;
+    if (/Section C|Passage One|There are 2 passages/.test(v)) secC = true;
+  });
   return {
-    rg: rg, qn: qn,
+    rg: rg, qn: qn, matchStart: matchStart, bankStart: bank ? bank.start : -1,
+    readPresent: readHave.length > 0 || readDirs || secC, 
     listenMissing: gapRangeMiss(1, 25, L),
     bank: bank, bankMissingCount: bank ? (rg.bank[1] - rg.bank[0] + 1) - bank.found.length : 0,
     matchHave: matchHave,
@@ -2030,16 +2040,19 @@ function gapBannerHtml(blocks) {
       (b.found.length ? '（' + b.found.join('、') + '）' : '') +
       (b.found.length < 10 ? '，其余 ' + (10 - b.found.length) + ' 个的原卷空号被扫描丢字，正在补录' : ''));
   }
-  var hasMatch = g.matchHave.length > 0;
+  var hasMatch = g.matchStart >= 0 || g.matchHave.length > 0;
   if (hasMatch && g.matchMissing.length) {
     if (!g.matchHave.length)
       lines.push('<b>长篇匹配 ' + g.rg.match[0] + '–' + g.rg.match[1] + '</b>：本节 10 条陈述句未录入（只有原文段落，这部分暂时做不了题）');
     else
       lines.push('<b>长篇匹配 ' + g.rg.match[0] + '–' + g.rg.match[1] + '</b>：缺第 ' + g.matchMissing.join('、') + ' 句');
   }
-  var hasRead = g.qn.some(function (n) { return n >= g.rg.read[0] && n <= g.rg.read[1]; });
-  if (hasRead && g.readMissing.length)
-    lines.push('<b>仔细阅读 ' + g.rg.read[0] + '–' + g.rg.read[1] + '</b>：缺第 ' + g.readMissing.join('、') + ' 题');
+  if (g.readPresent && g.readMissing.length) {
+    if (!g.qn.some(function (n) { return n >= g.rg.read[0] && n <= g.rg.read[1]; }))
+      lines.push('<b>仔细阅读 ' + g.rg.read[0] + '–' + g.rg.read[1] + '</b>：本节题目整节未录入（原文段落已收录）');
+    else
+      lines.push('<b>仔细阅读 ' + g.rg.read[0] + '–' + g.rg.read[1] + '</b>：缺第 ' + g.readMissing.join('、') + ' 题');
+  }
   if (!lines.length) return '';
   return '<div class="gapBanner">' + lines.map(function (l) { return '<div class="gline">⚠ ' + l + '</div>'; }).join('') + '</div>';
 }
