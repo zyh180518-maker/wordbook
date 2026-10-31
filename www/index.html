@@ -290,7 +290,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.14"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.15"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -614,7 +614,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.14";
+const APP_VERSION = "1.9.15";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2122,7 +2122,9 @@ function listenTurns(text) {
     if (/^Questions?\s+\d+/i.test(l)) { turns.push({ t: "q", v: l }); return; }
     // 原文末尾的题目行（"2. How does the woman feel about …?"）：单独成块、编号加粗，
     // 否则会和对话正文粘成一大段（v1.9.10）
-    if (/^\d{1,3}\.\s/.test(l) && /[?？]\s*$/.test(l)) { turns.push({ t: "qq", n: l.match(/^\d{1,3}/)[0], v: l }); return; }
+    // 题行：编号 + 题干。原先要求行尾是问号，但扫描/ASR 常把题干截断（"…of the same"），
+    // 于是这类行落到正文里和后面真正的题目重复 → 现在只要「编号+.」开头就当题行（v1.9.14 修）
+    if (/^\d{1,3}\.\s/.test(l)) { turns.push({ t: "qq", n: l.match(/^\d{1,3}/)[0], v: l }); return; }
     if (LISTEN_HEAD_RE.test(l)) { turns.push({ t: "h", v: l }); return; }
     const m = l.match(LISTEN_WHO_RE);
     if (m) {
