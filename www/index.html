@@ -290,7 +290,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.10"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.13"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -614,7 +614,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.10";
+const APP_VERSION = "1.9.13";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2042,13 +2042,13 @@ function gapBannerHtml(blocks) {
   // 若把整卷口径套上去，写作页会误报「听力 1–25 全缺」
   var hasListen = g.qn.some(function (n) { return n >= 1 && n <= 25; });
   if (hasListen && g.listenMissing.length)
-    lines.push('<b>听力 1–25</b>：缺第 ' + g.listenMissing.join('、') + ' 题（题目未录入；有音频的套可用音频补录）');
+    lines.push('<b>听力 1–25</b>：缺第 ' + g.listenMissing.join('、') + ' 题（题目未录入：有音频的套已用音频转写补过，无音频的老扫描套暂无源）');
   var b = g.bank;
   if (b && b.found.length < 10) {
     var range = g.rg.bank[0] + '–' + g.rg.bank[1];
     lines.push('<b>选词填空 ' + range + '</b>：正文只识别到 ' + b.found.length + ' 个空号' +
       (b.found.length ? '（' + b.found.join('、') + '）' : '') +
-      (b.found.length < 10 ? '，其余 ' + (10 - b.found.length) + ' 个的原卷空号被扫描丢字，正在补录' : ''));
+      (b.found.length < 10 ? '，其余 ' + (10 - b.found.length) + ' 个的原卷空号被扫描丢字，暂缺（等补源）' : ''));
   }
   var hasMatch = g.matchStart >= 0 || g.matchHave.length > 0;
   if (hasMatch && g.matchMissing.length) {
