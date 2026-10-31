@@ -290,7 +290,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.17"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.18"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -614,7 +614,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.17";
+const APP_VERSION = "1.9.18";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2352,37 +2352,111 @@ function listenTransSections(trans) {
 }
 /* 听力题组区间（v1.9.14）：先用整卷里的「Questions N to M …」行；行缺失（数据缺块）时
    按题号连续性把空档补出来（例：1–4 与 9–11 之间缺 5–8 → 补 {5,8,推断}），否则段与题会对不上。 */
-function listenGroups(key) {
-  var rgs = listenGroupTags(key).filter(function (g) { return g.a <= 25; });
+/* 「Questions N to M are based on …」公告：题库块 + 原文正文两处来源。正文更全，但 OCR 常出错 v1.9.18 */
+function listenGroupAnnouncements(text) {
+  var out = [];
+  String(text || "").split(/\r?\n/).forEach(function (l) {
+    var m = l.trim().match(/^Questions?\s*(\d+)\s*(?:to|-|and)\s*(\d+)\s*(.*)$/i);
+    if (!m) return;
+    var a = Number(m[1]), b = Number(m[2]);
+    if (!(a >= 1 && a <= 25) || !(b >= a) || b > 25) return;
+    out.push({ a: a, b: b, kind: /conversation/i.test(m[3]) ? "Conversation" : /passage/i.test(m[3]) ? "Passage" : "Recording" });
+  });
+  return out;
+}
+function listenGroups(key, rec) {
+  var exg = listenGroupTags(key).filter(function (g) { return g.a >= 1 && g.a <= 25 && g.b >= g.a; });
+  var tx = listenGroupAnnouncements(rec && rec.text);
+  var prev = 0, okTx = tx.length > 0;
+  tx.forEach(function (g) { if (g.a <= prev) okTx = false; prev = Math.max(prev, g.b); });  // 重叠/倒序 = OCR 错，弃用
+  var rgs = (okTx && tx.length >= exg.length) ? tx : exg;
   if (!rgs.length) return [];
   var out = [];
   if (rgs[0].a > 1) out.push({ a: 1, b: rgs[0].a - 1, inferred: true });
-  rgs.forEach(function (g, i) {
-    out.push({ a: g.a, b: Math.min(g.b, 25) });
-    var nx = rgs[i + 1];
-    if (nx && nx.a > g.b + 1) out.push({ a: g.b + 1, b: nx.a - 1, inferred: true });
+  rgs.forEach(function (g) {
+    var a = Math.max(1, g.a), b = Math.min(25, g.b), last = out[out.length - 1];
+    if (last) {
+      if (a <= last.b) return;                                     // 已被覆盖
+      if (a > last.b + 1) out.push({ a: last.b + 1, b: a - 1, inferred: true });  // 缺组按题号连续补
+    }
+    out.push({ a: a, b: b });
   });
-  var last = out[out.length - 1];
-  if (last && last.b < 25) {
-    var has = listenExamQs(key).some(function (q) { return q.n > last.b; });
-    if (has) out.push({ a: last.b + 1, b: 25, inferred: true });
+  var last2 = out[out.length - 1];
+  if (last2 && last2.b < 25) {
+    var has = listenExamQs(key).some(function (q) { return q.n > last2.b; });
+    if (has) out.push({ a: last2.b + 1, b: 25, inferred: true });
   }
   return out;
 }
-/* 把整篇原文切成「段」：Conversation One / Passage One / Recording One … 每段挂上题号区间 */
+/* 把整篇原文切成「段」：Conversation One / Passage One / Recording One … 每段挂上题号区间
+   v1.9.18 修的两个坑：
+   ① 原文没有段标题的套（2021-12-1、2024-12-1…）旧版只认标题，整篇被当成一段 → 只剩第一组题看得见；
+      改成按「Questions N to M」公告切段
+   ② 原文有 7 个段标题但正文里没有公告行的套（2023-12 以后扫描版）→ 段数正好等于题组数时按顺序一一对应
+   没取到区间的段落不再吞题：缺的那一组会单独补一段（只列题库题干），题号顺序不乱 */
 function listenSections(key, rec) {
-  var turns = listenTurns(rec.text || ""), ranges = listenGroups(key);
-  var secs = [], cur = null, gi = 0;
-  turns.forEach(function (t, i) {
-    if (t.t === "h" && LISTEN_GROUP_HEAD_RE.test(t.v)) {
-      cur = { title: t.v, range: (gi < ranges.length ? ranges[gi] : null), items: [] };
-      gi++;
-      secs.push(cur);
-      return;
-    }
-    if (!cur) { cur = { title: "", range: null, items: [] }; secs.push(cur); }
-    cur.items.push({ x: t, i: i });
+  var turns = listenTurns(rec.text || ""), ranges = listenGroups(key, rec);
+  var ANN = /Questions?\s*(\d+)\s*(?:to|-|and)\s*(\d+)/i;
+  function annOf(v) {
+    var m = String(v || "").match(ANN);
+    if (!m) return null;
+    var a = Number(m[1]), b = Math.min(Number(m[2]), 25);
+    return (a >= 1 && b >= a) ? { a: a, b: b, inferred: false } : null;
+  }
+  var heads = 0;
+  turns.forEach(function (t) { if (t.t === "h" && LISTEN_GROUP_HEAD_RE.test(t.v)) heads++; });
+  var secs = [];
+  if (heads >= 2) {
+    var ordinal = (heads === ranges.length), nIdx = 0, pending = null, cur = null;
+    turns.forEach(function (t, i) {
+      if (t.t === "h" && LISTEN_GROUP_HEAD_RE.test(t.v)) {
+        cur = { title: t.v, range: ordinal ? (ranges[nIdx] || null) : (pending || null), items: [] };
+        if (ordinal) nIdx++;
+        pending = null;
+        secs.push(cur);
+        return;
+      }
+      if (!cur) { cur = { title: "", range: null, items: [] }; secs.push(cur); }
+      var a = (t.t === "q") ? annOf(t.v) : null;
+      if (a && !ordinal) {
+        if (!cur.range) cur.range = a;
+        else if (!pending) pending = a;    // 公告印在下一段之前 → 留给下一段
+      }
+      cur.items.push({ x: t, i: i });
+    });
+  } else {
+    var kindWord = { Conversation: ["One", "Two"], Passage: ["One", "Two"], Recording: ["One", "Two", "Three"] };
+    var kindAt = { Conversation: 0, Passage: 0, Recording: 0 };
+    secs.push({ title: "", range: null, items: [] });
+    turns.forEach(function (t, i) {
+      var a = (t.t === "q") ? annOf(t.v) : null;
+      if (a) {
+        var kd = /conversation/i.test(t.v) ? "Conversation" : /passage/i.test(t.v) ? "Passage" : "Recording";
+        var w = (kindWord[kd] || ["One"])[kindAt[kd]++] || String(kindAt[kd]);
+        secs.push({ title: kd + " " + w, range: a, items: [{ x: t, i: i }] });
+        return;
+      }
+      secs[secs.length - 1].items.push({ x: t, i: i });
+    });
+  }
+  var used = {};
+  secs.forEach(function (s) { if (s.range) used[s.range.a] = 1; });
+  if (heads >= 2 && heads !== ranges.length) {
+    // 有标题但段内没公告：只给装了内容的段落补区间（Section/Directions 这种前导段不占题）
+    secs.forEach(function (s) {
+      if (s.range || s.items.length < 2) return;
+      for (var j = 0; j < ranges.length; j++) if (!used[ranges[j].a]) { s.range = ranges[j]; used[ranges[j].a] = 1; return; }
+    });
+  }
+  ranges.forEach(function (g) {
+    if (used[g.a]) return;
+    secs.push({ title: "", range: g, items: [], noText: true });   // 原文缺这一段：只列题干
   });
+  secs = secs.filter(function (s) { return s.items.length || s.range; });
+  var pre = [], body = [];
+  secs.forEach(function (s) { (s.range ? body : pre).push(s); });
+  body.sort(function (x, y) { return x.range.a - y.range.a; });
+  secs = pre.concat(body);
   var zh = listenTransSections(rec.trans);
   secs.forEach(function (s, idx) { s.zh = zh[idx] ? zh[idx].zh : null; });
   return { secs: secs, groups: ranges, qs: listenExamQs(key) };
@@ -2407,9 +2481,11 @@ function listenSecBar(sec, idx) {
 /* 选项模式：只给题号 + 选项（考试纸面口径） */
 function listenOptHtml(key, rec) {
   var m = listenSections(key, rec);
+  if (!m.qs.length) return '<div class="muted" style="font-size:13px;margin:8px 0;line-height:1.7">本套的题目没录进题库（只有录音和原文）。题目在录音里念，可点上方「原文（英+中）」看全文。</div>';
   var onlySec = m.secs.length <= 1;
   return m.secs.map(function (sec, idx) {
     var qs = listenSecQs(sec, m.qs, onlySec);
+    if (!sec.range && !qs.length) return "";   // Section/Directions 这种前导段，不给它空标题
     var h = (sec.title ? '<div class="listenHead">' + esc(sec.title) + '</div>' : '');
     if (m.secs.length > 1 || sec.range) h += listenSecBar(sec, idx);
     if (!qs.length) {
@@ -2450,7 +2526,7 @@ function listenTxtHtml(key, rec, audioId) {
   return m.secs.map(function (sec, idx) {
     var h = '';
     if (sec.title) h += '<div class="listenHead">' + esc(sec.title) + '</div>';
-    h += listenSecBar(sec, idx);
+    if (sec.range) h += listenSecBar(sec, idx);
     // 原文里自带的「2. What does…」题行编号不全（缺 1、5、6…），一律不用它们；
     // 本段的题干统一从题库按题号顺序列出来（录音里念的题也在题库里）
     h += sec.items.filter(function (it) { return it.x.t !== "qq"; })
@@ -2488,7 +2564,8 @@ function renderListenList() {
   for (const k of Object.keys(list).sort().reverse()) {
     const rec = list[k];
     const tag = rec.trans ? ' <span style="color:var(--accent);font-size:12px">译</span>' : '';
-    html += '<button class="btn ghost small listenItem" data-key="' + esc(k) + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + listenMetaLabel(rec.meta) + '（' + (rec.text ? (rec.trans ? '原文+译文' : '仅原文') : '无原文') + '）' + tag + '</button>';
+    const noQ = listenExamQs(k).length === 0;   // 题库里没这套的题目：只有原文+音频
+    html += '<button class="btn ghost small listenItem" data-key="' + esc(k) + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + listenMetaLabel(rec.meta) + '（' + (rec.text ? (rec.trans ? '原文+译文' : '仅原文') : '无原文') + (noQ ? '·无题目' : '') + '）' + tag + '</button>';
   }
   studyArea().innerHTML = html;
   document.getElementById("lvCet4").onclick = () => { window._listen.level = "cet4"; renderListenList(); };
