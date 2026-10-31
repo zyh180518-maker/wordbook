@@ -127,6 +127,8 @@
                    font-size: calc(var(--rd, 16px) - 1px); color: var(--dim); }
   /* 题干没录进来时的明示（不假装有题干，也不只是光秃秃一个题号） */
   .qMiss { font-size: 13px; color: var(--no); font-weight: 400; opacity: .85; }
+  /* v1.9.11 T7：由音频转写的题干（不静默当官方原文） */
+  .qAsr { font-size: 11px; color: var(--dim); opacity: .8; margin-left: 6px; }
   /* v1.9.11 T3：整卷/专题页顶部的「缺号·缺节」明示（不假装题目齐全，也不让用户以为页面坏了） */
   .gapBanner { margin: 8px 0 12px; padding: 9px 11px; border-radius: 10px;
                background: rgba(230,170,0,.10); border: 1px solid rgba(230,170,0,.38);
@@ -1843,7 +1845,8 @@ function renderExamPaper() {
       const ans = b.answer;
       const noStem = !(b.stem || "").trim();
       html += (b.stem
-        ? '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + esc(b.stem) + '</div>'
+        ? '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + esc(b.stem) +
+          (b.asr ? ' <span class="qAsr">音频转写</span>' : '') + '</div>'
         : '<div class="examQ numOnly" id="qq' + bi + '">' + b.n + '.' + (noStem && !missShown ? ' <span class="qMiss">题干未录入（只有选项）</span>' : '') + '</div>');
       missShown = noStem ? true : false;
       afterH = false;
@@ -3166,7 +3169,8 @@ function bankHtml(items) {
 function secQHtml(b, first, ans, sel, missHint) {
   // 题干缺失（听力等只有选项）→ 只留一个紧凑题号，不占一块色条空白
   var html = (b.stem
-    ? '<div class="examQ' + (first ? ' first' : '') + '">' + b.n + '. ' + esc(b.stem) + '</div>'
+    ? '<div class="examQ' + (first ? ' first' : '') + '">' + b.n + '. ' + esc(b.stem) +
+      (b.asr ? ' <span class="qAsr">音频转写</span>' : '') + '</div>'
     : '<div class="examQ numOnly">' + b.n + '.' + (missHint === false ? '' : ' <span class="qMiss">题干未录入（只有选项）</span>') + '</div>');
   var nOpt = 0;
   for (var i = 0; i < 4; i++) {
