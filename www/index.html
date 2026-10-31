@@ -1761,7 +1761,7 @@ function renderExamPaper() {
   scrollTopInstant();
   const ex = EXAM_BANK.exams[window._exam.key];
   const qs = ex.blocks.filter(b => b.t === "q");
-  const pblocks = preScanBanks(ex.blocks, 0);   // 选词填空词表成块渲染（原索引保留在 __bi）
+  const pblocks = mergeTextBlocks(preScanBanks(ex.blocks, 0));   // 选词填空词表成块渲染（原索引保留在 __bi）；断行续行并回上一块（v1.9.11）
   if (!window._exam.answers) window._exam.answers = {};
   const answeredN = () => Object.keys(window._exam.answers || {}).length;
   let html = '<div class="stickyBar"><button class="btn ghost small" id="examBack">← 列表</button>' +
@@ -1824,6 +1824,8 @@ function renderExamPaper() {
       lastDir = false;
     } else if (b.t === "text") {
       // 正文按内容分类渲染：Directions（含续行）压成说明体、中文原文放大、词表成网格（v1.9.2）
+      // 水印/页码/重复「(30 minutes)」这类 OCR 垃圾行直接不渲染（v1.9.11，与专题视图共用 secDropLine）
+      if (secDropLine(b.v)) { afterH = false; return; }
       var t = secNorm(b.v);
       html += examBlockHtml(b.v, lastDir);
       lastDir = !parseWordBank(t) && (secLineClass(t) === "secDir" || (lastDir && /^[a-z(]/.test(t)));
@@ -2860,6 +2862,50 @@ function blankify(escaped) {
   out = out.replace(/_+/g, " ").replace(/\u2007\s+/g, "\u2007").replace(/\s{2,}/g, " ");
   return out;
 }
+/* 扫描件把一句话按 PDF 行拆成多个 text 块 → 整卷视图逐块渲染就成了一行一段的碎排版。
+   这里在渲染前把「明显是续行」的相邻块并回上一块（只影响显示，不改题库数据）。
+   判续行的条件：上一块没以句末标点收尾、下一块以小写/引号/括号/汉字开头，且下一块不是
+   题号行、不是 A–O 段落色标、不是小节标题、不是 W:/M: 说话人、不是中英跨界（v1.9.11） */
+var MERGE_TERM_RE = /[。！？.!?][”’)）]$|[。！？.!?]$/;
+var MERGE_NO_RE = /^\d{1,3}\.\s/;
+var MERGE_LET_RE = /^[A-O]\s*[）)]/;
+var MERGE_HEAD_RE = /^(Directions|Questions|Passage|Section|Part|Writing|Translation|Listening|Conversation|News Report|Recording|Lecture|Talk|Interview|Story|Report|Speech|Broadcast)/i;
+var MERGE_WHO_RE = /^(W|M|Q|Woman|Man|Narrator|Speaker|Interviewer)\s*[:：]/i;
+function mergeTextBlocks(blocks) {
+  var out = [], i;
+  function cjkCount(s) { return (s.match(/[\u4e00-\u9fa5]/g) || []).length; }
+  for (i = 0; i < blocks.length; i++) {
+    var b = blocks[i];
+    if (b.t !== "text") { out.push(b); continue; }
+    var v = (b.v || "").trim();
+    if (secDropLine(v)) continue;   // OCR 垃圾行先扔掉，别并进正常段落
+    // 与上一块合并（可能连续并多行）
+    var prev = out[out.length - 1];
+    // 扫描件重扫重叠导致的重复段：新块整段落在上一块里、且以小写开头（不是新标题）→ 丢掉
+    if (prev && prev.t === "text" && v.length >= 40 && /^[a-z]/.test(v) && (prev.v || "").indexOf(v) >= 0) continue;
+    while (prev && prev.t === "text") {
+      var pv = (prev.v || "").trim();
+      if (!v || LEGACY_noMerge(pv, v, cjkCount)) break;
+      prev.v = pv + (((/\s$/.test(pv)) || (/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]$/.test(pv) && /^[\u4e00-\u9fa5]/.test(v))) ? "" : " ") + v;
+      v = "";
+      break;
+    }
+    if (v) out.push(b);
+  }
+  return out;
+  function LEGACY_noMerge(pv, cv, cjkCount) {
+    if (pv.length < 20) return true;                       // 太短的多半是碎片，别硬并
+    if (MERGE_TERM_RE.test(pv)) return true;               // 上一块已收句
+    if (!/^[a-z(“"'(（\u4e00-\u9fa5]/.test(cv)) return true;  // 下一块不是续行的开头
+    if (MERGE_NO_RE.test(cv) || MERGE_LET_RE.test(cv)) return true;
+    if (MERGE_HEAD_RE.test(cv) || MERGE_WHO_RE.test(cv)) return true;
+    // 中英跨界不并（"…Answer Sheet2.科技进步…" 这类粘连的老问题）
+    var pCJK = cjkCount(pv), cCJK = cjkCount(cv);
+    if (pCJK === 0 && cCJK > 0) return true;
+    if (pCJK > 0 && cCJK === 0) return true;
+    return false;
+  }
+}
 /* 一个正文档块 → HTML：词表走网格，其余按内容分类（Directions/中文/英文）
    cont=true 表示上一块是 Directions 且本块是它的续行 → 仍按说明体渲染 */
 function examBlockHtml(v, cont) {
@@ -2868,9 +2914,14 @@ function examBlockHtml(v, cont) {
   if (bank) return bank;
   var nm = t.match(/^(\d{1,3})\.\s(.*)$/);
   if (nm) return '<div class="matchStmt"><b>' + nm[1] + '.</b> ' + esc(tidyText(nm[2])) + '</div>';
-  // 长篇匹配正文的段落标记（A）…O）」：字母做成小色标，扫段落时好认
+  // 长篇匹配正文的段落标记（A）…O）」：字母做成小色标，扫段落时好认。
+  // 但不能把「选项串」当段落标记：`B）, C）and D)` 这类逗号分隔的选项行、以及正文残留的
+  // 选项行（`D）They will …`）会误判成 A–O 段落标签 → 要求括号后不是逗号/顿号且不是单字母另起
   var pm = t.match(/^([A-O])\s*[）)]\s*(.*)$/);
-  if (pm) return '<div class="examText paraHead"><b class="paraTag">' + pm[1] + '</b>' + esc(tidyText(pm[2])) + '</div>';
+  if (pm && pm[2].length >= 40 && !/^[,，、;；]/.test(pm[2]) && !/^and\s+[A-O]\s*[）)]/.test(pm[2]) &&
+      !/^[A-O]\s*[）)]/.test(pm[2])) {
+    return '<div class="examText paraHead"><b class="paraTag">' + pm[1] + '</b>' + esc(tidyText(pm[2])) + '</div>';
+  }
   var cls = secLineClass(t);
   if (cont && cls === "examText" && /^[a-z(]/.test(t)) cls = "secDir";
   return '<div class="' + cls + '">' + blankify(esc(t)) + '</div>';
