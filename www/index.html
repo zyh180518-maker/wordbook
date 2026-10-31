@@ -1846,7 +1846,8 @@ function renderExamPaper() {
       const noStem = !(b.stem || "").trim();
       html += (b.stem
         ? '<div class="examQ' + (afterH ? ' first' : '') + '" id="qq' + bi + '">' + b.n + '. ' + esc(b.stem) +
-          (b.asr ? ' <span class="qAsr">音频转写</span>' : '') + '</div>'
+          (b.asr ? ' <span class="qAsr">音频转写</span>' : '') +
+          (stemIncomplete(b.stem) ? ' <span class="qMiss">题干未录全</span>' : '') + '</div>'
         : '<div class="examQ numOnly" id="qq' + bi + '">' + b.n + '.' + (noStem && !missShown ? ' <span class="qMiss">题干未录入（只有选项）</span>' : '') + '</div>');
       missShown = noStem ? true : false;
       afterH = false;
@@ -1913,6 +1914,13 @@ function renderExamPaper() {
    判据只看 q 块题号，不猜年份。选词填空的空号在正文里（不是 q 块），扫描丢字时占位符会整段消失，
    所以只报「识别到几个空号」，不硬报具体缺哪号（避免像 v2 那样把 2024-06-1 的 29 号误判成缺失）。 */
 var GAP_STMT_RE = /^(\d{1,3})\s*[.、．]\s*/;
+function stemIncomplete(s) {
+  s = (s || "").trim();
+  if (!s) return false;
+  if (/[?."”]$/.test(s)) return false;
+  if (/_{2,}|_$/.test(s)) return false;     // 填空题的横线是正文一部分
+  return true;
+}
 function gapQnums(blocks) {
   var s = {}, out = [];
   blocks.forEach(function (b) { if (b.t === "q") s[b.n] = 1; });
@@ -2035,7 +2043,7 @@ function gapBannerHtml(blocks) {
   // 若把整卷口径套上去，写作页会误报「听力 1–25 全缺」
   var hasListen = g.qn.some(function (n) { return n >= 1 && n <= 25; });
   if (hasListen && g.listenMissing.length)
-    lines.push('<b>听力 1–25</b>：缺第 ' + g.listenMissing.join('、') + ' 题（音频里有、题目没录进来）');
+    lines.push('<b>听力 1–25</b>：缺第 ' + g.listenMissing.join('、') + ' 题（题目未录入；有音频的套可用音频补录）');
   var b = g.bank;
   if (b && b.found.length < 10) {
     var range = g.rg.bank[0] + '–' + g.rg.bank[1];
@@ -3170,7 +3178,8 @@ function secQHtml(b, first, ans, sel, missHint) {
   // 题干缺失（听力等只有选项）→ 只留一个紧凑题号，不占一块色条空白
   var html = (b.stem
     ? '<div class="examQ' + (first ? ' first' : '') + '">' + b.n + '. ' + esc(b.stem) +
-      (b.asr ? ' <span class="qAsr">音频转写</span>' : '') + '</div>'
+      (b.asr ? ' <span class="qAsr">音频转写</span>' : '') +
+      (stemIncomplete(b.stem) ? ' <span class="qMiss">题干未录全</span>' : '') + '</div>'
     : '<div class="examQ numOnly">' + b.n + '.' + (missHint === false ? '' : ' <span class="qMiss">题干未录入（只有选项）</span>') + '</div>');
   var nOpt = 0;
   for (var i = 0; i < 4; i++) {
