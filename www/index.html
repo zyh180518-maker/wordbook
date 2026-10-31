@@ -2886,6 +2886,8 @@ function mergeTextBlocks(blocks) {
     while (prev && prev.t === "text") {
       var pv = (prev.v || "").trim();
       if (!v || LEGACY_noMerge(pv, v, cjkCount)) break;
+      // 扫描重叠：要拼的这行已经在上一块末尾出现过了 → 直接当重复丢掉，不拼
+      if (pv.length > v.length && pv.slice(-v.length) === v) { v = ""; break; }
       prev.v = pv + (((/\s$/.test(pv)) || (/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]$/.test(pv) && /^[\u4e00-\u9fa5]/.test(v))) ? "" : " ") + v;
       v = "";
       break;
@@ -2895,17 +2897,20 @@ function mergeTextBlocks(blocks) {
   return out;
   function LEGACY_noMerge(pv, cv, cjkCount) {
     if (pv.length < 20) return true;                       // 太短的多半是碎片，别硬并
-    if (MERGE_TERM_RE.test(pv)) return true;               // 上一块已收句
-    if (!/^[A-Za-z(“"'(（\u4e00-\u9fa5]/.test(cv)) return true;  // 下一块不是续行的开头
     if (MERGE_NO_RE.test(cv)) return true;
     // A–O 段落色标/选项行不并段 —— 但「…four choices marked / A), B), C) and D)…」这种
     // 说明行被扫描断行的情形要接回去，靠上一块末尾的引导词判断
     if (MERGE_LET_RE.test(cv) && !/(marked|choices|following|listed|below|read)\s*$/i.test(pv)) return true;
     if (MERGE_HEAD_RE.test(cv) || MERGE_WHO_RE.test(cv)) return true;
-    // 中英跨界不并（"…Answer Sheet2.科技进步…" 这类粘连的老问题）
     var pCJK = cjkCount(pv), cCJK = cjkCount(cv);
+    // 中文连续行：翻译/中文正文被扫描按行硬拆（每行都以句号收尾，但原文是一整段）
+    // → 中中相接照并，除非本行是新编号/新色标（上面已挡掉）
+    if (pCJK >= 8 && cCJK >= 8) return false;
+    // 中英跨界不并（"…Answer Sheet2.科技进步…" 这类粘连的老问题）
     if (pCJK === 0 && cCJK > 0) return true;
     if (pCJK > 0 && cCJK === 0) return true;
+    if (MERGE_TERM_RE.test(pv)) return true;               // 上一块已收句
+    if (!/^[A-Za-z(“"'(（\u4e00-\u9fa5]/.test(cv)) return true;  // 下一块不是续行的开头
     return false;
   }
 }
