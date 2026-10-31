@@ -1916,8 +1916,19 @@ function gapQnums(blocks) {
   Object.keys(s).forEach(function (k) { out.push(Number(k)); });
   return out.sort(function (a, b) { return a - b; });
 }
-function gapRanges(qn) {
+function gapRanges(qn, blocks) {
+  // 老式编号判据：q 块出现 ≥56；或卷内出现「Questions 36 to 45」；或陈述句编号落在 46–55
   var old = qn.some(function (n) { return n >= 56; });
+  if (!old && blocks) {
+    for (var i = 0; i < blocks.length && !old; i++) {
+      var b = blocks[i];
+      if (b.t !== "text") continue;
+      var v = b.v || "";
+      if (/Questions? 36 to 45/.test(v)) { old = true; break; }
+      var m = GAP_STMT_RE.exec(v.replace(/^\s+/, ""));
+      if (m && Number(m[1]) >= 46 && Number(m[1]) <= 55) { old = true; }
+    }
+  }
   return old ? { old: true, bank: [36, 45], match: [46, 55], read: [56, 65] }
              : { old: false, bank: [26, 35], match: [36, 45], read: [46, 55] };
 }
@@ -1989,7 +2000,7 @@ function gapRangeMiss(lo, hi, have) {
 }
 function examGapOf(blocks) {
   var qn = gapQnums(blocks);
-  var rg = gapRanges(qn);
+  var rg = gapRanges(qn, blocks);
   var L = qn.filter(function (n) { return n >= 1 && n <= 25; });
   var bank = gapScanBank(blocks, rg.bank[0], rg.bank[1]);
   var match = gapScanMatch(blocks, rg.match[0], rg.match[1]);
