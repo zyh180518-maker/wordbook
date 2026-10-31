@@ -1951,8 +1951,7 @@ function gapScanNums(v, lo, hi, out) {
     if (n < lo || n > hi) continue;
     var i = m.index, prev = v.charAt(i - 1), next = v.charAt(i + 2);
     if (/\d/.test(prev) || /\d/.test(next)) continue;
-    var accept = prev === "_" || next === "_" || /[A-Za-z]/.test(prev) || /[A-Za-z]/.test(next) ||
-                 ((prev === " " || prev === "(" || prev === "") && (next === " " || next === ""));
+    var accept = true;   // 口径放宽：区段内任何两位数字（前后不接数字）都算空号——扫描件里空号写法太乱
     if (accept) out[n] = 1;
   }
 }
