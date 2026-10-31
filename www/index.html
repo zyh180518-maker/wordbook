@@ -2022,6 +2022,9 @@ function listenAnchorsFor(turns, groups, key) {
   var nums = [];
   if (groups && groups.length) groups.forEach(function (g) { for (var n = g.a; n <= g.b; n++) nums.push(n); });
   else Object.keys(stems).forEach(function (k) { nums.push(Number(k)); });
+  // 只保留听力题号（CET 四/六级听力都是第 1–25 题）：正文里「Questions 46 to 50」这类阅读分组
+  // 也会被 listenGroupTags 收进来，不限的话 46–55 的阅读题干会被误锚到对话轮次上（v1.9.10 修）
+  nums = nums.filter(function (n) { return n <= 25; });
   nums.sort(function (a, b) { return a - b; });
   var last = -1;
   nums.forEach(function (n) {
