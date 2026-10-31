@@ -2882,7 +2882,7 @@ function mergeTextBlocks(blocks) {
     // 与上一块合并（可能连续并多行）
     var prev = out[out.length - 1];
     // 扫描件重扫重叠导致的重复段：新块整段落在上一块里、且以小写开头（不是新标题）→ 丢掉
-    if (prev && prev.t === "text" && v.length >= 40 && /^[a-z]/.test(v) && (prev.v || "").indexOf(v) >= 0) continue;
+    if (prev && prev.t === "text" && v.length >= 40 && (prev.v || "").indexOf(v) >= 0) continue;
     while (prev && prev.t === "text") {
       var pv = (prev.v || "").trim();
       if (!v || LEGACY_noMerge(pv, v, cjkCount)) break;
@@ -2896,8 +2896,11 @@ function mergeTextBlocks(blocks) {
   function LEGACY_noMerge(pv, cv, cjkCount) {
     if (pv.length < 20) return true;                       // 太短的多半是碎片，别硬并
     if (MERGE_TERM_RE.test(pv)) return true;               // 上一块已收句
-    if (!/^[a-z(“"'(（\u4e00-\u9fa5]/.test(cv)) return true;  // 下一块不是续行的开头
-    if (MERGE_NO_RE.test(cv) || MERGE_LET_RE.test(cv)) return true;
+    if (!/^[A-Za-z(“"'(（\u4e00-\u9fa5]/.test(cv)) return true;  // 下一块不是续行的开头
+    if (MERGE_NO_RE.test(cv)) return true;
+    // A–O 段落色标/选项行不并段 —— 但「…four choices marked / A), B), C) and D)…」这种
+    // 说明行被扫描断行的情形要接回去，靠上一块末尾的引导词判断
+    if (MERGE_LET_RE.test(cv) && !/(marked|choices|following|listed|below|read)\s*$/i.test(pv)) return true;
     if (MERGE_HEAD_RE.test(cv) || MERGE_WHO_RE.test(cv)) return true;
     // 中英跨界不并（"…Answer Sheet2.科技进步…" 这类粘连的老问题）
     var pCJK = cjkCount(pv), cCJK = cjkCount(cv);
