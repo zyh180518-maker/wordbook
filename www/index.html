@@ -290,7 +290,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.13"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.14"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -614,7 +614,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.13";
+const APP_VERSION = "1.9.14";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -2101,7 +2101,7 @@ function loadListenBank() {
     .then(function (d) { LISTEN_BANK = d; return d; })
     .catch(function () { return null; });
 }
-window._listen = { level: "cet6", key: null, showTrans: false };
+window._listen = { level: "cet6", key: null, mode: "opt" };   /* mode: "opt"=只看选项 / "txt"=原文+译文 */
 function listenMetaLabel(meta) {
   return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" + (meta.set > 1 ? " 第" + meta.set + "套" : "");
 }
@@ -2315,6 +2315,156 @@ function listenSentenceBlocks(text) {
     .split(/(?<=[。！？.!?])\s+/).map(x => x.trim()).filter(Boolean)
     .map(s => '<div class="zhSent">' + esc(s) + '</div>').join("");
 }
+
+/* ===== 听力两种读法（v1.9.14）=====
+   用户口径：考试纸面只有「选项」，题干是录音里念的；所以
+     · 选项模式：每段（Conversation One…）只给「第 N 题」+ A/B/C/D 选项，不放题干、不放原文
+     · 原文模式：每段先英文原文（说话人轮次），紧跟中文译文（含提问的翻译；选项不译）
+   两页都在每段前面标「题 a–b」，一眼看出这段对应哪几题。 */
+function listenExamQs(key) {
+  var ex = (EXAM_BANK && EXAM_BANK.exams) ? EXAM_BANK.exams[key] : null;
+  if (!ex) return [];
+  var out = [];
+  ex.blocks.forEach(function (b) {
+    if (b && b.t === "q" && typeof b.n === "number" && b.n >= 1 && b.n <= 25) out.push(b);
+  });
+  out.sort(function (a, b) { return a.n - b.n; });
+  return out;
+}
+/* trans 是「## 段名 / **原文**：英文 / **译文**：中文」成对的 markdown → 只留中文，按段归 */
+function listenTransSections(trans) {
+  var out = [], parts = String(trans || "").split(/^## +/m);
+  parts.shift();
+  parts.forEach(function (p) {
+    var nl = p.indexOf("\n");
+    var title = (nl >= 0 ? p.slice(0, nl) : p).trim();
+    var rest = nl >= 0 ? p.slice(nl + 1) : "";
+    var zh = rest.split(/\*\*原文\*\*[:：]/).map(function (seg) {
+      var m = seg.split(/\*\*译文\*\*[:：]/);
+      return m.length > 1 ? m[1] : "";
+    }).join("\n");
+    zh = zh.replace(/\*\*/g, "").replace(/\*\*原文\*\*/g, "").trim();
+    if (zh) out.push({ title: title, zh: zh });
+  });
+  return out;
+}
+/* 听力题组区间（v1.9.14）：先用整卷里的「Questions N to M …」行；行缺失（数据缺块）时
+   按题号连续性把空档补出来（例：1–4 与 9–11 之间缺 5–8 → 补 {5,8,推断}），否则段与题会对不上。 */
+function listenGroups(key) {
+  var rgs = listenGroupTags(key).filter(function (g) { return g.a <= 25; });
+  if (!rgs.length) return [];
+  var out = [];
+  if (rgs[0].a > 1) out.push({ a: 1, b: rgs[0].a - 1, inferred: true });
+  rgs.forEach(function (g, i) {
+    out.push({ a: g.a, b: Math.min(g.b, 25) });
+    var nx = rgs[i + 1];
+    if (nx && nx.a > g.b + 1) out.push({ a: g.b + 1, b: nx.a - 1, inferred: true });
+  });
+  var last = out[out.length - 1];
+  if (last && last.b < 25) {
+    var has = listenExamQs(key).some(function (q) { return q.n > last.b; });
+    if (has) out.push({ a: last.b + 1, b: 25, inferred: true });
+  }
+  return out;
+}
+/* 把整篇原文切成「段」：Conversation One / Passage One / Recording One … 每段挂上题号区间 */
+function listenSections(key, rec) {
+  var turns = listenTurns(rec.text || ""), ranges = listenGroups(key);
+  var secs = [], cur = null, gi = 0;
+  turns.forEach(function (t, i) {
+    if (t.t === "h" && LISTEN_GROUP_HEAD_RE.test(t.v)) {
+      cur = { title: t.v, range: (gi < ranges.length ? ranges[gi] : null), items: [] };
+      gi++;
+      secs.push(cur);
+      return;
+    }
+    if (!cur) { cur = { title: "", range: null, items: [] }; secs.push(cur); }
+    cur.items.push({ x: t, i: i });
+  });
+  var zh = listenTransSections(rec.trans);
+  secs.forEach(function (s, idx) { s.zh = zh[idx] ? zh[idx].zh : null; });
+  return { secs: secs, groups: ranges, qs: listenExamQs(key) };
+}
+/* 段 ↔ 题：优先用题号区间；单段没有区间时就把听力题全给它 */
+function listenSecQs(sec, qs, onlySec) {
+  if (!qs.length) return [];
+  if (sec.range) return qs.filter(function (q) { return q.n >= sec.range.a && q.n <= sec.range.b; });
+  if (onlySec) return qs;
+  return [];
+}
+function listenSecBar(sec, idx) {
+  var lab = sec.range ? ("题 " + sec.range.a + "–" + sec.range.b) : ("题组 " + (idx + 1));
+  var txt = sec.range
+    ? ("Questions " + sec.range.a + " to " + sec.range.b + (sec.range.inferred ? "（题号区间按题号连续推得）" : "") + " are based on this " +
+      (/^Conversation/i.test(sec.title) ? "conversation" : /News/i.test(sec.title) ? "news report"
+        : /Passage/i.test(sec.title) ? "passage" : /Lecture/i.test(sec.title) ? "lecture" : "recording") +
+      " you have just heard.")
+    : "本段对应的题目（原文里没标题号区间）";
+  return '<div class="qSet"><span class="qSetTag">' + esc(lab) + '</span>' + esc(txt) + '</div>';
+}
+/* 选项模式：只给题号 + 选项（考试纸面口径） */
+function listenOptHtml(key, rec) {
+  var m = listenSections(key, rec);
+  var onlySec = m.secs.length <= 1;
+  return m.secs.map(function (sec, idx) {
+    var qs = listenSecQs(sec, m.qs, onlySec);
+    var h = (sec.title ? '<div class="listenHead">' + esc(sec.title) + '</div>' : '');
+    if (m.secs.length > 1 || sec.range) h += listenSecBar(sec, idx);
+    if (!qs.length) {
+      h += '<div class="muted" style="font-size:12px;margin:6px 0 12px">本段题目未录入题库（可用上方「原文」看录音内容）</div>';
+      return h;
+    }
+    var byN = {};
+    qs.forEach(function (q) { byN[q.n] = q; });
+    var seq = qs.map(function (q) { return q.n; });
+    if (sec.range) { seq = []; for (var n = sec.range.a; n <= sec.range.b; n++) seq.push(n); }
+    h += seq.map(function (n) {
+      var q = byN[n];
+      if (!q) return '<div class="examQ numOnly">第 ' + n + ' 题 <span class="qMiss">（本题题目块未录入）</span></div>';
+      var o = q.opts || {};
+      var html = '<div class="examQ numOnly">第 ' + q.n + ' 题</div>';
+      Object.keys(o).sort().forEach(function (k) {
+        html += '<div class="examOpt" style="pointer-events:none">' + '<b>' + esc(k) + '</b>' + esc(o[k]) + '</div>';
+      });
+      return html;
+    }).join("");
+    return h;
+  }).join("");
+}
+/* 原文模式：每段 英文（说话人轮次）→ 中文（含提问翻译） */
+function listenTxtHtml(key, rec, audioId) {
+  var m = listenSections(key, rec);
+  var tm = timingOf(key, listenTurns(rec.text || "")), aid = rec.audio ? (audioId || "listenAudio") : "";
+  function seek(i) { return (tm && tm[i] && aid) ? ' data-seek="' + tm[i][0].toFixed(2) + '"' : ''; }
+  function tmark(i) { return (tm && tm[i]) ? '<span class="tMark">' + fmtTime(tm[i][0]) + '</span>' : ''; }
+  function one(x, i) {
+    var s = seek(i), t = tmark(i);
+    if (x.t === "h") return '<div class="listenHead"' + s + '>' + esc(x.v) + t + '</div>';
+    if (x.t === "q") return '<div class="qSet"' + s + '><span class="qSetTag">' + esc((x.v.match(/Questions?\s+(\d+)\s*(?:to|-|and)\s*(\d+)/i) || [])[0] || "题组") + '</span>' + esc(x.v) + '</div>';
+    if (x.t === "d") return '<div class="dlgTurn"' + s + '><span class="who">' + esc(x.who) + ':</span><span class="say">' + esc(x.v) + '</span>' + t + '</div>';
+    if (x.t === "qq") return '<div class="listenQ"' + s + '><b>' + esc(x.n) + '.</b><span>' + esc(x.v.replace(/^\d{1,3}\.\s*/, "")) + '</span>' + t + '</div>';
+    return '<div class="listenLine"' + s + '>' + esc(x.v) + t + '</div>';
+  }
+  return m.secs.map(function (sec, idx) {
+    var h = '';
+    if (sec.title) h += '<div class="listenHead">' + esc(sec.title) + '</div>';
+    h += listenSecBar(sec, idx);
+    // 原文里自带的「2. What does…」题行编号不全（缺 1、5、6…），一律不用它们；
+    // 本段的题干统一从题库按题号顺序列出来（录音里念的题也在题库里）
+    h += sec.items.filter(function (it) { return it.x.t !== "qq"; })
+      .map(function (it) { return one(it.x, it.i); }).join("");
+    var miss = listenSecQs(sec, m.qs, m.secs.length <= 1);
+    if (miss.length) {
+      h += miss.map(function (q) {
+        return '<div class="listenQ"><b>' + esc(q.n) + '.</b><span>' + esc(q.stem || "（题干未录入）") +
+          (q.asr ? ' <span class="qAsr">音频转写</span>' : '') + '</span></div>';
+      }).join("");
+    }
+    if (sec.zh) h += '<div class="transBox" style="margin-top:12px"><div class="transHead">译文 · 这一段说了什么</div>' + listenSentenceBlocks(sec.zh) + '</div>';
+    else h += '<div class="muted" style="font-size:12px;margin:6px 0 12px">（该段暂无译文）</div>';
+    return h;
+  }).join("");
+}
 async function openListening() {
   switchMode("study");
   document.getElementById("studyExamTab").className = "btn small ghost";
@@ -2332,18 +2482,18 @@ function renderListenList() {
   html += '<button class="btn small ' + (lv === "cet4" ? "ok" : "ghost") + '" id="lvCet4" style="flex:1">四级听力</button>';
   html += '<button class="btn small ' + (lv === "cet6" ? "ok" : "ghost") + '" id="lvCet6" style="flex:1">六级听力</button>';
   html += '</div>';
-  html += '<div class="muted" style="margin:4px 0 8px;line-height:1.6">' + (lv === "cet4" ? "四级" : "六级") + '听力原文 ' + Object.keys(list).length + ' 套（带「译」的有对照译文）。音频已内置，<b>不联网也能听</b>，点上方播放器。</div>';
+  html += '<div class="muted" style="margin:4px 0 8px;line-height:1.6">' + (lv === "cet4" ? "四级" : "六级") + '听力 ' + Object.keys(list).length + ' 套（带「译」字的可看中文译文）。音频已内置，<b>不联网也能听</b>；点套次先看「选项」，再切「原文（英+中）」。</div>';
   for (const k of Object.keys(list).sort().reverse()) {
     const rec = list[k];
     const tag = rec.trans ? ' <span style="color:var(--accent);font-size:12px">译</span>' : '';
-    html += '<button class="btn ghost small listenItem" data-key="' + esc(k) + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + listenMetaLabel(rec.meta) + '（' + (rec.text ? '原文' : '无原文') + '）' + tag + '</button>';
+    html += '<button class="btn ghost small listenItem" data-key="' + esc(k) + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + listenMetaLabel(rec.meta) + '（' + (rec.text ? (rec.trans ? '原文+译文' : '仅原文') : '无原文') + '）' + tag + '</button>';
   }
   studyArea().innerHTML = html;
   document.getElementById("lvCet4").onclick = () => { window._listen.level = "cet4"; renderListenList(); };
   document.getElementById("lvCet6").onclick = () => { window._listen.level = "cet6"; renderListenList(); };
   studyArea().querySelectorAll(".listenItem").forEach(b => b.onclick = () => {
     window._listen.key = b.dataset.key;
-    window._listen.showTrans = false;
+    window._listen.mode = "opt";
     pushNav(() => renderListenList());
     renderListenRead();
   });
@@ -2351,8 +2501,10 @@ function renderListenList() {
 function renderListenRead() {
   scrollTopInstant();
   const d = LISTEN_BANK, lv = window._listen.level, rec = d[lv][window._listen.key];
+  window._listen.mode = window._listen.mode === "txt" ? "txt" : "opt";
+  const isTxt = window._listen.mode === "txt";
   let html = '<div class="stickyBar"><button class="btn ghost small" id="listenQuit">← 列表</button>' +
-    '<span class="meta">' + listenMetaLabel(rec.meta) + ' · 听力原文</span>' +
+    '<span class="meta">' + listenMetaLabel(rec.meta) + ' · ' + (isTxt ? '听力原文' : '听力选项') + '</span>' +
     '<button class="rsBtn" id="rdMinus" aria-label="字号变小">A-</button>' +
     '<button class="rsBtn" id="rdPlus" aria-label="字号变大">A+</button></div>';
   if (rec.note) {
@@ -2364,55 +2516,35 @@ function renderListenRead() {
   } else {
     html += '<div class="muted" style="font-size:12px;margin:6px 0">（该套暂无内置音频，可用电脑播放）</div>';
   }
-  if (rec.trans || rec.audio) {
-    html += '<div class="row" style="gap:8px;margin-bottom:10px">';
-    if (rec.trans) {
-      html += '<button class="btn small ' + (window._listen.showTrans ? "ghost" : "ok") + '" id="showOrig" style="flex:1">原文</button>';
-      html += '<button class="btn small ' + (window._listen.showTrans ? "ok" : "ghost") + '" id="showTrans" style="flex:1">对照译文</button>';
-    }
-    if (rec.audio) html += spdHtml();
-    html += '</div>';
-  }
-  // 音频时间轴：读不到就退化成文字模式；首次打开后台加载，加载到后自动重画一次
+  html += '<div class="row" style="gap:8px;margin-bottom:10px">';
+  html += '<button class="btn small ' + (isTxt ? "ghost" : "ok") + '" id="showOpt" style="flex:1">选项</button>';
+  html += '<button class="btn small ' + (isTxt ? "ok" : "ghost") + '" id="showTxt" style="flex:1">原文（英+中）</button>';
+  if (rec.audio) html += spdHtml();
+  html += '</div>';
+  // 音频时间轴：读不到就退化成纯文字；首次打开后台加载，加载到后自动重画一次
   var tmap = timingOf(window._listen.key, listenTurns(rec.text || ""));
   if (!LISTEN_TIMING_TRIED) {
     loadTiming().then(function () { if (LISTEN_TIMING) { try { renderListenRead(); } catch (e) { } } });
   }
-  const topts = { timing: tmap, audioId: rec.audio ? "listenAudio" : "" };
   if (rec.audio) {
     html += '<div class="hasSeekTip">' + (tmap
       ? '已带音频时间轴：点任意一轮或题组，就从那一刻开始播'
       : '本套暂无音频时间轴（只有文字，不能点着跳）') + '</div>';
   }
-  if (window._listen.showTrans && rec.trans) {
-    // 对照译文：上=原文（按说话人轮次分行），下=中文逐句（可收起；窄屏左右并排会挤成一团）
-    html += '<div class="transBox"><div class="transHead">原文 · 说话人轮次' + (rec.audio ? ' · 本套全部' : '') + '</div>' + listenTurnsHtml(rec.text || "（无原文）", false, listenGroupTags(window._listen.key), window._listen.key, topts) + '</div>';
-    html += listenTransBox(rec.trans);
+  if (isTxt) {
+    html += '<div class="muted" style="font-size:12px;margin:0 0 8px;line-height:1.6">每段先英文原文、再给这一段的中文译文（提问也一并译；选项不译）。</div>';
+    html += '<div style="margin-top:6px">' + listenTxtHtml(window._listen.key, rec) + '</div>';
   } else {
-    const turns = listenTurns(rec.text || "");
-    const heads2 = [];   // 段落速跳（Section/Conversation 等标题）
-    turns.forEach((x, i) => { if (x.t === "h") heads2.push({ i: i, v: x.v }); });
-    if (heads2.length >= 2) {
-      html += '<div class="yearChips" style="margin:0 0 4px">';
-      heads2.forEach((h, n) => {
-        html += '<button class="chip" data-ljump="lh' + h.i + '" title="' + esc(h.v) + '">' + (n + 1) + '. ' + esc(h.v.replace(/\s*\(.*/, "")) + '</button>';
-      });
-      html += '</div>';
-    }
-    html += '<div style="margin-top:8px">' + listenTurnsHtml(rec.text || "（无原文）", true, listenGroupTags(window._listen.key), window._listen.key, topts) + '</div>';
+    html += '<div class="muted" style="font-size:12px;margin:0 0 8px;line-height:1.6">按考试纸面来：只给选项，题干在录音里念。每段前面标了它对应哪几题。</div>';
+    html += '<div style="margin-top:6px">' + listenOptHtml(window._listen.key, rec) + '</div>';
   }
   studyArea().innerHTML = html;
   document.getElementById("listenQuit").onclick = () => { if (NAV_STACK.length) navBack(); else renderListenList(); };
   bindRsButtons();
   bindSpd("listenAudio");
   bindSeek(studyArea(), "listenAudio");
-  studyArea().querySelectorAll(".chip[data-ljump]").forEach(c => c.onclick = () => {
-    const el = document.getElementById(c.dataset.ljump);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-  const so = document.getElementById("showOrig"), st = document.getElementById("showTrans");
-  if (so) so.onclick = () => { window._listen.showTrans = false; renderListenRead(); };
-  if (st) st.onclick = () => { window._listen.showTrans = true; renderListenRead(); };
+  document.getElementById("showOpt").onclick = () => { window._listen.mode = "opt"; renderListenRead(); };
+  document.getElementById("showTxt").onclick = () => { window._listen.mode = "txt"; renderListenRead(); };
 }
 
 /* ================= 专题：把整卷按板块拆开（作文/翻译/听力/阅读/其它） ================= */
@@ -2885,7 +3017,7 @@ function renderTopicList() {
     document.getElementById("studyListenTab").className = "btn small ok";
     window._listen.level = "cet6";
     window._listen.key = b.dataset.lkey;
-    window._listen.showTrans = false;
+    window._listen.mode = "opt";
     renderListenRead();
   });
 }
@@ -3355,7 +3487,7 @@ function renderTopicPart() {
     html += '<div class="row" style="gap:8px;margin-bottom:10px">';
     if (audioRec.text) {
       html += '<button class="btn small ' + (showTxt ? "ghost" : "ok") + '" id="secText" style="flex:1">' +
-        (showTxt ? '← 回到题目' : '对照译文 ▾') + '</button>';
+        (showTxt ? '← 回到选项' : '原文（英+中）▾') + '</button>';
     }
     html += spdHtml() + '</div>';
     if (showTxt) html += '<div class="hasSeekTip">' + (tmap
@@ -3367,9 +3499,8 @@ function renderTopicPart() {
     const sents = ex.meta.transRef.split(/(?<=[.!?])\s+/).filter(Boolean);
     html += sents.map(s => '<div class="examText">' + esc(s) + '</div>').join('');
   } else if (window._secPart.showText && audioRec && audioRec.text) {
-    // 对照视图：上=原文（按说话人轮次分行），下=参考译文（逐句、默认收起）
-    html += '<div class="transBox"><div class="transHead">听力原文 · 说话人轮次 · 本套全部</div>' + listenTurnsHtml(audioRec.text, false, listenGroupTags(key), key, topts) + '</div>';
-    html += listenTransBox(audioRec.trans);
+    // v1.9.14：每段 英文原文（说话人轮次）→ 紧跟这段的中文（含提问翻译），不再重复英文
+    html += listenTxtHtml(key, audioRec, "secAudio");
   } else {
     // 缺号/缺节明示（v1.9.11 T3）：本板块内先提示缺哪几题/缺哪几句陈述句
     html += gapBannerHtml(blocks);
