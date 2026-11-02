@@ -29,6 +29,10 @@
 - **只改界面 / 逻辑（HTML）**：打 tag 后手机在应用内「检查更新」即可热更，不用重装。热更源按顺序取：Gitee → GitHub Pages 的 `latest.json` → gh-pages → jsdelivr 兜底
 - **改了数据或音频**（题库、听力原文、音频）：热更覆盖不了，必须发新 APK 整包重装。重装前应用内「导出备份」，装好后「导入备份」
 
+## 开发历程
+
+全周期记录（2026-10-22 起笔 → 1.9.29 收尾）：`HISTORY.md`；手机可看排版版：`www/history.html`（部署在 Pages，约 `https://zyh180518-maker.github.io/wordbook/www/history.html`）。
+
 ## 手机安装
 
 下载 Release 里的 `app-debug.apk`（约 330–350 MB，音频占大头）→ 允许"安装未知来源应用" → 安装 → 打开即用（完全离线）。签名固定，新版本可直接覆盖安装。

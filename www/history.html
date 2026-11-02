@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1420">
+<title>单词复习本 · 开发历程</title>
+<style>
+  :root{
+    --bg:#0f1420; --card:#1a2233; --line:#2a3650;
+    --fg:#e7edf7; --dim:#8fa3c0; --accent:#5aa2ff; --warn:#ffb95a;
+  }
+  *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:17px/1.78 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+    padding:calc(env(safe-area-inset-top) + 22px) 18px calc(env(safe-area-inset-bottom) + 40px);
+  }
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:26px;line-height:1.35;margin:0 0 10px}
+  .sub{color:var(--dim);font-size:14.5px;line-height:1.7;margin:0 0 18px}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 22px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat b{display:block;font-size:21px;color:var(--accent);line-height:1.3}
+  .stat span{font-size:12.5px;color:var(--dim)}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 26px}
+  .toc h2{font-size:13px;color:var(--dim);letter-spacing:.08em;margin:0 0 8px;font-weight:600}
+  .toc a{display:block;color:var(--fg);text-decoration:none;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
+  .toc a:last-child{border-bottom:0}
+  .toc a:active{color:var(--accent)}
+  section{margin:0 0 30px}
+  h2{font-size:19px;margin:34px 0 12px;padding-top:6px;line-height:1.5}
+  h2 .date{display:block;font-size:12.5px;color:var(--accent);font-weight:500;letter-spacing:.04em;margin-bottom:4px}
+  h3{font-size:15.5px;color:var(--accent);margin:22px 0 6px}
+  p{margin:0 0 13px}
+  ul{margin:0 0 14px;padding-left:20px}
+  li{margin:0 0 9px}
+  li b,strong{color:#fff}
+  .quote{border-left:3px solid var(--accent);background:rgba(90,162,255,.07);border-radius:0 10px 10px 0;padding:12px 14px;margin:0 0 14px;color:#d7e2f3;font-size:15.5px}
+  .note{color:var(--dim);font-size:14px}
+  code{background:#0b1220;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:14px;color:#cfe0ff}
+  .dl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 0;margin:0 0 16px}
+  .dl div{display:flex;justify-content:space-between;gap:12px;padding:9px 14px;border-bottom:1px dashed var(--line);font-size:15px}
+  .dl div:last-child{border-bottom:0}
+  .dl span:first-child{color:var(--dim)}
+  .dl span:last-child{text-align:right;color:#fff}
+  .end{border-top:1px solid var(--line);margin-top:34px;padding-top:18px;color:var(--dim);font-size:14px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>单词复习本 · 全周期开发历程</h1>
+<p class="sub">2026-10-22 22:06 起笔 → 2026-11-02 收尾，共 12 天。<br>从「一个 HTML 文件」长成「32 套六级真题 + 53 段听力音频的离线 App」。</p>
+
+<div class="stats">
+  <div class="stat"><b>12 天</b><span>从第一行代码到收尾</span></div>
+  <div class="stat"><b>30 个</b><span>版本标签</span></div>
+  <div class="stat"><b>149 次</b><span>代码提交</span></div>
+  <div class="stat"><b>1035 题</b><span>32 套卷全部四选项</span></div>
+</div>
+
+<div class="toc">
+  <h2>目录</h2>
+  <a href="#s0">00 · 起点：一个 docx 里的 1300 个单词</a>
+  <a href="#s1">01 · 纯网页阶段（10-22 夜 ~ 10-23）</a>
+  <a href="#s2">02 · 变成真 App，和一场签名事故（10-23）</a>
+  <a href="#s3">03 · 自动更新链（10-23 夜 ~ 10-25）</a>
+  <a href="#s4">04 · 从背单词到备考（10-25 ~ 10-28）</a>
+  <a href="#s5">05 · 题库、音频、专题（10-29）</a>
+  <a href="#s6">06 · OCR 与数据质检（10-29 ~ 10-31）</a>
+  <a href="#s7">07 · 收尾（11-02）</a>
+  <a href="#s8">08 · 最后的样子</a>
+  <a href="#s9">09 · 踩过的坑</a>
+  <a href="#s10">10 · 留下的硬约束</a>
+  <a href="#s11">11 · 结语</a>
+</div>
+
+<section id="s0">
+  <h2><span class="date">2026-10-22 · 22:06</span>起点：一个 docx 里的 1300 个单词</h2>
+  <p>第一条需求原话：</p>
+  <div class="quote">这是我平时在手机上记录的英语单词（<code>个人记录.docx</code>）。我希望你做一个类似软件的东西，功能就是我把英语和翻译写进去，然后它给我记着，然后我会想让他随机给一个我收录的英语，然后我翻译或者反过来（不清楚工作量有多大，做这个软件你得做到某一个阶段就保存一下，防止模型出现中断）。如果单词和翻译同时弄的话软件会很麻烦的话，你就退而求其次……</div>
+  <p>当晚 22:11 第一版就落在 <code>wordbook/index.html</code>。同一句话里定下的两条规矩，后来贯穿全程：</p>
+  <ul>
+    <li><b>阶段性保存</b>，防止中断丢进度 → 演变成「每版先备份、绝不覆盖、<code>.bak-before-*</code> 命名」</li>
+    <li><b>先给大纲问可行性再动手</b> → 演变成「方案先报、方向不对就停下来对齐」</li>
+  </ul>
+  <p>第一版形态：单文件 HTML + localStorage，零依赖，双击即用。功能已经齐了：内嵌种子词（源自那份 docx，清洗后 1292 个）、加权随机抽词、√/× 作答、艾宾浩斯复习间隔、统计与连续打卡、搜索 / 收录 / 批量导入、JSON 导入导出备份、答错强制补译文、深色主题。</p>
+  <p>手机怎么用是当晚第一个真问题。解法是 <code>启动-手机用.bat</code>：起一个 8765 端口的局域网服务，手机连同一 Wi-Fi 打开地址；或者在微信里直接打开 HTML（这条路径后来解释了为什么要做「从微信浏览器导出备份」的迁移流程）。</p>
+</section>
+
+<section id="s1">
+  <h2><span class="date">10-22 夜 ~ 10-23 下午</span>01 · 纯网页阶段</h2>
+  <p>改了两轮：先加应用图标（15:41，改前存 <code>.bak-before-icon</code>），再给「清空重来」加可选默认词库 / 归零（17:40，存 <code>.bak-before-reset-choice</code>）。</p>
+  <p>另一条线在并行：<b>另一个对话整理了一份移动端优化建议清单</b>（<code>优化建议.md</code>），把「手机上一天用几十次」的痛点排了优先级。落地了三项：底部固定答题栏（拇指友好）、主动回忆模式（先自测 → 看答案 → 再判 √/×）、手滑 5 秒内可撤回（配 Z / Ctrl+Z 快照恢复）。</p>
+  <p>也在这时清理了种子词库里的脏数据：拼错的（<code>civillisation</code>、<code>obaolete</code>）、缩写残词（<code>can't</code>、<code>i'll</code>）、碎片（<code>ial</code>、<code>hydr</code>、<code>againsta</code>）。<b>这是第一次「数据比代码更麻烦」的提醒</b>，10 天后它会变成整场的主要工作量。</p>
+  <p>遗留问题记在当时：答错强制填译文 × 5 秒撤回存在交互竞态（输入框被重建，译文可能写到别的词上），给了 A/B/C 三种修法，最终选了「填译文时先移除撤回钮」。</p>
+</section>
+
+<section id="s2">
+  <h2><span class="date">10-23 · 16:42 ~ 20:10</span>02 · 变成真 App，和一场签名事故</h2>
+  <p>动机很直接：手机浏览器用着费劲。于是 16:42 建仓库 <code>wordbook-github</code>，Capacitor 6 + GitHub Actions 自动打包 APK，第一个版本 v1.0.0。</p>
+  <p><b>签名事故</b>是这一阶段最重要的收获：v1.0.0 / v1.1.0 / v1.2.0 每次 CI 构建都用<b>随机 debug 签名</b>，手机上装过旧版后新版根本覆盖不上，只能卸载重来（数据全丢）。修了两轮：</p>
+  <ul>
+    <li>第一轮只把 keystore 复制进工程，没改 Gradle 的 <code>signingConfigs</code> → <b>不生效</b></li>
+    <li>第二轮 <code>scripts/patch-signing.py</code> 显式注入 PKCS12 → <b>生效</b></li>
+  </ul>
+  <p>v1.3.0 是分水岭：指纹 <code>O=Wordbook</code>、SHA256 <code>44:78:05:F0:…:E4:06</code>，从此新版可以覆盖安装、数据保住。当时写下三条硬约束，一直延续到最后：keystore 丢了就永远无法平滑升级（唯一单点风险）；每版必归档到 <code>backup/apk/</code> 且永不覆盖；回档路径始终可走。</p>
+  <p>顺带记录了第一次网络坑：git 没继承系统代理，push 一直超时；后来所有 GitHub 操作都显式走代理或直连。</p>
+</section>
+
+<section id="s3">
+  <h2><span class="date">10-23 夜 ~ 10-25</span>03 · 自动更新链</h2>
+  <p>这一阶段的目标是「以后改界面不用重装 App」。v1.4.0 一次上了三件套：<b>前端热更 + APK 全量自更新 + CI 发布链</b>。</p>
+  <p>热更的做法：head 里一段启动器，启动时拉 <code>latest.json</code>，比对版本、下载新 HTML、用 MD5 校验原始字节，再 <code>location.replace(Blob URL)</code> 整页替换。校验不过就删缓存回滚，成为「自愈」。</p>
+  <p>几个坑全在实测里撞出来，后来都写进了硬规矩：</p>
+  <ul>
+    <li><b>不能用 <code>document.write</code> 换页</b>——同 window 下 <code>const</code> 重复声明直接 SyntaxError，只能走 Blob URL</li>
+    <li><b>MD5 必须对原始字节算</b>（<code>arrayBuffer</code>），不能 <code>text()</code> 后再编码</li>
+    <li><b>Python 生成 MD5 必须二进制模式</b>，文本模式把 <code>\n</code> 变成 <code>\r\n</code>，永远对不上</li>
+    <li><b><code>UPDATE_URLS</code> 大小写不一致</b>（定义 var 大写、调用小写）导致按钮卡死</li>
+    <li><b>备份源一开始指向 <code>main/www</code></b>，而 CI 只推 gh-pages → 未来必然 404</li>
+  </ul>
+  <p>CI 侧三次构建失败也全是真问题：Capacitor 6.2+ 的 MainActivity 变成空类（脚本找不到 anchor）、<code>TtsBridge</code> 的 final 字段在 lambda 里被判「可能未初始化」两次。最终把语言/语速配置延迟到首次 <code>speak()</code> 执行才绕过去。为了让失败可诊断，workflow 里加了「把 gradle 报错写成 annotation」，匿名就能在 run 页面看到错误。</p>
+  <p>10-24 三个小版本接着修：v1.4.1 治「点发声没声音」（4 个根因：无兜底、引擎未就绪不回读、二次点击覆盖文本、语言 fallback 不看返回值）；v1.4.2 加「今日已学 / 学习记录」；v1.5.0 一次做七件事（使用说明重写、朗读模式手动/自动、更新入口独立、音色优化、记录整行可点 + 删除防误触…）。</p>
+  <p>10-25 是「国内能不能用」的一天。Gitee 做了镜像源（v1.5.1），结果发现 <b>Gitee raw 没有 CORS 头</b>：curl 能下、App 不能下。解法是启用 <b>CapacitorHttp</b>（App 内 fetch 走原生、绕开 CORS）并把备份源做成逐级兜底。另一个细节：<b>Gitee API 覆盖已有文件必须用 PUT，且 sha 要传完整 40 位</b>，截断就静默失败。</p>
+  <p>同一天还做了一次「降级升级链」回归：关掉代理模拟国内环境，用 v1.4.0 / v1.4.2 / v1.5.0 / v1.5.1 四个旧版本逐个往新版升——全失败。根因是这四个老版本的启动器<b>没有兜底链</b>，而主源当时指向 Gitee。修法是把 <code>htmlUrl</code> 主源改回 <b>GitHub Pages</b>（国内可达 + <code>CORS *</code>），Gitee 降为备份。改完 9 个版本逐个升级，全通。</p>
+  <p>这一串 7 连发之后：导出备份改成「真文件 + 系统分享」（<code>@capacitor/filesystem</code> + <code>@capacitor/share</code>），兜底还加了 gzip + base64 压缩；每日单词数可自定义（1–999）。</p>
+</section>
+
+<section id="s4">
+  <h2><span class="date">10-25 ~ 10-28</span>04 · 从背单词到备考</h2>
+  <p>v1.5.7 把学习逻辑做厚：遗忘曲线 / 完全随机两种抽词模式、✓× 可自由改判（但必须写意思）、记录可改掌握状态并筛选、多次未掌握（≥2 次）单独成表。</p>
+  <p>v1.6.0 加了「记忆方式」：系统直接给释义，判完自动显示，不用手写；同时<b>内嵌 3 万词词典</b>（<code>dict.json</code>，最终 31290 条），收录新词自动匹配释义，个人手写释义不被覆盖。</p>
+  <p>10-29 先补工具链：JDK17 + Android SDK + adb 装到本机（不再干等 CI），加 <code>qwen2.5-coder:7b</code> 当第二双眼睛复核代码，写了个 10 项自检脚本。这套后来所有版本都在用。</p>
+</section>
+
+<section id="s5">
+  <h2><span class="date">10-29</span>05 · 题库、音频、专题</h2>
+  <p>10-29 是单日跨度最大的一天，应用定位从「单词本」变成「备考工具」。</p>
+  <p>内容是这一天的主角：四六级初始词库（四级 4544 / 六级 6662 词）、六级真题模块（第一版 35 套 1228 题）、听力原文阅读（四级 29 套 / 六级 28 套）、备考专区 + 试卷式整卷展示。</p>
+  <p><b>把 58 套听力 m4a 打进 APK</b> 是这一天的转折：包体直接 262 MB。随后压缩到 AAC 16k 单声道，243 MB → 166 MB，APK 171.5 MB。当时以为这是终局，其实埋下了「电流音」的伏笔（见 11-02）。</p>
+  <p>题库靠质检一件件抠出来：解析混入清零、双栏空格对齐、不完整题丢弃、换行与 <code>[A]</code> 选项误判、<b>标准答案泄露</b>（未作答就预标 correct）。数据从 35 套 1228 题一路扩到 100 套 4665 题，标准答案 2858 条 / 46 套（剔除两套听力覆盖不足的）。最后瘦身到 32 套近期卷（2019-06 起），老卷归档。</p>
+  <p>体验侧：试卷吸顶返回条 + 字号三档、听力播放器吸顶、长卷段落速跳、年份筛选、回顶键；专题拆分（作文/翻译/听力/阅读/其它）到按题型作答区。</p>
+</section>
+
+<section id="s6">
+  <h2><span class="date">10-29 ~ 10-31</span>06 · OCR 与数据质检</h2>
+  <p>v1.8.x 靠 OCR 补内容：15 套翻译原文 + 4 套作文题干、17 套 2020–2026 真题（5208 题）、9 套参考译文对照。</p>
+  <p>v1.9.0 上了 18 篇扫描版解析 PDF 的 OCR 结果（翻译参考译文 25/64 套、作文范文 7 套），页面明确标「OCR 提取，个别字词可能有误差」。真机一测又是一批问题：听力 Section A/B/C 原来渲染的是同一份整 Part、<b>PDF 抽行导致单词粘连 1000+ 处</b>（<code>onAnswerSheet</code>、<code>Thenmarkthecorresponding</code>）、作文页顺序错、stickyBar 被截断。</p>
+  <p>v1.9.1 头疼了一次「题库加载失败（请升级 APK）」，原因是热更缓存页是 <code>blob:</code>，里面相对路径全部失效——只能改成绝对可用路径。</p>
+  <p>v1.9.10 开始上「真实音频时间轴」：用本机 SenseVoice + VAD 逐句对齐（28 套、轮次命中 79.3%），做了轮次与题组跳播。</p>
+  <p>然后是 10-31 通宵的质检：缺号 / 缺节<b>明示</b>（不再假装完整）、ASR 补听力题干（空题干 679 → 0）、匹配陈述句 41 套、选词正文按合订版 3x OCR 重建 13 套、编号体系按源卷统一。</p>
+  <p><b>两次「找回」事故值得记</b>：v1.9.22 发现选词词表被脚本压成了一个 <code>A）</code>（11 套），v1.9.23 发现 2020-09-2 的长篇匹配 A–O 15 段整段丢了。两次都靠旧快照 + OCR 一点点恢复。教训：<b>数据变化要先量化再动手，变小一律当退化信号核实</b>。</p>
+</section>
+
+<section id="s7">
+  <h2><span class="date">11-02</span>07 · 收尾</h2>
+  <ul>
+    <li><b>v1.9.25</b>：补 2025-12-1 第 9 题四选项、2025-12-2 选词空号 28/32 与丢失整句、7 道三选项题补第四项 → <b>1035 题全部四选项</b></li>
+    <li><b>v1.9.26</b>：17 套老真题补「原文 + 参考译文」（本机 7B 机翻，界面注明仅参考）</li>
+    <li><b>v1.9.27</b>：修 13 段译文里的英文回声（漏译的地方原样留了英文）</li>
+    <li><b>v1.9.28</b>：<b>音频重做</b>。原文件是 AAC-LC 11–16 kbps，频谱 3–8 kHz 只占 4.7%，听感是「电流音」（其实是编码量化噪声，不是电源哼声）。挖到源头是 22 kbps HE-AACv2 立体声母本，先试方案 1（直接用母本）——<b>这个 WebView 放不出 HE-AACv2</b>（<code>MediaError 4</code>，真机验证），退回方案 2：从母本重转 32 kbps AAC-LC，3–8 kHz 能量提升 3–6 倍。批量转换中途被中断，6 个文件写坏，靠逐个解码校验 + 重转补齐，53/53 全部可解码</li>
+    <li><b>v1.9.29</b>：三套缺听力的卷子做「听力另见第 1 套」引出卡 + 列表标签；纠正三套 note（2021-06-3 明确写「卷面无官方说明」，不假称官方一致）；2021-06-3 修 <code>Part m</code> → <code>Part III</code>、写作 Part I 移到卷首、选词碎块合并成 3 段</li>
+  </ul>
+  <p>代价是体积：音频 166 → 325 MB，APK 180 → 347 MB（Release 332 MB）。</p>
+</section>
+
+<section id="s8">
+  <h2>08 · 最后的样子</h2>
+  <div class="dl">
+    <div><span>版本</span><span>1.9.29</span></div>
+    <div><span>应用本体</span><span>index.html 232 KB / 3781 行</span></div>
+    <div><span>题库</span><span>32 套 / 1035 题，全四选项</span></div>
+    <div><span>听力</span><span>六级 24 套全有译文，53 段音频 325 MB</span></div>
+    <div><span>词库</span><span>四级 4544 / 六级 6662；词典 31290 条</span></div>
+    <div><span>APK</span><span>约 332 MB（音频占大头）</span></div>
+    <div><span>提交 / 标签</span><span>149 次 / 30 个</span></div>
+  </div>
+</section>
+
+<section id="s9">
+  <h2>09 · 踩过的坑</h2>
+  <h3>签名与安装</h3>
+  <ul>
+    <li>随机 debug 签名 → 覆盖安装失败；修法必须是显式 <code>signingConfigs</code>（PKCS12）</li>
+    <li>本地测试包必须按 CI 规则打 <code>versionCode</code>（主*10000+次*100+补丁），否则低于已装版本装不上</li>
+    <li>本地测试包必须用仓库那把 keystore，否则报签名不一致</li>
+  </ul>
+  <h3>热更新</h3>
+  <ul>
+    <li><code>document.write</code> 会撞 <code>const</code> 重复声明 → 只能 Blob URL + <code>location.replace</code></li>
+    <li>MD5 对原始字节；Python 必须二进制模式</li>
+    <li>主源不能放 Gitee raw（无 CORS）；Gitee 覆盖文件用 PUT + 完整 40 位 sha</li>
+    <li>老版本启动器没有兜底链 → 主源一变全挂；于是主源固定在 Pages、Gitee 降备份</li>
+    <li><code>blob:</code> 页面里相对路径全部失效</li>
+  </ul>
+  <h3>WebView / 原生</h3>
+  <ul>
+    <li>HE-AACv2 不支持（<code>MediaError 4</code>）→ 只能用 AAC-LC</li>
+    <li>TTS 引擎 0.5–3 秒才就绪，必须「就绪后回读 pending」+ 前端 <code>isReady()</code> 兜底</li>
+    <li>Capacitor 6.2+ 空类 MainActivity 让注入脚本失效</li>
+  </ul>
+  <h3>数据</h3>
+  <ul>
+    <li>想当然的完整性：三选项题、空题干、空号——最后都改成「缺就明示」，宁缺勿假</li>
+    <li>标准答案泄露、选项掉出题块、词表被压成 <code>A）</code>、整段正文丢失</li>
+    <li>PDF 抽行粘连 1000+ 处；OCR 折行把选项甩出题块</li>
+  </ul>
+  <h3>工程</h3>
+  <ul>
+    <li>CRLF 让四份副本 md5 不一致（<code>core.autocrlf=true</code> 改写了 www/index.html）</li>
+    <li>四副本必须逐一核对 md5</li>
+    <li>批量脚本中断会留半成品，重跑前先校验产物，别让「已存在即跳过」固化空文件</li>
+  </ul>
+</section>
+
+<section id="s10">
+  <h2>10 · 留下的硬约束</h2>
+  <ul>
+    <li><b>每版先备份、永不覆盖</b>（<code>.bak-before-*</code> + <code>backup/apk/</code> 归档）</li>
+    <li><b>改完必自检</b>：语法、幂等重跑、四副本 md5、真机实测、线上产物核对</li>
+    <li><b>数据变少一律当退化</b>，说清「减了什么、为什么」</li>
+    <li><b>宁缺勿假</b>：没录到的题就标缺，不编内容</li>
+    <li><b>数据或音频改动 → 只能整包重装</b>；纯 HTML 改动 → 应用内热更</li>
+    <li><b>keystore 不能丢</b>（唯一单点风险）</li>
+  </ul>
+</section>
+
+<section id="s11">
+  <h2>11 · 结语</h2>
+  <p>12 天，从一个 docx 里 1300 个单词，到 32 套真题、1035 道题、53 段音频、325 MB 的离线 App。中间大部分时间其实不在写功能，而在<b>把不完整的数据补完整、把假象去掉、把每处改动验证到底</b>。</p>
+  <p>以后不打算大更新了。要重新捡起来，按这个顺序看：</p>
+  <ul>
+    <li><code>README.md</code> —— 仓库结构与两条更新路径</li>
+    <li><code>wordbook/开发历程.md</code>、<code>DEVELOPMENT_LOG.md</code>、<code>update-progress.md</code> —— 各阶段原始记录（本文就是从这些 + 149 次提交整理出来的）</li>
+    <li><code>.intermediate/</code> —— 质检阶段的报告与状态文件</li>
+  </ul>
+</section>
+
+<p class="end">整理于 2026-11-02 · 本文也有 Markdown 版（仓库 <code>HISTORY.md</code>）</p>
+
+</div>
+</body>
+</html>
