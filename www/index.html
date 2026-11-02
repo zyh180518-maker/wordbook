@@ -290,7 +290,7 @@
 <script>
 /* ========== 热更启动器：检测缓存更新并暂存待应用状态（不在解析早期冒险 document.write） ========== */
 (function () {
-  var APP_VERSION = "1.9.28"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
+  var APP_VERSION = "1.9.29"; /* ⚠️ 与主脚本 APP_VERSION 保持同步 */
   function utf8(s) {
     var out = [], i = 0, c;
     while (i < s.length) {
@@ -614,7 +614,7 @@
 <script>
 "use strict";
 /* ===== 热更逻辑（APP_VERSION 与 head 启动器保持同步） ===== */
-const APP_VERSION = "1.9.28";
+const APP_VERSION = "1.9.29";
 const UPDATE_URLS_DEFAULT = [
   "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/latest.json", // Gitee 国内源（手机无代理直连快）
   "https://zyh180518-maker.github.io/wordbook/www/latest.json",
@@ -1701,6 +1701,16 @@ function scrollTopInstant() {
 
 /* ===== 六级真题（整卷试卷式展示） ===== */
 window._exam = { key: null, answers: {} };
+// 听力沿用第 1 套的套次（v1.9.29）：官方多题多卷下个别第 3 套不印听力。
+// 题库数据不改，只在页面上引出到对应的第 1 套。
+const LISTEN_BORROW = {
+  // 卷面原话：由于2020年9月六级考试全国共考了1套听力，本套听力试题同第1套试题一致，因此在本套题中不再重复出现
+  "2020-09-2": { src: "2020-09-1", why: "2020 年 9 月全国只考了 1 套听力；卷面写明：本套听力试题同第 1 套一致，不再重复出现" },
+  // 该套卷面无任何听力说明，不能替它下结论
+  "2021-06-3": { src: "2021-06-1", why: "本套卷面未收录听力，且卷面无原文说明；同批第 1 套听力 25 题齐全，可先去练第 1 套" },
+  // 卷面原话：官方第三套真题的听力试题与第一套真题的一致，只是选项顺序不同，因此本套试卷不再提供听力部分
+  "2024-06-3": { src: "2024-06-1", why: "卷面写明：官方第 3 套听力与第 1 套一致（仅选项顺序不同），本套不再提供听力部分" }
+};
 function examMetaLabel(meta) {
   return meta.year + "年" + (meta.month < 10 ? "0" + meta.month : meta.month) + "月" +
     (meta.set > 1 ? " 第" + meta.set + "套" : "");
@@ -1747,8 +1757,10 @@ function renderExamList() {
       const ex = d.exams[k], p = prog[k];
       const qs = ex.blocks.filter(b => b.t === "q");
       const hasListen = qs.some(q => q.n <= 25);
-      const tag = (hasListen ? "" : ' <span style="color:var(--no);font-size:12px">仅阅读</span>') +
-        (qs.length < 20 ? ' <span style="color:var(--no);font-size:12px">残缺扫描</span>' : '') +
+      const _lb = LISTEN_BORROW[k];
+      const tag = (_lb ? ' <span style="color:var(--dim);font-size:12px">听力另见第1套</span>'
+        : (hasListen ? "" : ' <span style="color:var(--no);font-size:12px">仅阅读</span>') +
+          (qs.length < 20 ? ' <span style="color:var(--no);font-size:12px">残缺扫描</span>' : '')) +
         (p ? ' <span style="color:var(--ok);font-size:12px">✓ ' + p.ok + '/' + p.done + '</span>' : '');
       html += '<button class="btn ghost small examItem" data-key="' + k + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' + examMetaLabel(ex.meta) + '（' + qs.length + ' 题）' + tag + '</button>';
     }
@@ -1782,6 +1794,16 @@ function renderExamPaper() {
   if (ex.meta && ex.meta.note) {
     const notePre = (ex.meta.note.indexOf("\u26a0") === 0) ? "" : "\u26a0 ";
     html += '<div class="muted" style="font-size:12px;color:var(--no);margin-bottom:8px;line-height:1.6">' + notePre + esc(ex.meta.note) + '</div>';
+  }
+  // 缺听力的套次：给一张引出卡片（v1.9.29）
+  if (LISTEN_BORROW[window._exam.key]) {
+    const _lb2 = LISTEN_BORROW[window._exam.key];
+    const _src = EXAM_BANK.exams[_lb2.src];
+    if (_src) {
+      html += '<button class="btn ghost" id="listenBorrow" style="display:block;width:100%;margin:0 0 10px;min-height:44px;text-align:left;line-height:1.6;padding:10px 12px">' +
+        '🎧 <b>本套听力另见第 1 套</b><br><span style="font-size:13px">' + esc(_lb2.why) + '</span><br>' +
+        '<span style="color:var(--ok);font-size:13px">→ 去练 ' + esc(examMetaLabel(_src.meta)) + '（听力 25 题）</span></button>';
+    }
   }
   // 段落速跳：长卷（70~90 题）手机上滑很久，给一排 Part/Section 跳转 chips
   const heads = [];
@@ -1867,6 +1889,14 @@ function renderExamPaper() {
   });
   studyArea().innerHTML = html;
   document.getElementById("examBack").onclick = () => { if (NAV_STACK.length) navBack(); else renderExamList(); };
+  const _lbBtn = document.getElementById("listenBorrow");
+  if (_lbBtn) _lbBtn.onclick = () => {
+    const _prev = window._exam.key;
+    pushNav(() => { window._exam.key = _prev; window._exam.answers = {}; renderExamPaper(); });
+    window._exam.key = LISTEN_BORROW[_prev].src;
+    window._exam.answers = {};
+    renderExamPaper();
+  };
   bindRsButtons();
   studyArea().querySelectorAll(".chip[data-jump]").forEach(c => c.onclick = () => {
     const el = document.getElementById(c.dataset.jump);
