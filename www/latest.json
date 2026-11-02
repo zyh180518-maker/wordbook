@@ -1,17 +1,17 @@
 {
-  "version": "1.9.25",
-  "htmlFile": "index-1.9.25.html",
-  "htmlUrl": "https://zyh180518-maker.github.io/wordbook/www/index-1.9.25.html",
+  "version": "1.9.26",
+  "htmlFile": "index-1.9.26.html",
+  "htmlUrl": "https://zyh180518-maker.github.io/wordbook/www/index-1.9.26.html",
   "htmlUrlBackup": [
-    "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/index-1.9.25.html",
-    "https://raw.githubusercontent.com/zyh180518-maker/wordbook/gh-pages/index-1.9.25.html",
-    "https://cdn.jsdelivr.net/gh/zyh180518-maker/wordbook@gh-pages/index-1.9.25.html"
+    "https://gitee.com/zyh2077/workbook.ds.cqjtu/raw/master/index-1.9.26.html",
+    "https://raw.githubusercontent.com/zyh180518-maker/wordbook/gh-pages/index-1.9.26.html",
+    "https://cdn.jsdelivr.net/gh/zyh180518-maker/wordbook@gh-pages/index-1.9.26.html"
   ],
-  "md5": "3fbaba2aea4b8e8358b521a8690d4838",
+  "md5": "543abd8cdff60b936e0fa9afee96f44b",
   "apk": {
-    "version": "1.9.25",
+    "version": "1.9.26",
     "url": "https://github.com/zyh180518-maker/wordbook/releases/latest/download/app-debug.apk",
-    "md5": "6de1587e44cd0f4bfddbbff0dd0a66a3",
-    "size": 180803892
+    "md5": "2d95b19265d3d9ba0dfb9ba4a824756d",
+    "size": 181023991
   }
 }
